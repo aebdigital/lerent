@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Nunito:wght@200;300;400;500;600;700;800&display=swap');
+
+@font-face {
+  font-family: 'AvantGarde';
+  src: url('./assets/fonts/avant/AvantGarde-Demi.woff2') format('woff2'),
+       url('./assets/fonts/avant/AvantGarde-Demi.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'AvantGarde';
+  src: url('./assets/fonts/avant/AvantGarde-Book.woff2') format('woff2'),
+       url('./assets/fonts/avant/AvantGarde-Book.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+  
+  /* Use Goldman font for all headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Goldman', sans-serif;
+  }
+  
+  /* Custom smooth transitions for page changes */
+  .page-transition {
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+  }
+  
+  .page-enter {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  /* Mobile menu smooth transitions */
+  .mobile-menu-transition {
+    transition: max-height 0.5s ease-out, opacity 0.3s ease-out;
+  }
+  
+  .page-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors duration-200;
+  }
+  
+  .btn-accent {
+    @apply bg-accent text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300;
+  }
+
+  /* Continuous scroll animation for reviews */
+  .animate-scroll {
+    animation: scroll 40s linear infinite;
+  }
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200;
+  }
+}
