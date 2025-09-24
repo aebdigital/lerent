@@ -13,6 +13,13 @@ import Icon2 from '../icon2.svg';
 import Icon3 from '../icon3.svg';
 import Icon4 from '../icon4.svg';
 import CarClassImg from '../testfilter2.png';
+import AudiA6Img from '../audia6.JPG';
+import BMW540iImg from '../bmw540i.png';
+import AudiS4Img from '../audis4.webp';
+import AudiS6Img from '../audis6.JPG';
+import MaseratiImg from '../maseratilevante.JPG';
+import BMW840iImg from '../bmw840i.png';
+import BMWX7Img from '../bmwx7.JPG';
 import SUVImg from '../SUV.webp';
 
 const HomePage = () => {
@@ -86,7 +93,7 @@ const HomePage = () => {
       transmission: '4x4',
       bodyType: 'Sedan',
       fuelType: 'Benzín',
-      image: '/src/audia6.JPG',
+      image: AudiA6Img,
       price: 90,
       type: 'Sedan',
       fuel: 'Benzín'
@@ -101,7 +108,7 @@ const HomePage = () => {
       transmission: '4x4',
       bodyType: 'Sedan',
       fuelType: 'Benzín',
-      image: '/src/bmw540i.png',
+      image: BMW540iImg,
       price: 90,
       type: 'Sedan',
       fuel: 'Benzín'
@@ -116,7 +123,7 @@ const HomePage = () => {
       transmission: '4x4',
       bodyType: 'Kombi',
       fuelType: 'Nafta',
-      image: '/src/audis4.webp',
+      image: AudiS4Img,
       price: 90,
       type: 'Kombi',
       fuel: 'Nafta'
@@ -131,7 +138,7 @@ const HomePage = () => {
       transmission: '4x4',
       bodyType: 'Kombi',
       fuelType: 'Nafta',
-      image: '/src/audis6.JPG',
+      image: AudiS6Img,
       price: 100,
       type: 'Kombi',
       fuel: 'Nafta'
@@ -146,7 +153,7 @@ const HomePage = () => {
       transmission: '4x4',
       bodyType: 'SUV',
       fuelType: 'Benzín',
-      image: '/src/maseratilevante.JPG',
+      image: MaseratiImg,
       price: 130,
       type: 'SUV',
       fuel: 'Benzín'
@@ -161,7 +168,7 @@ const HomePage = () => {
       transmission: '4x4',
       bodyType: 'Sedan',
       fuelType: 'Benzín',
-      image: '/src/bmw840i.png',
+      image: BMW840iImg,
       price: 140,
       type: 'Sedan',
       fuel: 'Benzín'
@@ -176,7 +183,7 @@ const HomePage = () => {
       transmission: '4x4',
       bodyType: 'SUV',
       fuelType: 'Nafta',
-      image: '/src/bmwx7.JPG',
+      image: BMWX7Img,
       price: 200,
       type: 'SUV',
       fuel: 'Nafta'

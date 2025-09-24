@@ -17,6 +17,13 @@ import ContactMapSection from '../components/ContactMapSection';
 import BookingFormSection from '../components/BookingFormSection';
 import { carsAPI } from '../services/api';
 import HeroImg from '../test.png';
+import AudiA6Img from '../audia6.JPG';
+import BMW540iImg from '../bmw540i.png';
+import AudiS4Img from '../audis4.webp';
+import AudiS6Img from '../audis6.JPG';
+import MaseratiImg from '../maseratilevante.JPG';
+import BMW840iImg from '../bmw840i.png';
+import BMWX7Img from '../bmwx7.JPG';
 
 // Function to get car images based on car ID or brand/model
 const getCarImage = (car) => {
@@ -32,13 +39,13 @@ const getCarImage = (car) => {
   
   // Map car IDs to specific images (matching HomePage data)
   const carImageMap = {
-    'audi-a6': '/src/audia6.JPG',
-    'bmw-540i-xdrive': '/src/bmw540i.png',
-    'audi-s4': '/src/audis4.webp',
-    'audi-s6': '/src/audis6.JPG',
-    'maserati-levante': '/src/maseratilevante.JPG',
-    'bmw-840i-xdrive': '/src/bmw840i.png',
-    'bmw-x7-xdrive-40d': '/src/bmwx7.JPG'
+    'audi-a6': AudiA6Img,
+    'bmw-540i-xdrive': BMW540iImg,
+    'audi-s4': AudiS4Img,
+    'audi-s6': AudiS6Img,
+    'maserati-levante': MaseratiImg,
+    'bmw-840i-xdrive': BMW840iImg,
+    'bmw-x7-xdrive-40d': BMWX7Img
   };
   
   // Try to match by car ID
