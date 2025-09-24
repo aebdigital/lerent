@@ -1,7 +1,6 @@
 [build]
-  base = "lerent/car-rental-frontend"
-  command = "npm run build"
-  publish = "dist"
+  command = "cd lerent/car-rental-frontend && npm run build"
+  publish = "lerent/car-rental-frontend/dist"
 
 [build.environment]
   NODE_VERSION = "18"
