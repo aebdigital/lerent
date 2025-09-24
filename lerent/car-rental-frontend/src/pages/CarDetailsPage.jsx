@@ -137,7 +137,7 @@ const CarDetailsPage = () => {
       transmission: '4x4',
       bodyType: 'Sedan',
       fuelType: 'Benzín',
-      image: '/src/audia6.JPG',
+      image: AudiA6Img,
       year: 2024,
       status: 'available',
       features: ['air-conditioning', 'gps', 'bluetooth', 'heated-seats']
@@ -152,7 +152,7 @@ const CarDetailsPage = () => {
       transmission: '4x4',
       bodyType: 'Sedan',
       fuelType: 'Benzín',
-      image: '/src/bmw540i.png',
+      image: BMW540iImg,
       year: 2024,
       status: 'available',
       features: ['air-conditioning', 'gps', 'bluetooth', 'sport-package']
@@ -167,7 +167,7 @@ const CarDetailsPage = () => {
       transmission: '4x4',
       bodyType: 'Kombi',
       fuelType: 'Nafta',
-      image: '/src/audis4.webp',
+      image: AudiS4Img,
       year: 2024,
       status: 'available',
       features: ['air-conditioning', 'gps', 'bluetooth', 'quattro']
@@ -182,7 +182,7 @@ const CarDetailsPage = () => {
       transmission: '4x4',
       bodyType: 'Kombi',
       fuelType: 'Nafta',
-      image: '/src/audis6.JPG',
+      image: AudiS6Img,
       year: 2024,
       status: 'available',
       features: ['air-conditioning', 'gps', 'bluetooth', 'quattro', 'sport-package']
@@ -197,7 +197,7 @@ const CarDetailsPage = () => {
       transmission: '4x4',
       bodyType: 'SUV',
       fuelType: 'Benzín',
-      image: '/src/maseratilevante.JPG',
+      image: MaseratiImg,
       year: 2024,
       status: 'available',
       features: ['air-conditioning', 'gps', 'bluetooth', 'leather-seats', 'premium-sound']
@@ -212,7 +212,7 @@ const CarDetailsPage = () => {
       transmission: '4x4',
       bodyType: 'Sedan',
       fuelType: 'Benzín',
-      image: '/src/bmw840i.png',
+      image: BMW840iImg,
       year: 2024,
       status: 'available',
       features: ['air-conditioning', 'gps', 'bluetooth', 'sport-package', 'premium-sound']
@@ -227,7 +227,7 @@ const CarDetailsPage = () => {
       transmission: '4x4',
       bodyType: 'SUV',
       fuelType: 'Nafta',
-      image: '/src/bmwx7.JPG',
+      image: BMWX7Img,
       year: 2024,
       status: 'available',
       features: ['air-conditioning', 'gps', 'bluetooth', 'leather-seats', '7-seats', 'premium-sound']
