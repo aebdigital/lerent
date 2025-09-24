@@ -47,7 +47,7 @@ const Footer = () => {
             </div>
 
             {/* Footer Navigation */}
-            <div className="flex flex-col space-y-3 lg:mt-16">
+            <div className="flex flex-col space-y-3">
               <Link to="/" className="text-gray-400 hover:text-white transition-colors text-sm">
                 Domov
               </Link>
