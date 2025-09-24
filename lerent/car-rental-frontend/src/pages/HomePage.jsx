@@ -6,7 +6,7 @@ import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
 import BookingFormSection from '../components/BookingFormSection';
 import { carsAPI } from '../services/api';
-import HeroImg from '../test.png';
+import HeroImg from '../hero_lerent.avif';
 import VasenImg from '../vasen.webp';
 import Icon1 from '../icon1.svg';
 import Icon2 from '../icon2.svg';
@@ -22,6 +22,7 @@ const HomePage = () => {
   const [filteredCars, setFilteredCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
   // Car classes for filtering
   const carClasses = [
@@ -40,7 +41,7 @@ const HomePage = () => {
 
   // Filters
   const [sortBy, setSortBy] = useState('price-asc');
-  
+
   const [filters, setFilters] = useState({
     priceRange: 'all',
     transmission: 'all',
@@ -48,6 +49,30 @@ const HomePage = () => {
     brand: 'all',
     sortBy: 'price-asc'
   });
+
+  // Sort options for dropdown
+  const sortOptions = [
+    { value: 'price-asc', label: 'Zobraziť od najlacnejšieho' },
+    { value: 'price-desc', label: 'Zobraziť od najdrahšieho' },
+    { value: 'availability', label: 'Podľa dostupnosti' }
+  ];
+
+  const handleSortChange = (value) => {
+    setSortBy(value);
+    setIsDropdownOpen(false);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isDropdownOpen && !event.target.closest('.dropdown-container')) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDropdownOpen]);
 
   // All cars data
   const allCars = [
@@ -275,6 +300,21 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-white text-black">
+      <style jsx>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slideDown {
+          animation: slideDown 0.2s ease-out forwards;
+        }
+      `}</style>
       
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
@@ -331,7 +371,7 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Main Content with Brand Filter on Left */}
+          {/* Main Content with Brand Filter on Left and Centered Car Grid */}
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Brand Filter - Left Side */}
             <div className="w-full lg:w-64 lg:flex-shrink-0">
@@ -349,13 +389,13 @@ const HomePage = () => {
                         }
                       }}
                       className={`flex items-center space-x-3 p-3 w-full lg:w-full rounded-lg transition-all duration-200 ${
-                        selectedBrands.includes(brand.value) 
-                          ? 'bg-[rgba(250,146,8,0.1)] border-2 border-[rgb(250,146,8)]' 
+                        selectedBrands.includes(brand.value)
+                          ? 'bg-[rgba(250,146,8,0.1)] border-2 border-[rgb(250,146,8)]'
                           : 'bg-white border-2 border-transparent hover:bg-gray-50'
                       }`}
                     >
-                      <img 
-                        src={brand.value === 'bmw' 
+                      <img
+                        src={brand.value === 'bmw'
                           ? 'https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg'
                           : brand.value === 'audi'
                           ? 'https://upload.wikimedia.org/wikipedia/commons/9/92/Audi-Logo_2016.svg'
@@ -378,97 +418,120 @@ const HomePage = () => {
                 </div>
               </div>
             </div>
-            
-            {/* Car Grid - Right Side */}
-            <div className="flex-1">
-              {/* Sort Dropdown */}
-              <div className="flex justify-end mb-6">
-                <div className="relative">
-                  <select 
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="bg-white text-black px-4 py-2 border border-gray-300 appearance-none pr-8 min-w-64"
-                  >
-                    <option value="price-asc">Zobraziť od najlacnejšieho</option>
-                    <option value="price-desc">Zobraziť od najdrahšieho</option>
-                    <option value="availability">Podľa dostupnosti</option>
-                  </select>
-                  <ChevronDownIcon className="h-4 w-4 absolute right-2 top-1/2 transform -translate-y-1/2 text-black pointer-events-none" />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {filteredCars.map((car, index) => (
-                  <div 
-                    key={car._id}
-                    className={`aspect-square border border-gray-400 shadow-lg ${
-                      index % 2 === 1 ? 'mt-12' : ''
-                    }`}
-                    style={{
-                      borderWidth: '0.5px'
-                    }}
-                  >
-                    <Link
-                      to={`/car/${car._id}`}
-                      className="relative bg-gray-800 overflow-hidden aspect-square block w-full h-full"
-                      style={{
-                        clipPath: 'polygon(0px 0px, 90% 0px, 100% 10%, 100% 100%, 10% 100%, 0px 90%)',
-                        backgroundImage: `url(${car.image})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center'
-                      }}
+
+            {/* Car Grid - Right Side, Centered */}
+            <div className="flex-1 flex justify-center">
+              <div className="w-full max-w-4xl">
+                {/* Custom Sort Dropdown */}
+                <div className="flex justify-end mb-6">
+                  <div className="relative dropdown-container">
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="bg-white text-black px-6 py-4 border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 min-w-80 flex items-center justify-between font-goldman text-lg font-medium"
                     >
-                    
-                    <div className="relative z-10 h-full flex flex-col">
-                      {/* Car name and price - top left */}
-                      <div className="absolute top-6 left-6">
-                        <h3 className="text-2xl font-bold text-white mb-2 uppercase" style={{textShadow: '2px 2px 8px rgba(0,0,0,0.9), 4px 4px 12px rgba(0,0,0,0.7)'}}>{car.brand} {car.model}</h3>
-                        <p className="text-lg text-white font-bold font-goldman" style={{textShadow: '2px 2px 6px rgba(0,0,0,0.8), 3px 3px 8px rgba(0,0,0,0.6)'}}>od {car.price}€/deň</p>
-                      </div>
-                      
-                      {/* Spacer for layout */}
-                      <div className="flex-1"></div>
-                      
-                      {/* Bottom section with car info and button */}
-                      <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
-                        {/* Car info 2x2 grid with icons */}
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-base text-white">
-                          <div className="flex items-center space-x-3">
-                            <img src={Icon1} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
-                            <span className="font-medium" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8), 2px 2px 6px rgba(0,0,0,0.6)'}}>{car.power}</span>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                            <img src={Icon2} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
-                            <span className="font-medium" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8), 2px 2px 6px rgba(0,0,0,0.6)'}}>{car.transmission}</span>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                            <img src={Icon3} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
-                            <span className="font-medium" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8), 2px 2px 6px rgba(0,0,0,0.6)'}}>{car.type}</span>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                            <img src={Icon4} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
-                            <span className="font-medium" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8), 2px 2px 6px rgba(0,0,0,0.6)'}}>{car.fuel}</span>
-                          </div>
-                        </div>
-                        
-                        {/* Button - positioned on the right with spacing */}
-                        <div className="ml-8">
-                          <button 
-                            className="text-black hover:opacity-90 text-black text-sm font-bold transition-colors px-8 py-3"
+                      <span>{sortOptions.find(option => option.value === sortBy)?.label}</span>
+                      <ChevronDownIcon
+                        className={`h-5 w-5 text-black transition-transform duration-300 ${
+                          isDropdownOpen ? 'rotate-180' : 'rotate-0'
+                        }`}
+                      />
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {isDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-xl z-50 overflow-hidden animate-slideDown">
+                        {sortOptions.map((option, index) => (
+                          <button
+                            key={option.value}
+                            onClick={() => handleSortChange(option.value)}
+                            className={`w-full px-6 py-4 text-left hover:bg-[rgb(250,146,8)] hover:text-white transition-all duration-200 font-goldman text-lg font-medium ${
+                              sortBy === option.value ? 'bg-[rgba(250,146,8,0.1)] text-[rgb(250,146,8)]' : 'text-black'
+                            } ${index !== sortOptions.length - 1 ? 'border-b border-gray-200' : ''}`}
                             style={{
-                              clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
-                              borderRadius: '0px',
-                              backgroundColor: '#fa9208'
+                              animationDelay: `${index * 50}ms`
                             }}
                           >
-                            Rezervovať
+                            {option.label}
                           </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8" style={{marginTop: '-40px'}}>
+                  {filteredCars.map((car, index) => (
+                    <div
+                      key={car._id}
+                      className={`aspect-[4/3] border border-gray-400 shadow-lg ${
+                        index % 2 === 1 ? 'mt-12' : ''
+                      }`}
+                      style={{
+                        borderWidth: '0.5px'
+                      }}
+                    >
+                      <Link
+                        to={`/car/${car._id}`}
+                        className="relative bg-gray-800 overflow-hidden aspect-[4/3] block w-full h-full"
+                        style={{
+                          clipPath: 'polygon(0px 0px, 90% 0px, 100% 10%, 100% 100%, 10% 100%, 0px 90%)',
+                          backgroundImage: `url(${car.image})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center'
+                        }}
+                      >
+
+                      <div className="relative z-10 h-full flex flex-col">
+                        {/* Car name and price - top left */}
+                        <div className="absolute top-6 left-6">
+                          <h3 className="text-2xl font-bold text-white mb-2 uppercase" style={{textShadow: '2px 2px 8px rgba(0,0,0,0.9), 4px 4px 12px rgba(0,0,0,0.7)'}}>{car.brand} {car.model}</h3>
+                          <p className="text-lg text-white font-bold font-goldman" style={{textShadow: '2px 2px 6px rgba(0,0,0,0.8), 3px 3px 8px rgba(0,0,0,0.6)'}}>od {car.price}€/deň</p>
+                        </div>
+
+                        {/* Spacer for layout */}
+                        <div className="flex-1"></div>
+
+                        {/* Bottom section with car info and button */}
+                        <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
+                          {/* Car info 2x2 grid with icons */}
+                          <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-base text-white">
+                            <div className="flex items-center space-x-3">
+                              <img src={Icon1} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
+                              <span className="font-medium" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8), 2px 2px 6px rgba(0,0,0,0.6)'}}>{car.power}</span>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <img src={Icon2} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
+                              <span className="font-medium" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8), 2px 2px 6px rgba(0,0,0,0.6)'}}>{car.transmission}</span>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <img src={Icon3} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
+                              <span className="font-medium" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8), 2px 2px 6px rgba(0,0,0,0.6)'}}>{car.type}</span>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <img src={Icon4} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
+                              <span className="font-medium" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8), 2px 2px 6px rgba(0,0,0,0.6)'}}>{car.fuel}</span>
+                            </div>
+                          </div>
+
+                          {/* Button - positioned on the right with spacing */}
+                          <div className="ml-8">
+                            <button
+                              className="text-black hover:opacity-90 text-black text-sm font-bold transition-colors px-8 py-3"
+                              style={{
+                                clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
+                                borderRadius: '0px',
+                                backgroundColor: '#fa9208'
+                              }}
+                            >
+                              Rezervovať
+                            </button>
+                          </div>
                         </div>
                       </div>
+                      </Link>
                     </div>
-                    </Link>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -542,15 +605,15 @@ const HomePage = () => {
               </p>
               
               <div className="grid grid-cols-3 gap-8">
-                <div className="text-center">
+                <div className="text-left">
                   <div className="text-5xl font-bold text-[rgb(250,146,8)] mb-2">10</div>
                   <div className="text-white font-bold">Prémiových áut v našej flotile</div>
                 </div>
-                <div className="text-center">
+                <div className="text-left">
                   <div className="text-5xl font-bold text-[rgb(250,146,8)] mb-2">2.0M+</div>
                   <div className="text-white font-bold">Kilometrov najazdených šťastnými klientmi</div>
                 </div>
-                <div className="text-center">
+                <div className="text-left">
                   <div className="text-5xl font-bold text-[rgb(250,146,8)] mb-2">580</div>
                   <div className="text-white font-bold">Spokojných klientov</div>
                 </div>

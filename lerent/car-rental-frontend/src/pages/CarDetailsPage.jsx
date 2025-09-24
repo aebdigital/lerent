@@ -81,11 +81,13 @@ const getCarDescription = (brand, model) => {
 const CarDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [unavailableDates, setUnavailableDates] = useState([]);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const [bookingData, setBookingData] = useState({
     pickupLocation: '',
@@ -231,12 +233,12 @@ const CarDetailsPage = () => {
         // Use static data instead of API
         const carData = staticCarsData.find(car => car._id === id) || staticCarsData[0];
         setCar(carData);
-        
+
         // Load availability
         const startDate = new Date();
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + 6);
-        
+
         try {
           const availability = await carsAPI.getCarAvailability(id, startDate, endDate);
           setUnavailableDates(availability.unavailableDates || []);
@@ -254,6 +256,15 @@ const CarDetailsPage = () => {
       loadCarDetails();
     }
   }, [id]);
+
+  // Force navbar to be black on mobile for car details page
+  useEffect(() => {
+    // Add a class to body to signal the header should be black on mobile
+    document.body.classList.add('force-black-header-mobile');
+    return () => {
+      document.body.classList.remove('force-black-header-mobile');
+    };
+  }, []);
 
   const handleInputChange = (field, value) => {
     setBookingData(prev => ({
@@ -449,127 +460,294 @@ const CarDetailsPage = () => {
 
   return (
     <div className="min-h-screen bg-white text-black" style={{fontFamily: 'AvantGarde, sans-serif'}}>
-      {/* Hero Section - Full Width Car Photo */}
-      <div 
-        className="relative w-full h-[50vh] lg:h-[100vh] bg-cover bg-center flex items-end"
-        style={{
-          backgroundImage: `url(${getCarImage(car)})`
-        }}
-      >
-        {/* Dark overlay for better text visibility */}
-        <div className="absolute inset-0 bg-black/40"></div>
-        
-        {/* Car Title - Bottom Left */}
-        <div className="absolute bottom-[10%] left-4 z-10">
-          <h1 className="text-5xl md:text-6xl font-bold text-white font-goldman drop-shadow-lg">
-            {car.brand} {car.model}
-          </h1>
-        </div>
-        
-        {/* YouTube Icon - Middle Bottom */}
-        <div className="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 z-10">
-          <button className="bg-red-600 hover:bg-red-700 rounded-full p-4 transition-colors duration-200">
-            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-            </svg>
-          </button>
-        </div>
-        
-        {/* Rezervovat Button - Bottom Right */}
-        <div className="absolute bottom-[10%] right-[10%] z-10">
-          <button
-            onClick={scrollToBooking}
-            className="text-black hover:opacity-90 px-8 py-3 font-bold text-lg transition-colors"
-            style={{
-              clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
-              borderRadius: '0px',
-              backgroundColor: '#fa9208'
-            }}
-          >
-            Rezervovať
-          </button>
+      {/* Hero Section - Desktop Only */}
+      <div className="hidden lg:block">
+        <div
+          className="relative w-full h-[100vh] bg-cover bg-center flex items-end"
+          style={{
+            backgroundImage: `url(${getCarImage(car)})`
+          }}
+        >
+          {/* Dark overlay for better text visibility */}
+          <div className="absolute inset-0 bg-black/40"></div>
+
+          {/* Car Title - Bottom Left */}
+          <div className="absolute bottom-[10%] left-4 z-10">
+            <h1 className="text-6xl font-bold text-white font-goldman drop-shadow-lg">
+              {car.brand} {car.model}
+            </h1>
+          </div>
+
+          {/* Video Button - Middle Bottom */}
+          <div className="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 z-10">
+            <button className="bg-black bg-opacity-50 hover:bg-opacity-70 p-4 rounded-full transition-all duration-200">
+              <img src="/src/video_orange.png" alt="Video" className="w-8 h-8" />
+            </button>
+          </div>
+
+          {/* Rezervovat Button - Bottom Right */}
+          <div className="absolute bottom-[10%] right-[10%] z-10">
+            <button
+              onClick={scrollToBooking}
+              className="text-black hover:opacity-90 px-8 py-3 font-bold text-lg transition-colors"
+              style={{
+                clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
+                borderRadius: '0px',
+                backgroundColor: '#fa9208'
+              }}
+            >
+              Rezervovať
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Gallery Section - Single Photo with Navigation */}
+      {/* Gallery Section - Mobile: Single Clickable Photo, Desktop: 6 Photos Grid */}
       <div className="w-full">
-        <div className="relative">
-          <div className="aspect-[16/9] overflow-hidden">
-            <img 
-              src={getCarImage(car)} 
-              alt={`${car.brand} ${car.model}`} 
-              className="w-full h-full object-cover"
-            />
+        {/* Mobile Layout */}
+        <div className="lg:hidden">
+          {/* Mobile Image - 99% width with top padding for navbar */}
+          <div className="px-[0.5%] pt-24">
+            <div
+              className="aspect-[16/9] overflow-hidden rounded-lg cursor-pointer"
+              onClick={() => {
+                setCurrentImageIndex(0);
+                setShowImageModal(true);
+              }}
+            >
+              <img
+                src={getCarImage(car)}
+                alt={`${car.brand} ${car.model}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
-          
-          {/* Navigation arrows - inside the photo */}
-          <button className="absolute left-6 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors z-10">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button className="absolute right-6 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors z-10">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-          
-          {/* Image counter */}
-          <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm z-10">
-            1 / 6
+
+          {/* Mobile Car Info Section */}
+          <div className="px-4 py-6">
+            {/* Car Title */}
+            <h1 className="text-4xl font-bold text-black font-goldman mb-6">
+              {car.brand} {car.model}
+            </h1>
+
+            {/* Buttons Row */}
+            <div className="flex items-center justify-between mb-6">
+              {/* Video Button */}
+              <button className="bg-gray-200 hover:bg-gray-300 p-3 rounded-full transition-colors duration-200">
+                <img src="/src/video_orange.png" alt="Video" className="w-6 h-6" />
+              </button>
+
+              {/* Rezervovat Button */}
+              <button
+                onClick={scrollToBooking}
+                className="text-black hover:opacity-90 px-6 py-3 font-bold text-base transition-colors"
+                style={{
+                  clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
+                  borderRadius: '0px',
+                  backgroundColor: '#fa9208'
+                }}
+              >
+                Rezervovať
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Gallery - Full Width Thumbnails in a Row */}
+        <div className="hidden lg:block w-full py-6">
+          <div className="grid grid-cols-6 gap-4 px-4">
+            {/* Generate gallery photos */}
+            {[1, 2, 3, 4, 5].map((index) => (
+              <div
+                key={index}
+                className="aspect-[4/3] overflow-hidden rounded-lg cursor-pointer hover:opacity-75 transition-opacity duration-200"
+                onClick={() => {
+                  setCurrentImageIndex(index - 1);
+                  setShowImageModal(true);
+                }}
+              >
+                <img
+                  src={getCarImage(car)}
+                  alt={`${car.brand} ${car.model} - Photo ${index}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+
+            {/* Show All Button - Last thumbnail with overlay */}
+            <div
+              className="aspect-[4/3] overflow-hidden rounded-lg cursor-pointer relative hover:opacity-75 transition-opacity duration-200"
+              onClick={() => {
+                setCurrentImageIndex(0);
+                setShowImageModal(true);
+              }}
+            >
+              <img
+                src={getCarImage(car)}
+                alt={`${car.brand} ${car.model} - More photos`}
+                className="w-full h-full object-cover"
+              />
+              {/* Transparent overlay */}
+              <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+                <div className="text-white text-center">
+                  <div className="text-2xl font-semibold">+6</div>
+                  <div className="text-sm">Zobraziť všetky</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Car Specs Section - 3x2 Grid */}
+      {/* Car Specs Section - Mobile: 3x2 Grid, Desktop: Horizontal Row */}
       <div className="w-full py-8 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-3 lg:grid-cols-3 gap-1 lg:gap-4">
-            <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:space-x-3 lg:bg-white lg:p-4 lg:rounded-lg lg:shadow-sm lg:text-left">
-              <BoltIcon className="h-4 w-4 lg:h-6 lg:w-6 text-[rgb(250,146,8)] flex-shrink-0 mb-1 lg:mb-0" />
+        <div className="max-w-7xl mx-auto px-4">
+          {/* Mobile Specs */}
+          <div className="lg:hidden grid grid-cols-3 gap-1">
+            <div className="flex flex-col items-center text-center">
+              <BoltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs lg:text-sm text-gray-600">Výkon</div>
-                <div className="font-semibold text-xs lg:text-base">110 kW</div>
+                <div className="text-xs text-gray-600">Výkon</div>
+                <div className="font-semibold text-xs">{car.power}</div>
               </div>
             </div>
-            <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:space-x-3 lg:bg-white lg:p-4 lg:rounded-lg lg:shadow-sm lg:text-left">
-              <GlobeAltIcon className="h-4 w-4 lg:h-6 lg:w-6 text-[rgb(250,146,8)] flex-shrink-0 mb-1 lg:mb-0" />
+            <div className="flex flex-col items-center text-center">
+              <GlobeAltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs lg:text-sm text-gray-600">Palivo</div>
-                <div className="font-semibold text-xs lg:text-base">{car.fuelType}</div>
+                <div className="text-xs text-gray-600">Palivo</div>
+                <div className="font-semibold text-xs">{car.fuelType}</div>
               </div>
             </div>
-            <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:space-x-3 lg:bg-white lg:p-4 lg:rounded-lg lg:shadow-sm lg:text-left">
-              <CogIcon className="h-4 w-4 lg:h-6 lg:w-6 text-[rgb(250,146,8)] flex-shrink-0 mb-1 lg:mb-0" />
+            <div className="flex flex-col items-center text-center">
+              <CogIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs lg:text-sm text-gray-600">Spotreba</div>
-                <div className="font-semibold text-xs lg:text-base">5 l/100km</div>
+                <div className="text-xs text-gray-600">Spotreba</div>
+                <div className="font-semibold text-xs">5 l/100km</div>
               </div>
             </div>
-            <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:space-x-3 lg:bg-white lg:p-4 lg:rounded-lg lg:shadow-sm lg:text-left">
-              <UsersIcon className="h-4 w-4 lg:h-6 lg:w-6 text-[rgb(250,146,8)] flex-shrink-0 mb-1 lg:mb-0" />
+            <div className="flex flex-col items-center text-center">
+              <UsersIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs lg:text-sm text-gray-600">Prevodovka</div>
-                <div className="font-semibold text-xs lg:text-base">{car.transmission}</div>
+                <div className="text-xs text-gray-600">Prevodovka</div>
+                <div className="font-semibold text-xs">{car.transmission}</div>
               </div>
             </div>
-            <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:space-x-3 lg:bg-white lg:p-4 lg:rounded-lg lg:shadow-sm lg:text-left">
-              <CalendarIcon className="h-4 w-4 lg:h-6 lg:w-6 text-[rgb(250,146,8)] flex-shrink-0 mb-1 lg:mb-0" />
+            <div className="flex flex-col items-center text-center">
+              <CalendarIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs lg:text-sm text-gray-600">Rok</div>
-                <div className="font-semibold text-xs lg:text-base">{car.year}</div>
+                <div className="text-xs text-gray-600">Rok</div>
+                <div className="font-semibold text-xs">{car.year}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Specs - Horizontal Row */}
+          <div className="hidden lg:grid lg:grid-cols-5 lg:gap-8">
+            <div className="flex flex-row items-center space-x-3 bg-white p-4 rounded-lg shadow-sm">
+              <BoltIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
+              <div>
+                <div className="text-sm text-gray-600">Výkon</div>
+                <div className="font-semibold text-base">{car.power}</div>
+              </div>
+            </div>
+            <div className="flex flex-row items-center space-x-3 bg-white p-4 rounded-lg shadow-sm">
+              <GlobeAltIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
+              <div>
+                <div className="text-sm text-gray-600">Palivo</div>
+                <div className="font-semibold text-base">{car.fuelType}</div>
+              </div>
+            </div>
+            <div className="flex flex-row items-center space-x-3 bg-white p-4 rounded-lg shadow-sm">
+              <CogIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
+              <div>
+                <div className="text-sm text-gray-600">Spotreba</div>
+                <div className="font-semibold text-base">5 l/100km</div>
+              </div>
+            </div>
+            <div className="flex flex-row items-center space-x-3 bg-white p-4 rounded-lg shadow-sm">
+              <UsersIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
+              <div>
+                <div className="text-sm text-gray-600">Prevodovka</div>
+                <div className="font-semibold text-base">{car.transmission}</div>
+              </div>
+            </div>
+            <div className="flex flex-row items-center space-x-3 bg-white p-4 rounded-lg shadow-sm">
+              <CalendarIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
+              <div>
+                <div className="text-sm text-gray-600">Rok</div>
+                <div className="font-semibold text-base">{car.year}</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Booking Form Section - After Specs */}
-      <div className="w-full px-4 py-8 bg-white">
-        <div className="max-w-2xl mx-auto lg:max-w-4xl">
-          <div id="booking-section" className="rounded-lg p-6 shadow-lg bg-white border border-gray-200 mb-8">
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {/* Mobile Content Order: Popis, Cenník, Prenájom */}
+        <div className="lg:hidden space-y-8">
+          {/* Mobile Car Description */}
+          <div className="rounded-lg p-6 bg-white border border-gray-200 shadow-sm">
+            <h2 className="text-2xl font-semibold text-black mb-4">Popis</h2>
+            <div className="text-gray-600 leading-relaxed">
+              {car.description || getCarDescription(car.brand, car.model)}
+            </div>
+          </div>
+
+          {/* Mobile Pricing Table */}
+          <div className="rounded-lg p-6 bg-white border border-gray-200 shadow-sm">
+            <h3 className="text-xl font-semibold text-black mb-4">Cenník prenájmu</h3>
+
+            <div className="divide-y divide-gray-200">
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <span className="text-gray-600">1-2 dni</span>
+                  <span className="text-[rgb(250,146,8)] font-semibold text-right">45€</span>
+                </div>
+              </div>
+
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <span className="text-gray-600">3-6 dní</span>
+                  <span className="text-[rgb(250,146,8)] font-semibold text-right">40€</span>
+                </div>
+              </div>
+
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <span className="text-gray-600">7-13 dní</span>
+                  <span className="text-[rgb(250,146,8)] font-semibold text-right">35€</span>
+                </div>
+              </div>
+
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <span className="text-gray-600">14-20 dní</span>
+                  <span className="text-[rgb(250,146,8)] font-semibold text-right">30€</span>
+                </div>
+              </div>
+
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <span className="text-gray-600">21-27 dní</span>
+                  <span className="text-[rgb(250,146,8)] font-semibold text-right">28€</span>
+                </div>
+              </div>
+
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <span className="text-gray-600">28+ dní</span>
+                  <span className="text-[rgb(250,146,8)] font-semibold text-right">25€</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Booking Form */}
+          <div id="booking-section" className="rounded-lg p-6 shadow-lg bg-white border border-gray-200">
             <h2 className="text-2xl font-semibold text-black mb-6">Prenájom</h2>
-            
+
             <div className="space-y-4">
               {/* Dates */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -613,24 +791,20 @@ const CarDetailsPage = () => {
                 className="w-full mt-6 bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200"
                 disabled={car.status !== 'available'}
               >
-                {car.status === 'available' ? 'Dokončiť objednávku' : 'Momentálne nedostupné'}
+                {car.status === 'available' ? 'Pokračovať v objednávke' : 'Momentálne nedostupné'}
               </button>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column - Pricing */}
-          <div className="lg:col-span-1">
-
-
-
+        {/* Desktop Two-Column Layout */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-8">
+          {/* Left Column - Cenník */}
+          <div className="lg:col-span-1 space-y-6">
             {/* Pricing Table */}
-            <div className="rounded-lg p-6 mb-6 bg-white border border-gray-200 shadow-sm">
+            <div className="rounded-lg p-6 bg-white border border-gray-200 shadow-sm">
               <h3 className="text-xl font-semibold text-black mb-4">Cenník prenájmu</h3>
-              
+
               <div className="divide-y divide-gray-200">
                 <div className="py-3">
                   <div className="grid grid-cols-2 gap-4">
@@ -638,35 +812,35 @@ const CarDetailsPage = () => {
                     <span className="text-[rgb(250,146,8)] font-semibold text-right">45€</span>
                   </div>
                 </div>
-                
+
                 <div className="py-3">
                   <div className="grid grid-cols-2 gap-4">
                     <span className="text-gray-600">3-6 dní</span>
                     <span className="text-[rgb(250,146,8)] font-semibold text-right">40€</span>
                   </div>
                 </div>
-                
+
                 <div className="py-3">
                   <div className="grid grid-cols-2 gap-4">
                     <span className="text-gray-600">7-13 dní</span>
                     <span className="text-[rgb(250,146,8)] font-semibold text-right">35€</span>
                   </div>
                 </div>
-                
+
                 <div className="py-3">
                   <div className="grid grid-cols-2 gap-4">
                     <span className="text-gray-600">14-20 dní</span>
                     <span className="text-[rgb(250,146,8)] font-semibold text-right">30€</span>
                   </div>
                 </div>
-                
+
                 <div className="py-3">
                   <div className="grid grid-cols-2 gap-4">
                     <span className="text-gray-600">21-27 dní</span>
                     <span className="text-[rgb(250,146,8)] font-semibold text-right">28€</span>
                   </div>
                 </div>
-                
+
                 <div className="py-3">
                   <div className="grid grid-cols-2 gap-4">
                     <span className="text-gray-600">28+ dní</span>
@@ -676,24 +850,63 @@ const CarDetailsPage = () => {
               </div>
             </div>
 
-            {/* Features */}
-            {car.features && car.features.length > 0 && (
-              <div className="rounded-lg p-6 bg-white border border-gray-200 shadow-sm">
-                <h3 className="text-xl font-semibold text-black mb-4">Výbava auta</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {car.features.map((feature, index) => (
-                    <div key={index} className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-[rgb(250,146,8)] rounded-full"></div>
-                      <span className="text-gray-600 capitalize">{feature.replace('-', ' ')}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Right Column - Car Description */}
-          <div className="lg:col-span-1">
+          {/* Right Column - Rezervovat and Popis */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Desktop Booking Form */}
+            <div className="rounded-lg p-6 shadow-lg bg-white border border-gray-200">
+              <h2 className="text-2xl font-semibold text-black mb-6">Rezervovať</h2>
+
+              <div className="space-y-4">
+                {/* Dates */}
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <DatePicker
+                      selectedDate={bookingData.pickupDate}
+                      onDateSelect={(date) => handleInputChange('pickupDate', date)}
+                      minDate={new Date()}
+                      unavailableDates={unavailableDates}
+                      carId={id}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <DatePicker
+                      selectedDate={bookingData.returnDate}
+                      onDateSelect={(date) => handleInputChange('returnDate', date)}
+                      minDate={bookingData.pickupDate ? new Date(bookingData.pickupDate.getTime() + 86400000) : new Date()}
+                      unavailableDates={unavailableDates}
+                      carId={id}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+
+                {/* Pricing Information */}
+                <div className="rounded-lg p-4 space-y-3 bg-gray-50">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Depozit:</span>
+                    <span className="font-semibold text-black">{getDeposit().toFixed(2)}€</span>
+                  </div>
+                  <div className="flex justify-between pt-4 mt-4" style={{borderTop: '1px solid rgba(107, 114, 128, 0.3)'}}>
+                    <span className="text-black font-semibold text-2xl">Cena:</span>
+                    <span className="font-semibold text-[rgb(250,146,8)] text-2xl">{(calculatePrice() + getKmPackagePrice()).toFixed(2)}€</span>
+                  </div>
+                </div>
+
+                {/* Book Now Button */}
+                <button
+                  onClick={handleBookNow}
+                  className="w-full mt-6 bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200"
+                  disabled={car.status !== 'available'}
+                >
+                  {car.status === 'available' ? 'Pokračovať v objednávke' : 'Momentálne nedostupné'}
+                </button>
+              </div>
+            </div>
+
+            {/* Car Description */}
             <div className="rounded-lg p-6 bg-white border border-gray-200 shadow-sm">
               <h2 className="text-2xl font-semibold text-black mb-4">Popis</h2>
               <div className="text-gray-600 leading-relaxed">
@@ -702,14 +915,83 @@ const CarDetailsPage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Reviews Section */}
         <ReviewsSection />
-        
+
         {/* Additional Shared Sections */}
         <ContactMapSection />
-        <BookingFormSection />
       </div>
+
+      {/* Image Modal */}
+      {showImageModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
+          <div className="relative max-w-4xl max-h-full w-full h-full flex items-center justify-center p-4">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Previous Button */}
+            <button
+              onClick={() => setCurrentImageIndex(prev => prev > 0 ? prev - 1 : 5)}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            {/* Main Image */}
+            <div className="max-w-full max-h-full">
+              <img
+                src={getCarImage(car)}
+                alt={`${car.brand} ${car.model} - Photo ${currentImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+
+            {/* Next Button */}
+            <button
+              onClick={() => setCurrentImageIndex(prev => prev < 5 ? prev + 1 : 0)}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            {/* Image Counter */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-full">
+              {currentImageIndex + 1} / 6
+            </div>
+
+            {/* Thumbnail Strip */}
+            <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex gap-2">
+              {[0, 1, 2, 3, 4, 5].map((index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-16 h-12 rounded overflow-hidden border-2 transition-all ${
+                    currentImageIndex === index ? 'border-white' : 'border-transparent opacity-70'
+                  }`}
+                >
+                  <img
+                    src={getCarImage(car)}
+                    alt={`Thumbnail ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

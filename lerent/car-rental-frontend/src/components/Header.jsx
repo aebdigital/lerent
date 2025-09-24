@@ -8,6 +8,7 @@ const Header = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
+  const [forceBlackMobile, setForceBlackMobile] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -16,8 +17,25 @@ const Header = () => {
       setIsScrolled(window.scrollY > 10);
     };
 
+    // Check if body has the force black header class
+    const checkForceBlackMobile = () => {
+      setForceBlackMobile(document.body.classList.contains('force-black-header-mobile'));
+    };
+
+    // Initial check
+    checkForceBlackMobile();
+
+    // Set up observers
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    // Observer for class changes on body
+    const observer = new MutationObserver(checkForceBlackMobile);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
   }, []);
 
   const navigation = [
@@ -70,7 +88,7 @@ const Header = () => {
   return (
     <>
       <header className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-black shadow-lg' : 'bg-transparent'
+        isScrolled || forceBlackMobile ? 'bg-black shadow-lg' : 'bg-transparent'
       }`}>
       <nav className="px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
