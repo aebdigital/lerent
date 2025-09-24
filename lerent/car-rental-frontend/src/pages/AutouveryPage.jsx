@@ -2,6 +2,8 @@ import React from 'react';
 import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
 import BookingFormSection from '../components/BookingFormSection';
+import AutouverImg from '../autouver.jpg';
+import TestImg from '../test.png';
 
 const AutouveryPage = () => {
   return (
@@ -10,7 +12,7 @@ const AutouveryPage = () => {
       <section 
         className="relative h-[50vh] bg-cover bg-center flex items-center"
         style={{
-          backgroundImage: `url('/src/autouver.jpg')`
+          backgroundImage: `url(${AutouverImg})`
         }}
       >
         <div className="absolute inset-0 bg-black/70"></div>
@@ -26,7 +28,7 @@ const AutouveryPage = () => {
             {/* Left Side - Image */}
             <div className="w-1/3">
               <img 
-                src="/src/test.png" 
+                src={TestImg} 
                 alt="Autoúvery" 
                 className="w-full h-96 object-cover rounded-lg"
               />
