@@ -21,6 +21,7 @@ import MaseratiImg from '../maseratilevante.JPG';
 import BMW840iImg from '../bmw840i.png';
 import BMWX7Img from '../bmwx7.JPG';
 import SUVImg from '../SUV.webp';
+import SUVIconImg from '../SUV.png';
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -33,10 +34,10 @@ const HomePage = () => {
   
   // Car classes for filtering
   const carClasses = [
-    { name: 'Športové', value: 'sports', icon: '/src/SUV.png' },
-    { name: 'Sedan', value: 'sedan', icon: '/src/SUV.png' },
-    { name: 'SUV', value: 'suv', icon: '/src/SUV.png' },
-    { name: 'Coupe', value: 'coupe', icon: '/src/SUV.png' }
+    { name: 'Športové', value: 'sports', icon: SUVIconImg },
+    { name: 'Sedan', value: 'sedan', icon: SUVIconImg },
+    { name: 'SUV', value: 'suv', icon: SUVIconImg },
+    { name: 'Coupe', value: 'coupe', icon: SUVIconImg }
   ];
 
   // Brand filters

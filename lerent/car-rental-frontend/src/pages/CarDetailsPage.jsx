@@ -24,6 +24,7 @@ import AudiS6Img from '../audis6.JPG';
 import MaseratiImg from '../maseratilevante.JPG';
 import BMW840iImg from '../bmw840i.png';
 import BMWX7Img from '../bmwx7.JPG';
+import VideoIcon from '../video_orange.png';
 
 // Function to get car images based on car ID or brand/model
 const getCarImage = (car) => {
@@ -488,7 +489,7 @@ const CarDetailsPage = () => {
           {/* Video Button - Middle Bottom */}
           <div className="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 z-10">
             <button className="bg-black bg-opacity-50 hover:bg-opacity-70 p-4 rounded-full transition-all duration-200">
-              <img src="/src/video_orange.png" alt="Video" className="w-8 h-8" />
+              <img src={VideoIcon} alt="Video" className="w-8 h-8" />
             </button>
           </div>
 
@@ -541,7 +542,7 @@ const CarDetailsPage = () => {
             <div className="flex items-center justify-between mb-6">
               {/* Video Button */}
               <button className="bg-gray-200 hover:bg-gray-300 p-3 rounded-full transition-colors duration-200">
-                <img src="/src/video_orange.png" alt="Video" className="w-6 h-6" />
+                <img src={VideoIcon} alt="Video" className="w-6 h-6" />
               </button>
 
               {/* Rezervovat Button */}
