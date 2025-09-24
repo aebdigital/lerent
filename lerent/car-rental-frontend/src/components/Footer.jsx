@@ -11,8 +11,8 @@ const Footer = () => {
 
           {/* Left Side - Logo */}
           <div className="flex flex-col lg:flex-row lg:items-start lg:gap-16">
-            <div className="flex flex-col">
-              <div className="flex items-center space-x-3 mb-4">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:gap-8">
+              <div className="flex items-center space-x-3 mb-4 lg:mb-0">
                 <img src={Logo} alt="Lerent" className="h-10 sm:h-12 w-auto" />
               </div>
 
