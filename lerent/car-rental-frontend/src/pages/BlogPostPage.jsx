@@ -202,9 +202,9 @@ const BlogPostPage = () => {
 
             {/* Back Navigation */}
             <div className="mt-8 mb-4">
-              <Link 
-                to="/blog" 
-                className="inline-flex items-center text-cyan-400 hover:text-cyan-300 transition-colors">
+              <Link
+                to="/blog"
+                className="inline-flex items-center text-cyan-400 hover:text-cyan-300 transition-colors"
               >
                 <ArrowLeftIcon className="h-4 w-4 mr-2" />
                 Späť na blog
