@@ -378,10 +378,10 @@ const BookingPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#0d0d0d'}}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[rgb(250,146,8)] mx-auto"></div>
-          <p className="mt-4 text-black">Načítavajú sa detaily rezervácie...</p>
+          <p className="mt-4 text-white">Načítavajú sa detaily rezervácie...</p>
         </div>
       </div>
     );
@@ -389,15 +389,15 @@ const BookingPage = () => {
 
   if (error && !selectedCar) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#0d0d0d'}}>
         <div className="text-center max-w-md mx-auto px-4">
           <div className="text-red-500 mb-4">
             <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-black mb-2">Chyba rezervácie</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <h2 className="text-xl font-semibold text-white mb-2">Chyba rezervácie</h2>
+          <p className="text-gray-300 mb-4">{error}</p>
           <Button onClick={() => navigate('/fleet')}>
             Späť na flotilu
           </Button>
@@ -409,7 +409,7 @@ const BookingPage = () => {
   // Confirmation step
   if (currentStep === 5 && bookingResult) {
     return (
-      <div className="min-h-screen bg-white text-black" style={{fontFamily: 'AvantGarde, sans-serif'}}>
+      <div className="min-h-screen text-white" style={{backgroundColor: '#0d0d0d', fontFamily: 'AvantGarde, sans-serif'}}>
         {/* Mini Hero Section */}
         <div 
           className="relative h-[30vh] bg-cover bg-center"
@@ -424,19 +424,19 @@ const BookingPage = () => {
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           {/* Car Summary Container */}
-          <div className="rounded-lg shadow-sm p-8 mb-8 bg-white border border-gray-200">
+          <div className="rounded-lg shadow-sm p-8 mb-8 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
             {/* Thank You Section - Inside Container */}
             <div className="text-center mb-12">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-[rgba(250,146,8,0.1)] rounded-full mb-6">
                 <CheckCircleIcon className="w-12 h-12 text-[rgb(250,146,8)]" />
               </div>
-              <h1 className="text-5xl font-bold text-black mb-4">
+              <h1 className="text-5xl font-bold text-white mb-4">
                 Ďakujeme!
               </h1>
               
               {/* Contact Notification */}
-              <div className="mt-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                <p className="text-gray-700 text-sm">
+              <div className="mt-6 p-4 border border-gray-600 rounded-lg" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
+                <p className="text-gray-300 text-sm">
                   <strong>Kontaktujeme Vás na mailovej adrese:</strong><br />
                   <span className="font-semibold text-[rgb(250,146,8)]">{formData.email}</span>
                 </p>
@@ -450,7 +450,7 @@ const BookingPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black" style={{fontFamily: 'AvantGarde, sans-serif'}}>
+    <div className="min-h-screen text-white" style={{backgroundColor: '#0d0d0d', fontFamily: 'AvantGarde, sans-serif'}}>
       {/* Mini Hero Section */}
       <div 
         className="relative h-[30vh] bg-cover bg-center"
@@ -464,7 +464,7 @@ const BookingPage = () => {
       </div>
 
       {/* Progress Steps at Top */}
-      <div className="border-b border-gray-200 bg-white">
+      <div className="border-b border-gray-700" style={{backgroundColor: '#0d0d0d'}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="max-w-4xl mx-auto">
             {/* Step boxes */}
@@ -484,13 +484,14 @@ const BookingPage = () => {
                       ${isActive 
                         ? 'bg-[rgb(250,146,8)] text-white shadow-lg shadow-[rgba(250,146,8,0.5)] transform scale-105' 
                         : isCompleted
-                        ? 'bg-gray-100 text-black border border-gray-300 hover:bg-gray-200'
+                        ? 'text-white border border-gray-600 hover:bg-gray-700'
                         : isAccessible
-                        ? 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                        : 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed opacity-50'
+                        ? 'text-gray-300 border border-gray-600 hover:bg-gray-700'
+                        : 'text-gray-500 border border-gray-700 cursor-not-allowed opacity-50'
                       }
                     `}
                     style={{
+                      backgroundColor: isActive ? undefined : isCompleted ? 'rgb(25, 25, 25)' : isAccessible ? 'rgb(25, 25, 25)' : 'rgba(25, 25, 25, 0.5)',
                       boxShadow: isActive ? '0 0 20px rgba(250, 146, 8, 0.6)' : 'none'
                     }}
                   >
@@ -502,8 +503,8 @@ const BookingPage = () => {
                         : isCompleted
                         ? 'text-[rgb(250,146,8)]'
                         : isAccessible
-                        ? 'text-gray-600'
-                        : 'text-gray-400'
+                        ? 'text-gray-300'
+                        : 'text-gray-500'
                       }
                     `}>
                       {isCompleted ? (
@@ -520,10 +521,10 @@ const BookingPage = () => {
                         ${isActive 
                           ? 'text-white' 
                           : isCompleted
-                          ? 'text-black'
+                          ? 'text-white'
                           : isAccessible
-                          ? 'text-gray-700'
-                          : 'text-gray-400'
+                          ? 'text-gray-300'
+                          : 'text-gray-500'
                         }
                       `}>
                         {step.title}
@@ -533,10 +534,10 @@ const BookingPage = () => {
                         ${isActive 
                           ? 'text-white/70' 
                           : isCompleted
-                          ? 'text-gray-600'
+                          ? 'text-gray-300'
                           : isAccessible
-                          ? 'text-gray-500'
-                          : 'text-gray-400'
+                          ? 'text-gray-400'
+                          : 'text-gray-500'
                         }
                       `}>
                         Krok {step.number}
@@ -554,9 +555,9 @@ const BookingPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Left Side - Form Content */}
           <div className="lg:col-span-3">
-            <div className="rounded-lg shadow-sm p-8 bg-white border border-gray-200">
+            <div className="rounded-lg shadow-sm p-8 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+                <div className="border border-red-400 rounded-md p-4 mb-6" style={{backgroundColor: 'rgba(220, 38, 38, 0.1)'}}>
                   <div className="flex">
                     <div className="text-red-400">
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -564,8 +565,8 @@ const BookingPage = () => {
                       </svg>
                     </div>
                     <div className="ml-3">
-                      <h3 className="text-sm font-medium text-red-800">Chyba</h3>
-                      <div className="mt-2 text-sm text-red-700">
+                      <h3 className="text-sm font-medium text-red-300">Chyba</h3>
+                      <div className="mt-2 text-sm text-red-200">
                         <p>{error}</p>
                       </div>
                     </div>
@@ -577,12 +578,12 @@ const BookingPage = () => {
                 {/* Step 1: Insurance */}
                 {currentStep === 1 && (
                   <div>
-                    <h2 className="text-2xl font-bold text-black mb-6 text-left">
+                    <h2 className="text-2xl font-bold text-white mb-6 text-left">
                       Vyberte si poistenie
                     </h2>
                     
                     <div className="grid grid-cols-1 gap-4">
-                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-50 bg-white border border-gray-200">
+                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                         <div className="flex items-center space-x-3">
                           <input
                             type="radio"
@@ -590,17 +591,17 @@ const BookingPage = () => {
                             value="basic"
                             checked={formData.insuranceType === 'basic'}
                             onChange={handleInputChange}
-                            className="w-5 h-5 text-[rgb(250,146,8)] bg-white border-gray-300 focus:ring-[rgb(250,146,8)]"
+                            className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
                           />
                           <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-black">Základné poistenie</h3>
-                            <p className="text-gray-600 text-sm mt-1">Zákonné poistenie zodpovednosti + kasko poistenie s spoluúčasťou 1000€</p>
+                            <h3 className="text-lg font-semibold text-white">Základné poistenie</h3>
+                            <p className="text-gray-300 text-sm mt-1">Zákonné poistenie zodpovednosti + kasko poistenie s spoluúčasťou 1000€</p>
                             <p className="text-[rgb(250,146,8)] font-semibold mt-2">Zahrnuté v cene</p>
                           </div>
                         </div>
                       </label>
                       
-                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-50 bg-white border border-gray-200">
+                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                         <div className="flex items-center space-x-3">
                           <input
                             type="radio"
@@ -608,17 +609,17 @@ const BookingPage = () => {
                             value="premium"
                             checked={formData.insuranceType === 'premium'}
                             onChange={handleInputChange}
-                            className="w-5 h-5 text-[rgb(250,146,8)] bg-white border-gray-300 focus:ring-[rgb(250,146,8)]"
+                            className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
                           />
                           <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-black">Prémiové poistenie</h3>
-                            <p className="text-gray-600 text-sm mt-1">Komplexné poistenie s nulovou spoluúčasťou + poistenie skiel a pneumatík</p>
+                            <h3 className="text-lg font-semibold text-white">Prémiové poistenie</h3>
+                            <p className="text-gray-300 text-sm mt-1">Komplexné poistenie s nulovou spoluúčasťou + poistenie skiel a pneumatík</p>
                             <p className="text-[rgb(250,146,8)] font-semibold mt-2">+15€/deň</p>
                           </div>
                         </div>
                       </label>
                       
-                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-50 bg-white border border-gray-200">
+                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                         <div className="flex items-center space-x-3">
                           <input
                             type="radio"
@@ -626,11 +627,11 @@ const BookingPage = () => {
                             value="full"
                             checked={formData.insuranceType === 'full'}
                             onChange={handleInputChange}
-                            className="w-5 h-5 text-[rgb(250,146,8)] bg-white border-gray-300 focus:ring-[rgb(250,146,8)]"
+                            className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
                           />
                           <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-black">Úplné poistenie</h3>
-                            <p className="text-gray-600 text-sm mt-1">Maximálna ochrana - nulová spoluúčasť + krádež + vandalizmus + poistenie osobných vecí</p>
+                            <h3 className="text-lg font-semibold text-white">Úplné poistenie</h3>
+                            <p className="text-gray-300 text-sm mt-1">Maximálna ochrana - nulová spoluúčasť + krádež + vandalizmus + poistenie osobných vecí</p>
                             <p className="text-[rgb(250,146,8)] font-semibold mt-2">+25€/deň</p>
                           </div>
                         </div>
@@ -654,47 +655,47 @@ const BookingPage = () => {
                 {/* Step 2: Additional Services */}
                 {currentStep === 2 && (
                   <div>
-                    <h2 className="text-2xl font-bold text-black mb-6 text-left">
+                    <h2 className="text-2xl font-bold text-white mb-6 text-left">
                       Doplnkové služby
                     </h2>
                     
                     <div className="space-y-4">
-                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-50 flex items-center justify-between bg-white border border-gray-200">
+                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                         <div className="flex items-center space-x-3">
                           <input
                             type="checkbox"
                             name="gps"
                             checked={formData.gps}
                             onChange={handleInputChange}
-                            className="w-5 h-5 text-[rgb(250,146,8)] bg-white border-gray-300 rounded focus:ring-[rgb(250,146,8)]"
+                            className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
                           />
                           <div>
-                            <h3 className="text-lg font-semibold text-black">GPS Navigácia</h3>
-                            <p className="text-gray-600 text-sm">Moderný GPS systém s mapami Slovenska a Európy</p>
+                            <h3 className="text-lg font-semibold text-white">GPS Navigácia</h3>
+                            <p className="text-gray-300 text-sm">Moderný GPS systém s mapami Slovenska a Európy</p>
                           </div>
                         </div>
                         <span className="text-[rgb(250,146,8)] font-semibold">+5€/deň</span>
                       </label>
                       
-                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-50 flex items-center justify-between bg-white border border-gray-200">
+                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                         <div className="flex items-center space-x-3">
                           <input
                             type="checkbox"
                             name="childSeat"
                             checked={formData.childSeat}
                             onChange={handleInputChange}
-                            className="w-5 h-5 text-[rgb(250,146,8)] bg-white border-gray-300 rounded focus:ring-[rgb(250,146,8)]"
+                            className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
                           />
                           <div>
-                            <h3 className="text-lg font-semibold text-black">Detská sedačka</h3>
-                            <p className="text-gray-600 text-sm">Bezpečnostná detská sedačka pre deti 9-36 kg</p>
+                            <h3 className="text-lg font-semibold text-white">Detská sedačka</h3>
+                            <p className="text-gray-300 text-sm">Bezpečnostná detská sedačka pre deti 9-36 kg</p>
                           </div>
                         </div>
                         <span className="text-[rgb(250,146,8)] font-semibold">+3€/deň</span>
                       </label>
                       
-                      <div className="rounded-lg p-6 bg-white border border-gray-200">
-                        <label className="block text-sm font-medium text-black mb-2">
+                      <div className="rounded-lg p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                        <label className="block text-sm font-medium text-white mb-2">
                           Špeciálne požiadavky
                         </label>
                         <textarea
@@ -702,7 +703,8 @@ const BookingPage = () => {
                           value={formData.specialRequests}
                           onChange={handleInputChange}
                           rows={3}
-                          className="w-full border border-gray-300 rounded-lg px-4 py-3 text-black placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)] bg-white" 
+                          className="w-full border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" 
+                          style={{backgroundColor: '#191919', border: '1px solid #555'}} 
                           placeholder="Napíšte nám vaše špeciálne požiadavky..."
                         ></textarea>
                       </div>
@@ -712,7 +714,7 @@ const BookingPage = () => {
                       <button
                         type="button"
                         onClick={prevStep}
-                        className="border border-gray-300 text-black px-6 py-3 rounded-lg font-semibold transition-colors duration-200 hover:bg-gray-50"
+                        className="border border-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 hover:bg-gray-700"
                       >
                         Späť
                       </button>
@@ -730,13 +732,13 @@ const BookingPage = () => {
                 {/* Step 3: Customer Information */}
                 {currentStep === 3 && (
                   <div>
-                    <h2 className="text-2xl font-bold text-black mb-6 text-left">
+                    <h2 className="text-2xl font-bold text-white mb-6 text-left">
                       Osobné údaje
                     </h2>
                     
                     {currentUser && (
-                      <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-6">
-                        <p className="text-green-700">Vitajte späť, {currentUser.firstName}! Vaše údaje sú predvyplnené nižšie.</p>
+                      <div className="border border-green-400 rounded-md p-4 mb-6" style={{backgroundColor: 'rgba(34, 197, 94, 0.1)'}}>
+                        <p className="text-green-300">Vitajte späť, {currentUser.firstName}! Vaše údaje sú predvyplnené nižšie.</p>
                       </div>
                     )}
                     
@@ -748,7 +750,7 @@ const BookingPage = () => {
                           value={formData.firstName}
                           onChange={handleInputChange}
                           placeholder="Meno*"
-                          className="w-full border border-gray-300 rounded-md px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)] bg-white"
+                          className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
                         />
@@ -760,7 +762,7 @@ const BookingPage = () => {
                           value={formData.lastName}
                           onChange={handleInputChange}
                           placeholder="Priezvisko*"
-                          className="w-full border border-gray-300 rounded-md px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)] bg-white"
+                          className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
                         />
@@ -772,7 +774,7 @@ const BookingPage = () => {
                           value={formData.phone}
                           onChange={handleInputChange}
                           placeholder="Telefónne číslo*"
-                          className="w-full border border-gray-300 rounded-md px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)] bg-white"
+                          className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
                         />
@@ -784,7 +786,7 @@ const BookingPage = () => {
                           value={formData.email}
                           onChange={handleInputChange}
                           placeholder="E-mail*"
-                          className="w-full border border-gray-300 rounded-md px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)] bg-white"
+                          className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
                         />
@@ -796,7 +798,7 @@ const BookingPage = () => {
                           value={formData.licenseNumber}
                           onChange={handleInputChange}
                           placeholder="Číslo občianskeho preukazu*"
-                          className="w-full border border-gray-300 rounded-md px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)] bg-white"
+                          className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
                         />
@@ -808,7 +810,7 @@ const BookingPage = () => {
                           value={formData.dateOfBirth}
                           onChange={handleInputChange}
                           placeholder="Rodné číslo (bez lomítka)*"
-                          className="w-full border border-gray-300 rounded-md px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)] bg-white"
+                          className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
                         />
@@ -820,7 +822,7 @@ const BookingPage = () => {
                           value={formData.driverLicenseNumber || ''}
                           onChange={handleInputChange}
                           placeholder="Číslo vodičského preukazu*"
-                          className="w-full border border-gray-300 rounded-md px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)] bg-white"
+                          className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
                         />
@@ -838,7 +840,7 @@ const BookingPage = () => {
                             value={formData.address.street}
                             onChange={handleInputChange}
                             placeholder="Adresa*"
-                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)] bg-white"
+                            className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                             required
                             disabled={!!currentUser}
                           />
@@ -850,7 +852,7 @@ const BookingPage = () => {
                             value={formData.address.city}
                             onChange={handleInputChange}
                             placeholder="Mesto*"
-                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)] bg-white"
+                            className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                             required
                             disabled={!!currentUser}
                           />
@@ -862,7 +864,7 @@ const BookingPage = () => {
                             value={formData.address.postalCode}
                             onChange={handleInputChange}
                             placeholder="Smerovacíe číslo*"
-                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)] bg-white"
+                            className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                             required
                             disabled={!!currentUser}
                           />
@@ -874,7 +876,7 @@ const BookingPage = () => {
                             value={formData.address.state}
                             onChange={handleInputChange}
                             placeholder="Krajina*"
-                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)] bg-white"
+                            className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                             required
                             disabled={!!currentUser}
                           />
@@ -884,11 +886,11 @@ const BookingPage = () => {
 
                     {/* Document Upload Section */}
                     <div className="mt-8">
-                      <h3 className="text-lg font-semibold text-black mb-4 text-left">Identifikačné údaje</h3>
+                      <h3 className="text-lg font-semibold text-white mb-4 text-left">Identifikačné údaje</h3>
                       <div className="space-y-3">
-                        <label className="border border-gray-300 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors bg-white">
+                        <label className="border border-gray-700 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors border border-gray-800">
                           <div className="text-left">
-                            <p className="text-gray-700 text-sm">Občiansky preukaz - predná strana</p>
+                            <p className="text-gray-300 text-sm">Občiansky preukaz - predná strana</p>
                             <p className="text-gray-500 text-xs">
                               {formData.idCardFront ? formData.idCardFront.name : 'Súbor nebol nahratý'}
                             </p>
@@ -902,9 +904,9 @@ const BookingPage = () => {
                             className="hidden"
                           />
                         </label>
-                        <label className="border border-gray-300 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors bg-white">
+                        <label className="border border-gray-700 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors border border-gray-800">
                           <div className="text-left">
-                            <p className="text-gray-700 text-sm">Občiansky preukaz - zadná strana</p>
+                            <p className="text-gray-300 text-sm">Občiansky preukaz - zadná strana</p>
                             <p className="text-gray-500 text-xs">
                               {formData.idCardBack ? formData.idCardBack.name : 'Súbor nebol nahratý'}
                             </p>
@@ -918,9 +920,9 @@ const BookingPage = () => {
                             className="hidden"
                           />
                         </label>
-                        <label className="border border-gray-300 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors bg-white">
+                        <label className="border border-gray-700 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors border border-gray-800">
                           <div className="text-left">
-                            <p className="text-gray-700 text-sm">Vodičský preukaz - predná strana</p>
+                            <p className="text-gray-300 text-sm">Vodičský preukaz - predná strana</p>
                             <p className="text-gray-500 text-xs">
                               {formData.driverLicenseFront ? formData.driverLicenseFront.name : 'Súbor nebol nahratý'}
                             </p>
@@ -934,9 +936,9 @@ const BookingPage = () => {
                             className="hidden"
                           />
                         </label>
-                        <label className="border border-gray-300 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors bg-white">
+                        <label className="border border-gray-700 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors border border-gray-800">
                           <div className="text-left">
-                            <p className="text-gray-700 text-sm">Vodičský preukaz - zadná strana</p>
+                            <p className="text-gray-300 text-sm">Vodičský preukaz - zadná strana</p>
                             <p className="text-gray-500 text-xs">
                               {formData.driverLicenseBack ? formData.driverLicenseBack.name : 'Súbor nebol nahratý'}
                             </p>
@@ -959,10 +961,10 @@ const BookingPage = () => {
                         <input
                           type="checkbox"
                           id="businessTerms"
-                          className="w-4 h-4 text-[rgb(250,146,8)] bg-white border-gray-300 rounded focus:ring-[rgb(250,146,8)] mt-0.5"
+                          className="w-4 h-4 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)] mt-0.5"
                           required
                         />
-                        <label htmlFor="businessTerms" className="text-black text-sm text-left">
+                        <label htmlFor="businessTerms" className="text-white text-sm text-left">
                           Súhlasím so <Link to="/terms" className="text-[rgb(250,146,8)] underline hover:text-[rgb(230,126,0)]">všeobecnými obchodnými podmienkami</Link> *
                         </label>
                       </div>
@@ -971,10 +973,10 @@ const BookingPage = () => {
                           <input
                             type="checkbox"
                             id="dataProcessing"
-                            className="w-4 h-4 text-[rgb(250,146,8)] bg-white border-gray-300 rounded focus:ring-[rgb(250,146,8)] mt-0.5"
+                            className="w-4 h-4 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)] mt-0.5"
                             required
                           />
-                          <label htmlFor="dataProcessing" className="text-black text-sm text-left">
+                          <label htmlFor="dataProcessing" className="text-white text-sm text-left">
                             Súhlasím so <Link to="/privacy" className="text-[rgb(250,146,8)] underline hover:text-[rgb(230,126,0)]">spracovaním osobných údajov</Link> *
                           </label>
                         </div>
@@ -1007,7 +1009,7 @@ const BookingPage = () => {
 
           {/* Right Side - Rental Details */}
           <div className="lg:col-span-2">
-            <div className="rounded-lg shadow-sm sticky overflow-hidden bg-white border border-gray-200" style={{ top: '140px' }}>
+            <div className="rounded-lg shadow-sm sticky overflow-hidden border border-gray-800" style={{ top: '140px', backgroundColor: 'rgb(25, 25, 25)' }}>
               {/* Selected Car */}
               {selectedCar && (
                 <div>
@@ -1017,7 +1019,7 @@ const BookingPage = () => {
                     className="w-full h-64 object-cover"
                   />
                   <div className="px-6 pt-6 pb-4">
-                    <h4 className="text-xl font-bold text-black">{selectedCar.brand} {selectedCar.model}</h4>
+                    <h4 className="text-xl font-bold text-white">{selectedCar.brand} {selectedCar.model}</h4>
                   </div>
                 </div>
               )}
@@ -1029,7 +1031,14 @@ const BookingPage = () => {
                   <select
                     value={formData.pickupLocation.name ? locations.findIndex(loc => loc.name === formData.pickupLocation.name) : ''}
                     onChange={(e) => handleLocationChange('pickupLocation', parseInt(e.target.value))}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] appearance-none bg-white" style={{backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23fa9208\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em'}}
+                    className="w-full border border-gray-700 rounded-md px-3 py-2 pr-10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] appearance-none" style={{
+                        backgroundColor: '#191919', 
+                        border: '1px solid #555',
+                        backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23fa9208\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")', 
+                        backgroundPosition: 'right 0.5rem center', 
+                        backgroundRepeat: 'no-repeat', 
+                        backgroundSize: '1.5em 1.5em'
+                      }}
                     required
                   >
                     <option value="">Vyberte miesto prevzatia</option>
@@ -1042,7 +1051,14 @@ const BookingPage = () => {
                   <select
                     value={formData.returnLocation.name ? locations.findIndex(loc => loc.name === formData.returnLocation.name) : ''}
                     onChange={(e) => handleLocationChange('returnLocation', parseInt(e.target.value))}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] appearance-none bg-white" style={{backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23fa9208\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em'}}
+                    className="w-full border border-gray-700 rounded-md px-3 py-2 pr-10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] appearance-none" style={{
+                        backgroundColor: '#191919', 
+                        border: '1px solid #555',
+                        backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23fa9208\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")', 
+                        backgroundPosition: 'right 0.5rem center', 
+                        backgroundRepeat: 'no-repeat', 
+                        backgroundSize: '1.5em 1.5em'
+                      }}
                     required
                   >
                     <option value="">Vyberte miesto vrátenia</option>
@@ -1079,7 +1095,14 @@ const BookingPage = () => {
                   <select
                     value={formData.pickupTime}
                     onChange={(e) => handleInputChange({ target: { name: 'pickupTime', value: e.target.value } })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] appearance-none bg-white" style={{backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23fa9208\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em'}}
+                    className="w-full border border-gray-700 rounded-md px-3 py-2 pr-10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] appearance-none" style={{
+                        backgroundColor: '#191919', 
+                        border: '1px solid #555',
+                        backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23fa9208\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")', 
+                        backgroundPosition: 'right 0.5rem center', 
+                        backgroundRepeat: 'no-repeat', 
+                        backgroundSize: '1.5em 1.5em'
+                      }}
                   >
                     {timeSlots.map(time => (
                       <option key={time} value={time}>{time}</option>
@@ -1088,7 +1111,14 @@ const BookingPage = () => {
                   <select
                     value={formData.returnTime}
                     onChange={(e) => handleInputChange({ target: { name: 'returnTime', value: e.target.value } })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] appearance-none bg-white" style={{backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23fa9208\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em'}}
+                    className="w-full border border-gray-700 rounded-md px-3 py-2 pr-10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] appearance-none" style={{
+                        backgroundColor: '#191919', 
+                        border: '1px solid #555',
+                        backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23fa9208\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")', 
+                        backgroundPosition: 'right 0.5rem center', 
+                        backgroundRepeat: 'no-repeat', 
+                        backgroundSize: '1.5em 1.5em'
+                      }}
                   >
                     {timeSlots.map(time => (
                       <option key={time} value={time}>{time}</option>
@@ -1102,24 +1132,24 @@ const BookingPage = () => {
                 <div className="px-6 pt-4 pb-6" style={{borderTop: '0.5px solid #d1d5db'}}>
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Denná sadzba:</span>
-                      <span className="font-medium text-black">{selectedCar.dailyRate}€</span>
+                      <span className="text-gray-300">Denná sadzba:</span>
+                      <span className="font-medium text-white">{selectedCar.dailyRate}€</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Počet dní:</span>
-                      <span className="font-medium text-black">{calculateDays()}</span>
+                      <span className="text-gray-300">Počet dní:</span>
+                      <span className="font-medium text-white">{calculateDays()}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Cena prenájmu:</span>
-                      <span className="font-medium text-black">{calculateTotal()}€</span>
+                      <span className="text-gray-300">Cena prenájmu:</span>
+                      <span className="font-medium text-white">{calculateTotal()}€</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Depozit:</span>
-                      <span className="font-medium text-black">{selectedCar.deposit}€</span>
+                      <span className="text-gray-300">Depozit:</span>
+                      <span className="font-medium text-white">{selectedCar.deposit}€</span>
                     </div>
                     <div className="pt-3" style={{borderTop: '0.5px solid #d1d5db'}}>
                       <div className="flex justify-between text-lg font-bold">
-                        <span className="text-black">Cena:</span>
+                        <span className="text-white">Cena:</span>
                         <span className="text-[rgb(250,146,8)]">{calculateTotal() + selectedCar.deposit}€</span>
                       </div>
                     </div>

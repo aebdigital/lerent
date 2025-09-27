@@ -26,6 +26,11 @@
   * {
     box-sizing: border-box;
   }
+
+  /* Force dark theme on text elements only */
+  p, span, h1, h2, h3, h4, h5, h6 {
+    color: inherit !important;
+  }
   
   html {
     scroll-behavior: smooth;
@@ -36,6 +41,12 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    background-color: #0d0d0d !important;
+    color: white !important;
+  }
+
+  html {
+    background-color: #0d0d0d !important;
   }
   
   /* Use Goldman font for all headings */
@@ -74,7 +85,7 @@
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300;
+    @apply bg-gray-800 text-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300;
   }
 
   /* Continuous scroll animation for reviews */
@@ -92,6 +103,6 @@
   }
   
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200;
+    @apply w-full px-4 py-3 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200;
   }
 }

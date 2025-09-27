@@ -20,8 +20,13 @@ import AudiS6Img from '../audis6.JPG';
 import MaseratiImg from '../maseratilevante.JPG';
 import BMW840iImg from '../bmw840i.png';
 import BMWX7Img from '../bmwx7.JPG';
-import SUVImg from '../SUV.webp';
-import SUVIconImg from '../SUV.png';
+import SUVImg from '../catg img/SUV.webp';
+import SUVIconImg from '../catg img/SUV.png';
+import SedanIconImg from '../catg img/sedan-removebg-preview.png';
+import SportIconImg from '../catg img/sport.webp';
+import CoupeIconImg from '../catg img/coupe.png';
+import AudiLogo from '../audi-logo.png';
+import MaseratiLogo from '../maserati-black-vector-logo.png';
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -34,10 +39,10 @@ const HomePage = () => {
   
   // Car classes for filtering
   const carClasses = [
-    { name: 'Športové', value: 'sports', icon: SUVIconImg },
-    { name: 'Sedan', value: 'sedan', icon: SUVIconImg },
+    { name: 'Športové', value: 'sports', icon: SportIconImg },
+    { name: 'Sedan', value: 'sedan', icon: SedanIconImg },
     { name: 'SUV', value: 'suv', icon: SUVIconImg },
-    { name: 'Coupe', value: 'coupe', icon: SUVIconImg }
+    { name: 'Coupe', value: 'coupe', icon: CoupeIconImg }
   ];
 
   // Brand filters
@@ -307,7 +312,7 @@ const HomePage = () => {
   }, [activeTab, selectedBrands, sortBy]);
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen text-white" style={{backgroundColor: '#0d0d0d'}}>
       <style jsx>{`
         @keyframes slideDown {
           from {
@@ -345,7 +350,7 @@ const HomePage = () => {
       </section>
 
       {/* Car Categories Section */}
-      <section className="py-8 bg-white">
+      <section className="py-8" style={{backgroundColor: '#0d0d0d', paddingBottom: '100px'}}>
         <div className="max-w-7xl mx-auto px-4">
           
           {/* Car Class Icons */}
@@ -358,11 +363,28 @@ const HomePage = () => {
                     // Toggle the selection - if already selected, deselect to show all cars
                     setActiveTab(activeTab === carClass.value ? 'all' : carClass.value);
                   }}
-                  className={`flex flex-col items-center p-2 sm:p-4 lg:p-8 transition-all duration-200 ${
+                  className={`flex flex-col items-center p-2 sm:p-4 lg:p-8 transition-all duration-200 transform hover:scale-105 rounded-lg ${
                     activeTab === carClass.value 
                       ? 'border-2 border-[rgb(250,146,8)]' 
-                      : 'border-2 border-transparent hover:border-gray-300'
+                      : 'border border-transparent hover:border-gray-700'
                   }`}
+                  style={{
+                    backgroundColor: activeTab === carClass.value ? 'rgba(250,146,8,0.1)' : 'rgb(25, 25, 25)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== carClass.value) {
+                      const button = e.currentTarget;
+                      button.style.background = 'radial-gradient(circle, rgba(250,146,8,0.25) 0%, rgb(25, 25, 25) 60%)';
+                      button.style.borderColor = 'rgba(55, 65, 81, 0.8)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== carClass.value) {
+                      const button = e.currentTarget;
+                      button.style.background = 'rgb(25, 25, 25)';
+                      button.style.borderColor = 'transparent';
+                    }
+                  }}
                 >
                   <img 
                     src={carClass.icon} 
@@ -370,7 +392,7 @@ const HomePage = () => {
                     className="w-20 h-12 sm:w-28 sm:h-16 lg:w-40 lg:h-24 mb-2 sm:mb-3 lg:mb-4 object-contain"
                   />
                   <span className={`font-semibold text-sm sm:text-base lg:text-lg ${
-                    activeTab === carClass.value ? 'text-[rgb(250,146,8)]' : 'text-gray-700'
+                    activeTab === carClass.value ? 'text-[rgb(250,146,8)]' : 'text-gray-300'
                   }`}>
                     {carClass.name}
                   </span>
@@ -383,8 +405,7 @@ const HomePage = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Brand Filter - Left Side */}
             <div className="w-full lg:w-64 lg:flex-shrink-0">
-              <div className="bg-white border border-gray-200 rounded-lg p-6 lg:sticky lg:top-24">
-                <h3 className="text-xl font-semibold text-black mb-6">Značky</h3>
+              <div className="rounded-lg p-6 lg:sticky lg:top-24" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                 <div className="space-y-4 lg:space-y-4 flex lg:flex-col gap-4 lg:gap-0">
                   {brandFilters.map((brand) => (
                     <button
@@ -398,16 +419,17 @@ const HomePage = () => {
                       }}
                       className={`flex items-center space-x-3 p-3 w-full lg:w-full rounded-lg transition-all duration-200 ${
                         selectedBrands.includes(brand.value)
-                          ? 'bg-[rgba(250,146,8,0.1)] border-2 border-[rgb(250,146,8)]'
-                          : 'bg-white border-2 border-transparent hover:bg-gray-50'
+                          ? 'border-2 border-[rgb(250,146,8)]'
+                          : 'border-2 border-transparent hover:opacity-80'
                       }`}
+                      style={{backgroundColor: selectedBrands.includes(brand.value) ? 'rgba(250,146,8,0.1)' : 'transparent'}}
                     >
                       <img
                         src={brand.value === 'bmw'
                           ? 'https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg'
                           : brand.value === 'audi'
-                          ? 'https://upload.wikimedia.org/wikipedia/commons/9/92/Audi-Logo_2016.svg'
-                          : 'https://cdn.worldvectorlogo.com/logos/maserati.svg'
+                          ? AudiLogo
+                          : MaseratiLogo
                         }
                         alt={brand.name}
                         className="w-12 h-12 object-contain"
@@ -417,7 +439,7 @@ const HomePage = () => {
                         }}
                       />
                       <span className={`text-sm font-medium ${
-                        selectedBrands.includes(brand.value) ? 'text-[rgb(250,146,8)]' : 'text-gray-700'
+                        selectedBrands.includes(brand.value) ? 'text-[rgb(250,146,8)]' : 'text-gray-300'
                       }`}>
                         {brand.name}
                       </span>
@@ -435,11 +457,12 @@ const HomePage = () => {
                   <div className="relative dropdown-container">
                     <button
                       onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className="bg-white text-black px-6 py-4 border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 min-w-80 flex items-center justify-between font-goldman text-lg font-medium"
+                      className="text-white px-6 py-4 border border-gray-600 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 min-w-80 flex items-center justify-between font-goldman text-lg font-medium"
+                      style={{backgroundColor: '#0d0d0d'}}
                     >
                       <span>{sortOptions.find(option => option.value === sortBy)?.label}</span>
                       <ChevronDownIcon
-                        className={`h-5 w-5 text-black transition-transform duration-300 ${
+                        className={`h-5 w-5 text-white transition-transform duration-300 ${
                           isDropdownOpen ? 'rotate-180' : 'rotate-0'
                         }`}
                       />
@@ -447,14 +470,14 @@ const HomePage = () => {
 
                     {/* Dropdown Menu */}
                     {isDropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-xl z-50 overflow-hidden animate-slideDown">
+                      <div className="absolute top-full left-0 right-0 mt-2 border border-gray-600 rounded-lg shadow-xl z-50 overflow-hidden animate-slideDown" style={{backgroundColor: '#0d0d0d'}}>
                         {sortOptions.map((option, index) => (
                           <button
                             key={option.value}
                             onClick={() => handleSortChange(option.value)}
                             className={`w-full px-6 py-4 text-left hover:bg-[rgb(250,146,8)] hover:text-white transition-all duration-200 font-goldman text-lg font-medium ${
-                              sortBy === option.value ? 'bg-[rgba(250,146,8,0.1)] text-[rgb(250,146,8)]' : 'text-black'
-                            } ${index !== sortOptions.length - 1 ? 'border-b border-gray-200' : ''}`}
+                              sortBy === option.value ? 'bg-[rgba(250,146,8,0.1)] text-[rgb(250,146,8)]' : 'text-white'
+                            } ${index !== sortOptions.length - 1 ? 'border-b border-gray-600' : ''}`}
                             style={{
                               animationDelay: `${index * 50}ms`
                             }}
@@ -471,16 +494,13 @@ const HomePage = () => {
                   {filteredCars.map((car, index) => (
                     <div
                       key={car._id}
-                      className={`aspect-[4/3] border border-gray-400 shadow-lg ${
+                      className={`aspect-[4/3] ${
                         index % 2 === 1 ? 'mt-12' : ''
                       }`}
-                      style={{
-                        borderWidth: '0.5px'
-                      }}
                     >
                       <Link
                         to={`/car/${car._id}`}
-                        className="relative bg-gray-800 overflow-hidden aspect-[4/3] block w-full h-full"
+                        className="relative overflow-hidden aspect-[4/3] block w-full h-full"
                         style={{
                           clipPath: 'polygon(0px 0px, 90% 0px, 100% 10%, 100% 100%, 10% 100%, 0px 90%)',
                           backgroundImage: `url(${car.image})`,
@@ -488,12 +508,14 @@ const HomePage = () => {
                           backgroundPosition: 'center'
                         }}
                       >
+                        {/* Dark overlay for images */}
+                        <div className="absolute inset-0 bg-black opacity-20 z-5"></div>
 
                       <div className="relative z-10 h-full flex flex-col">
                         {/* Car name and price - top left */}
                         <div className="absolute top-6 left-6">
-                          <h3 className="text-2xl font-bold text-white mb-2 uppercase" style={{textShadow: '2px 2px 8px rgba(0,0,0,0.9), 4px 4px 12px rgba(0,0,0,0.7)'}}>{car.brand} {car.model}</h3>
-                          <p className="text-lg text-white font-bold font-goldman" style={{textShadow: '2px 2px 6px rgba(0,0,0,0.8), 3px 3px 8px rgba(0,0,0,0.6)'}}>od {car.price}€/deň</p>
+                          <h3 className="text-2xl font-bold text-white mb-2 uppercase" style={{textShadow: '1px 1px 3px rgba(0,0,0,0.5)'}}>{car.brand} {car.model}</h3>
+                          <p className="text-lg text-white font-bold font-goldman" style={{textShadow: '1px 1px 3px rgba(0,0,0,0.5)'}}>od {car.price}€/deň</p>
                         </div>
 
                         {/* Spacer for layout */}
@@ -505,19 +527,19 @@ const HomePage = () => {
                           <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-base text-white">
                             <div className="flex items-center space-x-3">
                               <img src={Icon1} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
-                              <span className="font-medium" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8), 2px 2px 6px rgba(0,0,0,0.6)'}}>{car.power}</span>
+                              <span className="font-medium" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.4)'}}>{car.power}</span>
                             </div>
                             <div className="flex items-center space-x-3">
                               <img src={Icon2} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
-                              <span className="font-medium" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8), 2px 2px 6px rgba(0,0,0,0.6)'}}>{car.transmission}</span>
+                              <span className="font-medium" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.4)'}}>{car.transmission}</span>
                             </div>
                             <div className="flex items-center space-x-3">
                               <img src={Icon3} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
-                              <span className="font-medium" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8), 2px 2px 6px rgba(0,0,0,0.6)'}}>{car.type}</span>
+                              <span className="font-medium" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.4)'}}>{car.type}</span>
                             </div>
                             <div className="flex items-center space-x-3">
                               <img src={Icon4} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
-                              <span className="font-medium" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8), 2px 2px 6px rgba(0,0,0,0.6)'}}>{car.fuel}</span>
+                              <span className="font-medium" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.4)'}}>{car.fuel}</span>
                             </div>
                           </div>
 

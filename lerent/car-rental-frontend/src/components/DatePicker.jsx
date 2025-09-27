@@ -104,46 +104,46 @@ const DatePicker = ({
     <div className="relative" ref={containerRef}>
       {/* Input Field */}
       <div
-        className="w-full px-3 py-2 rounded-md border border-gray-300 cursor-pointer focus-within:ring-2 focus-within:ring-orange-500"
-        style={{backgroundColor: 'white'}}
+        className="w-full px-3 py-2 rounded-md border border-gray-700 cursor-pointer focus-within:ring-2"
+        style={{backgroundColor: '#191919'}}
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center justify-between">
-          <span className={selectedDate ? 'text-black' : 'text-gray-500'}>
+          <span className={selectedDate ? 'text-white' : 'text-gray-400'}>
             {selectedDate ? formatDate(selectedDate) : placeholder}
           </span>
-          <CalendarIcon className="h-5 w-5 text-orange-500" />
+          <CalendarIcon className="h-5 w-5" style={{color: '#fa9208'}} />
         </div>
       </div>
 
       {/* Calendar Dropdown */}
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-1 w-80 rounded-lg shadow-lg z-50 bg-white border border-gray-300">
+        <div className="absolute bottom-full left-0 mb-1 w-80 rounded-lg shadow-lg z-50 border border-gray-700" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
             <button
               onClick={() => navigateMonth(-1)}
-              className="p-1 hover:bg-gray-100 rounded"
+              className="p-1 hover:bg-gray-700 rounded"
             >
-              <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+              <ChevronLeftIcon className="h-5 w-5 text-gray-300" />
             </button>
             
-            <h3 className="text-lg font-semibold text-black">
+            <h3 className="text-lg font-semibold text-white">
               {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
             </h3>
             
             <button
               onClick={() => navigateMonth(1)}
-              className="p-1 hover:bg-gray-100 rounded"
+              className="p-1 hover:bg-gray-700 rounded"
             >
-              <ChevronRightIcon className="h-5 w-5 text-gray-600" />
+              <ChevronRightIcon className="h-5 w-5 text-gray-300" />
             </button>
           </div>
 
           {/* Days of Week Header */}
-          <div className="grid grid-cols-7 gap-0 px-4 py-2 border-b border-gray-200">
+          <div className="grid grid-cols-7 gap-0 px-4 py-2 border-b border-gray-700">
             {dayNames.map(day => (
-              <div key={day} className="text-center text-sm font-medium text-gray-600 py-1">
+              <div key={day} className="text-center text-sm font-medium text-gray-300 py-1">
                 {day}
               </div>
             ))}
@@ -159,13 +159,14 @@ const DatePicker = ({
                     disabled={isDateDisabled(date)}
                     className={`w-full h-full flex items-center justify-center text-sm rounded transition-colors ${
                       selectedDate && date.toDateString() === selectedDate.toDateString()
-                        ? 'bg-orange-500 text-white font-semibold'
+                        ? 'text-white font-semibold'
                         : isDateUnavailable(date)
-                        ? 'text-red-400 bg-red-100 cursor-not-allowed'
+                        ? 'text-red-400 bg-red-900 cursor-not-allowed'
                         : isDateDisabled(date)
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : 'text-black hover:bg-orange-100'
+                        ? 'text-gray-600 cursor-not-allowed'
+                        : 'text-white hover:bg-gray-700'
                     }`}
+                    style={selectedDate && date.toDateString() === selectedDate.toDateString() ? {backgroundColor: '#fa9208'} : {}}
                   >
                     {date.getDate()}
                   </button>

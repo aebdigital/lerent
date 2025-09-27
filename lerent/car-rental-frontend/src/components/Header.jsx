@@ -39,8 +39,7 @@ const Header = () => {
   }, []);
 
   const navigation = [
-    { name: 'Recenzie', href: '#reviews' },
-    { name: 'Kontakt', href: '#booking' },
+    { name: 'Kontakt', href: '#contact' },
   ];
 
   const servicesDropdown = [
@@ -88,29 +87,43 @@ const Header = () => {
   return (
     <>
       <header className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${
-        isScrolled || forceBlackMobile ? 'bg-black shadow-lg' : 'bg-transparent'
-      }`}>
+        isScrolled || forceBlackMobile ? 'shadow-lg' : 'bg-transparent'
+      }`}
+        style={{
+          backgroundColor: isScrolled || forceBlackMobile ? 'rgb(25, 25, 25)' : 'transparent'
+        }}>
       <nav className="px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between">
+        <div className="flex h-20 items-center justify-between lg:justify-between lg:flex lg:w-full">
           
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center justify-start">
             <Link to="/" className="flex items-center">
               <img src={Logo} alt="Nitra Car" className="h-14 w-auto" />
             </Link>
           </div>
 
+          {/* Phone Number */}
+          <div className="hidden lg:flex items-center justify-center space-x-2 text-white">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+            </svg>
+            <a href="tel:+421905318164" className="font-medium hover:text-gray-300 transition-colors" style={{fontSize: '19px'}}>
+              +421 905 318 164
+            </a>
+          </div>
+
           {/* Desktop Navigation - Center */}
-          <div className="hidden lg:flex items-center space-x-10">
+          <div className="hidden lg:flex items-center justify-center space-x-10">
             {/* Domov */}
             <button
               onClick={() => handleNavClick('/')}
-              className={`text-lg font-medium transition-colors duration-200 relative pb-1 ${
+              className={`font-medium transition-colors duration-200 relative pb-1 ${
                 isActive('/')
                   ? 'text-white'
                   : 'text-white hover:text-gray-300'
               }`}
               style={{
+                fontSize: '19px',
                 borderBottom: isActive('/') ? '2px solid #02cdff' : '2px solid transparent'
               }}
             >
@@ -124,7 +137,8 @@ const Header = () => {
               onMouseLeave={() => setServicesDropdownOpen(false)}
             >
               <button
-                className="text-lg font-medium transition-colors duration-200 relative pb-1 text-white hover:text-gray-300 flex items-center"
+                className="font-medium transition-colors duration-200 relative pb-1 text-white hover:text-gray-300 flex items-center"
+                style={{fontSize: '19px'}}
               >
                 Služby
                 <ChevronDownIcon className="ml-1 h-4 w-4" />
@@ -133,7 +147,7 @@ const Header = () => {
               {/* Dropdown Menu */}
               {servicesDropdownOpen && (
                 <div className="absolute top-full left-0 pt-2 w-64 z-50">
-                  <div className="bg-black border border-gray-600 rounded-lg shadow-lg">
+                  <div className="border border-gray-600 rounded-lg shadow-lg" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                     {servicesDropdown.map((item) => (
                       <button
                         key={item.name}
@@ -154,12 +168,13 @@ const Header = () => {
             {/* Blog Link */}
             <button
               onClick={() => handleNavClick('/blog')}
-              className={`text-lg font-medium transition-colors duration-200 relative pb-1 ${
+              className={`font-medium transition-colors duration-200 relative pb-1 ${
                 isActive('/blog')
                   ? 'text-white'
                   : 'text-white hover:text-gray-300'
               }`}
               style={{
+                fontSize: '19px',
                 borderBottom: isActive('/blog') ? '2px solid #02cdff' : '2px solid transparent'
               }}
             >
@@ -171,12 +186,13 @@ const Header = () => {
               <button
                 key={item.name}
                 onClick={() => handleNavClick(item.href)}
-                className={`text-lg font-medium transition-colors duration-200 relative pb-1 ${
+                className={`font-medium transition-colors duration-200 relative pb-1 ${
                   isActive(item.href)
                     ? 'text-white'
                     : 'text-white hover:text-gray-300'
                 }`}
                 style={{
+                  fontSize: '19px',
                   borderBottom: isActive(item.href) ? '2px solid #02cdff' : '2px solid transparent'
                 }}
               >
@@ -185,16 +201,30 @@ const Header = () => {
             ))}
           </div>
 
-          {/* Right Side - Rezervovať Button */}
-          <div className="hidden lg:flex items-center">
-            {/* Rezervovať Button */}
+          {/* Napíšte nám Email Link */}
+          <div className="hidden lg:flex items-center justify-center space-x-2 text-white">
+            <a 
+              href="mailto:info@lerent.sk" 
+              className="flex items-center space-x-2 hover:text-gray-300 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+              <span className="font-medium" style={{fontSize: '19px'}}>Napíšte nám</span>
+            </a>
+          </div>
+
+          {/* Rezervovať Button */}
+          <div className="hidden lg:flex items-center justify-end">
             <a
               href="#booking"
-              className="text-black hover:opacity-90 text-black px-5 py-3 text-base font-medium transition-colors duration-200"
+              className="hover:opacity-90 px-5 py-3 text-base transition-colors duration-200"
               style={{
                 clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
                 borderRadius: '0px',
-                backgroundColor: '#fa9208'
+                backgroundColor: '#fa9208',
+                color: '#191919',
+                fontWeight: 700
               }}
             >
               Rezervovať

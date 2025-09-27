@@ -23,9 +23,9 @@ const ReviewsSection = () => {
   ];
 
   return (
-    <section id="reviews" className="py-24 bg-white">
+    <section id="reviews" className="py-24" style={{backgroundColor: '#0d0d0d'}}>
       <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-4xl md:text-5xl font-bold text-black text-center mb-4 font-goldman">
+        <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-4 font-goldman">
           SKÚSENOSTI, KTORÉ HOVORIA SAMY ZA SEBA
         </h2>
         
@@ -35,26 +35,26 @@ const ReviewsSection = () => {
               key={index} 
               className="rounded-lg p-6 relative"
               style={{
-                background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'
+                background: 'linear-gradient(143deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.00) 100%)'
               }}
             >
               {/* Top left - R8 above Year */}
               <div className="mb-4">
-                <div className="text-black font-bold text-4xl mb-1 font-goldman">R8</div>
-                <span className="text-black font-bold text-lg">{testimonial.year}</span>
+                <div className="text-white font-bold text-4xl mb-1 font-goldman">R8</div>
+                <span className="text-white font-bold text-lg">{testimonial.year}</span>
               </div>
               
               {/* Review text */}
-              <p className="text-gray-600 mb-16 text-sm leading-relaxed">
+              <p className="text-white mb-16 text-sm leading-relaxed">
                 {testimonial.text}
               </p>
               
               {/* Bottom right - Name and Stars */}
               <div className="absolute bottom-6 right-6 text-right">
-                <p className="text-black font-semibold text-sm mb-2">{testimonial.name}</p>
+                <p className="text-white font-semibold text-sm mb-2">{testimonial.name}</p>
                 <div className="flex justify-end space-x-1">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <span key={i} className="text-orange-500 text-sm">★</span>
+                    <span key={i} style={{color: '#fc9200 !important', fontSize: '14px'}}>★</span>
                   ))}
                 </div>
               </div>

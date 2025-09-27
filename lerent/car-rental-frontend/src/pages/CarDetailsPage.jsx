@@ -410,7 +410,7 @@ const CarDetailsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen text-white" style={{backgroundColor: '#0d0d0d'}}>
         {/* Mini Hero Section */}
         <div 
           className="relative h-[30vh] bg-cover bg-center flex items-center"
@@ -435,7 +435,7 @@ const CarDetailsPage = () => {
 
   if (error || !car) {
     return (
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen text-white" style={{backgroundColor: '#0d0d0d'}}>
         {/* Mini Hero Section */}
         <div 
           className="relative h-[30vh] bg-cover bg-center flex items-center"
@@ -467,7 +467,7 @@ const CarDetailsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black" style={{fontFamily: 'AvantGarde, sans-serif'}}>
+    <div className="min-h-screen text-white" style={{backgroundColor: '#0d0d0d', fontFamily: 'AvantGarde, sans-serif'}}>
       {/* Hero Section - Desktop Only */}
       <div className="hidden lg:block">
         <div
@@ -497,11 +497,12 @@ const CarDetailsPage = () => {
           <div className="absolute bottom-[10%] right-[10%] z-10">
             <button
               onClick={scrollToBooking}
-              className="text-black hover:opacity-90 px-8 py-3 font-bold text-lg transition-colors"
+              className="hover:opacity-90 px-8 py-3 font-bold text-lg transition-colors"
               style={{
                 clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
                 borderRadius: '0px',
-                backgroundColor: '#fa9208'
+                backgroundColor: '#fa9208',
+                color: '#191919'
               }}
             >
               Rezervovať
@@ -534,7 +535,7 @@ const CarDetailsPage = () => {
           {/* Mobile Car Info Section */}
           <div className="px-4 py-6">
             {/* Car Title */}
-            <h1 className="text-4xl font-bold text-black font-goldman mb-6">
+            <h1 className="text-4xl font-bold text-white font-goldman mb-6">
               {car.brand} {car.model}
             </h1>
 
@@ -548,11 +549,12 @@ const CarDetailsPage = () => {
               {/* Rezervovat Button */}
               <button
                 onClick={scrollToBooking}
-                className="text-black hover:opacity-90 px-6 py-3 font-bold text-base transition-colors"
+                className="hover:opacity-90 px-6 py-3 font-bold text-base transition-colors"
                 style={{
                   clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
                   borderRadius: '0px',
-                  backgroundColor: '#fa9208'
+                  backgroundColor: '#fa9208',
+                  color: '#191919'
                 }}
               >
                 Rezervovať
@@ -608,82 +610,82 @@ const CarDetailsPage = () => {
       </div>
 
       {/* Car Specs Section - Mobile: 3x2 Grid, Desktop: Horizontal Row */}
-      <div className="w-full py-8 bg-gray-50">
+      <div className="w-full py-8" style={{backgroundColor: '#0d0d0d'}}>
         <div className="max-w-7xl mx-auto px-4">
           {/* Mobile Specs */}
           <div className="lg:hidden grid grid-cols-3 gap-1">
             <div className="flex flex-col items-center text-center">
               <BoltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs text-gray-600">Výkon</div>
-                <div className="font-semibold text-xs">{car.power}</div>
+                <div className="text-xs text-gray-300">Výkon</div>
+                <div className="font-semibold text-xs text-white">{car.power}</div>
               </div>
             </div>
             <div className="flex flex-col items-center text-center">
               <GlobeAltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs text-gray-600">Palivo</div>
-                <div className="font-semibold text-xs">{car.fuelType}</div>
+                <div className="text-xs text-gray-300">Palivo</div>
+                <div className="font-semibold text-xs text-white">{car.fuelType}</div>
               </div>
             </div>
             <div className="flex flex-col items-center text-center">
               <CogIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs text-gray-600">Spotreba</div>
-                <div className="font-semibold text-xs">5 l/100km</div>
+                <div className="text-xs text-gray-300">Spotreba</div>
+                <div className="font-semibold text-xs text-white">5 l/100km</div>
               </div>
             </div>
             <div className="flex flex-col items-center text-center">
               <UsersIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs text-gray-600">Prevodovka</div>
-                <div className="font-semibold text-xs">{car.transmission}</div>
+                <div className="text-xs text-gray-300">Prevodovka</div>
+                <div className="font-semibold text-xs text-white">{car.transmission}</div>
               </div>
             </div>
             <div className="flex flex-col items-center text-center">
               <CalendarIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs text-gray-600">Rok</div>
-                <div className="font-semibold text-xs">{car.year}</div>
+                <div className="text-xs text-gray-300">Rok</div>
+                <div className="font-semibold text-xs text-white">{car.year}</div>
               </div>
             </div>
           </div>
 
           {/* Desktop Specs - Horizontal Row */}
           <div className="hidden lg:grid lg:grid-cols-5 lg:gap-8">
-            <div className="flex flex-row items-center space-x-3 bg-white p-4 rounded-lg shadow-sm">
+            <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
               <BoltIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
               <div>
-                <div className="text-sm text-gray-600">Výkon</div>
-                <div className="font-semibold text-base">{car.power}</div>
+                <div className="text-sm text-gray-300">Výkon</div>
+                <div className="font-semibold text-base text-white">{car.power}</div>
               </div>
             </div>
-            <div className="flex flex-row items-center space-x-3 bg-white p-4 rounded-lg shadow-sm">
+            <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
               <GlobeAltIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
               <div>
-                <div className="text-sm text-gray-600">Palivo</div>
-                <div className="font-semibold text-base">{car.fuelType}</div>
+                <div className="text-sm text-gray-300">Palivo</div>
+                <div className="font-semibold text-base text-white">{car.fuelType}</div>
               </div>
             </div>
-            <div className="flex flex-row items-center space-x-3 bg-white p-4 rounded-lg shadow-sm">
+            <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
               <CogIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
               <div>
-                <div className="text-sm text-gray-600">Spotreba</div>
-                <div className="font-semibold text-base">5 l/100km</div>
+                <div className="text-sm text-gray-300">Spotreba</div>
+                <div className="font-semibold text-base text-white">5 l/100km</div>
               </div>
             </div>
-            <div className="flex flex-row items-center space-x-3 bg-white p-4 rounded-lg shadow-sm">
+            <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
               <UsersIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
               <div>
-                <div className="text-sm text-gray-600">Prevodovka</div>
-                <div className="font-semibold text-base">{car.transmission}</div>
+                <div className="text-sm text-gray-300">Prevodovka</div>
+                <div className="font-semibold text-base text-white">{car.transmission}</div>
               </div>
             </div>
-            <div className="flex flex-row items-center space-x-3 bg-white p-4 rounded-lg shadow-sm">
+            <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
               <CalendarIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
               <div>
-                <div className="text-sm text-gray-600">Rok</div>
-                <div className="font-semibold text-base">{car.year}</div>
+                <div className="text-sm text-gray-300">Rok</div>
+                <div className="font-semibold text-base text-white">{car.year}</div>
               </div>
             </div>
           </div>
@@ -696,56 +698,56 @@ const CarDetailsPage = () => {
         {/* Mobile Content Order: Popis, Cenník, Prenájom */}
         <div className="lg:hidden space-y-8">
           {/* Mobile Car Description */}
-          <div className="rounded-lg p-6 bg-white border border-gray-200 shadow-sm">
-            <h2 className="text-2xl font-semibold text-black mb-4">Popis</h2>
-            <div className="text-gray-600 leading-relaxed">
+          <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+            <h2 className="text-2xl font-semibold text-white mb-4">Popis</h2>
+            <div className="text-gray-300 leading-relaxed">
               {car.description || getCarDescription(car.brand, car.model)}
             </div>
           </div>
 
           {/* Mobile Pricing Table */}
-          <div className="rounded-lg p-6 bg-white border border-gray-200 shadow-sm">
-            <h3 className="text-xl font-semibold text-black mb-4">Cenník prenájmu</h3>
+          <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+            <h3 className="text-xl font-semibold text-white mb-4">Cenník prenájmu</h3>
 
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-800">
               <div className="py-3">
                 <div className="grid grid-cols-2 gap-4">
-                  <span className="text-gray-600">1-2 dni</span>
+                  <span className="text-white">1-2 dni</span>
                   <span className="text-[rgb(250,146,8)] font-semibold text-right">45€</span>
                 </div>
               </div>
 
               <div className="py-3">
                 <div className="grid grid-cols-2 gap-4">
-                  <span className="text-gray-600">3-6 dní</span>
+                  <span className="text-white">3-6 dní</span>
                   <span className="text-[rgb(250,146,8)] font-semibold text-right">40€</span>
                 </div>
               </div>
 
               <div className="py-3">
                 <div className="grid grid-cols-2 gap-4">
-                  <span className="text-gray-600">7-13 dní</span>
+                  <span className="text-white">7-13 dní</span>
                   <span className="text-[rgb(250,146,8)] font-semibold text-right">35€</span>
                 </div>
               </div>
 
               <div className="py-3">
                 <div className="grid grid-cols-2 gap-4">
-                  <span className="text-gray-600">14-20 dní</span>
+                  <span className="text-white">14-20 dní</span>
                   <span className="text-[rgb(250,146,8)] font-semibold text-right">30€</span>
                 </div>
               </div>
 
               <div className="py-3">
                 <div className="grid grid-cols-2 gap-4">
-                  <span className="text-gray-600">21-27 dní</span>
+                  <span className="text-white">21-27 dní</span>
                   <span className="text-[rgb(250,146,8)] font-semibold text-right">28€</span>
                 </div>
               </div>
 
               <div className="py-3">
                 <div className="grid grid-cols-2 gap-4">
-                  <span className="text-gray-600">28+ dní</span>
+                  <span className="text-white">28+ dní</span>
                   <span className="text-[rgb(250,146,8)] font-semibold text-right">25€</span>
                 </div>
               </div>
@@ -753,8 +755,8 @@ const CarDetailsPage = () => {
           </div>
 
           {/* Mobile Booking Form */}
-          <div id="booking-section" className="rounded-lg p-6 shadow-lg bg-white border border-gray-200">
-            <h2 className="text-2xl font-semibold text-black mb-6">Prenájom</h2>
+          <div id="booking-section" className="rounded-lg p-6 shadow-lg border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+            <h2 className="text-2xl font-semibold text-white mb-6">Prenájom</h2>
 
             <div className="space-y-4">
               {/* Dates */}
@@ -782,13 +784,13 @@ const CarDetailsPage = () => {
               </div>
 
               {/* Pricing Information */}
-              <div className="rounded-lg p-4 space-y-3 bg-gray-50">
+              <div className="rounded-lg p-4 space-y-3" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Depozit:</span>
-                  <span className="font-semibold text-black">{getDeposit().toFixed(2)}€</span>
+                  <span className="text-gray-300">Depozit:</span>
+                  <span className="font-semibold text-white">{getDeposit().toFixed(2)}€</span>
                 </div>
                 <div className="flex justify-between pt-4 mt-4" style={{borderTop: '1px solid rgba(107, 114, 128, 0.3)'}}>
-                  <span className="text-black font-semibold text-2xl">Cena:</span>
+                  <span className="text-white font-semibold text-2xl">Cena:</span>
                   <span className="font-semibold text-[rgb(250,146,8)] text-2xl">{(calculatePrice() + getKmPackagePrice()).toFixed(2)}€</span>
                 </div>
               </div>
@@ -796,7 +798,11 @@ const CarDetailsPage = () => {
               {/* Book Now Button */}
               <button
                 onClick={handleBookNow}
-                className="w-full mt-6 bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200"
+                className="w-full mt-6 hover:opacity-90 px-6 py-3 rounded-lg font-semibold transition-colors duration-200"
+                style={{
+                  backgroundColor: '#fa9208',
+                  color: '#191919'
+                }}
                 disabled={car.status !== 'available'}
               >
                 {car.status === 'available' ? 'Pokračovať v objednávke' : 'Momentálne nedostupné'}
@@ -810,48 +816,48 @@ const CarDetailsPage = () => {
           {/* Left Column - Cenník */}
           <div className="lg:col-span-1 space-y-6">
             {/* Pricing Table */}
-            <div className="rounded-lg p-6 bg-white border border-gray-200 shadow-sm">
-              <h3 className="text-xl font-semibold text-black mb-4">Cenník prenájmu</h3>
+            <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+              <h3 className="text-xl font-semibold text-white mb-4">Cenník prenájmu</h3>
 
-              <div className="divide-y divide-gray-200">
+              <div className="divide-y divide-gray-800">
                 <div className="py-3">
                   <div className="grid grid-cols-2 gap-4">
-                    <span className="text-gray-600">1-2 dni</span>
+                    <span className="text-white">1-2 dni</span>
                     <span className="text-[rgb(250,146,8)] font-semibold text-right">45€</span>
                   </div>
                 </div>
 
                 <div className="py-3">
                   <div className="grid grid-cols-2 gap-4">
-                    <span className="text-gray-600">3-6 dní</span>
+                    <span className="text-white">3-6 dní</span>
                     <span className="text-[rgb(250,146,8)] font-semibold text-right">40€</span>
                   </div>
                 </div>
 
                 <div className="py-3">
                   <div className="grid grid-cols-2 gap-4">
-                    <span className="text-gray-600">7-13 dní</span>
+                    <span className="text-white">7-13 dní</span>
                     <span className="text-[rgb(250,146,8)] font-semibold text-right">35€</span>
                   </div>
                 </div>
 
                 <div className="py-3">
                   <div className="grid grid-cols-2 gap-4">
-                    <span className="text-gray-600">14-20 dní</span>
+                    <span className="text-white">14-20 dní</span>
                     <span className="text-[rgb(250,146,8)] font-semibold text-right">30€</span>
                   </div>
                 </div>
 
                 <div className="py-3">
                   <div className="grid grid-cols-2 gap-4">
-                    <span className="text-gray-600">21-27 dní</span>
+                    <span className="text-white">21-27 dní</span>
                     <span className="text-[rgb(250,146,8)] font-semibold text-right">28€</span>
                   </div>
                 </div>
 
                 <div className="py-3">
                   <div className="grid grid-cols-2 gap-4">
-                    <span className="text-gray-600">28+ dní</span>
+                    <span className="text-white">28+ dní</span>
                     <span className="text-[rgb(250,146,8)] font-semibold text-right">25€</span>
                   </div>
                 </div>
@@ -863,8 +869,8 @@ const CarDetailsPage = () => {
           {/* Right Column - Rezervovat and Popis */}
           <div className="lg:col-span-1 space-y-6">
             {/* Desktop Booking Form */}
-            <div className="rounded-lg p-6 shadow-lg bg-white border border-gray-200">
-              <h2 className="text-2xl font-semibold text-black mb-6">Rezervovať</h2>
+            <div className="rounded-lg p-6 shadow-lg border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+              <h2 className="text-2xl font-semibold text-white mb-6">Rezervovať</h2>
 
               <div className="space-y-4">
                 {/* Dates */}
@@ -892,13 +898,13 @@ const CarDetailsPage = () => {
                 </div>
 
                 {/* Pricing Information */}
-                <div className="rounded-lg p-4 space-y-3 bg-gray-50">
+                <div className="rounded-lg p-4 space-y-3" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Depozit:</span>
-                    <span className="font-semibold text-black">{getDeposit().toFixed(2)}€</span>
+                    <span className="text-gray-300">Depozit:</span>
+                    <span className="font-semibold text-white">{getDeposit().toFixed(2)}€</span>
                   </div>
                   <div className="flex justify-between pt-4 mt-4" style={{borderTop: '1px solid rgba(107, 114, 128, 0.3)'}}>
-                    <span className="text-black font-semibold text-2xl">Cena:</span>
+                    <span className="text-white font-semibold text-2xl">Cena:</span>
                     <span className="font-semibold text-[rgb(250,146,8)] text-2xl">{(calculatePrice() + getKmPackagePrice()).toFixed(2)}€</span>
                   </div>
                 </div>
@@ -906,7 +912,11 @@ const CarDetailsPage = () => {
                 {/* Book Now Button */}
                 <button
                   onClick={handleBookNow}
-                  className="w-full mt-6 bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200"
+                  className="w-full mt-6 hover:opacity-90 px-6 py-3 rounded-lg font-semibold transition-colors duration-200"
+                  style={{
+                    backgroundColor: '#fa9208',
+                    color: '#191919'
+                  }}
                   disabled={car.status !== 'available'}
                 >
                   {car.status === 'available' ? 'Pokračovať v objednávke' : 'Momentálne nedostupné'}
@@ -915,9 +925,9 @@ const CarDetailsPage = () => {
             </div>
 
             {/* Car Description */}
-            <div className="rounded-lg p-6 bg-white border border-gray-200 shadow-sm">
-              <h2 className="text-2xl font-semibold text-black mb-4">Popis</h2>
-              <div className="text-gray-600 leading-relaxed">
+            <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+              <h2 className="text-2xl font-semibold text-white mb-4">Popis</h2>
+              <div className="text-gray-300 leading-relaxed">
                 {car.description || getCarDescription(car.brand, car.model)}
               </div>
             </div>
