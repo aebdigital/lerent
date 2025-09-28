@@ -479,22 +479,23 @@ const CarDetailsPage = () => {
           {/* Dark overlay for better text visibility */}
           <div className="absolute inset-0 bg-black/40"></div>
 
-          {/* Car Title - Bottom Left */}
-          <div className="absolute bottom-[10%] left-4 z-10">
-            <h1 className="text-6xl font-bold text-white font-goldman drop-shadow-lg">
-              {car.brand} {car.model}
-            </h1>
-          </div>
-
-          {/* Video Button - Middle Bottom */}
-          <div className="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 z-10">
+          {/* Video Button - Bottom Left */}
+          <div className="absolute bottom-[10%] left-16 z-10">
             <button className="bg-black bg-opacity-50 hover:bg-opacity-70 p-4 rounded-full transition-all duration-200">
               <img src={VideoIcon} alt="Video" className="w-8 h-8" />
             </button>
           </div>
 
+          {/* Car Title - Middle Bottom */}
+          <div className="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 z-10">
+            <h1 className="text-6xl font-bold text-white font-goldman drop-shadow-lg text-center">
+              {car.brand} {car.model}
+            </h1>
+          </div>
+
+
           {/* Rezervovat Button - Bottom Right */}
-          <div className="absolute bottom-[10%] right-[10%] z-10">
+          <div className="absolute bottom-[10%] right-16 z-10">
             <button
               onClick={scrollToBooking}
               className="hover:opacity-90 px-8 py-3 font-bold text-lg transition-colors"
@@ -695,65 +696,8 @@ const CarDetailsPage = () => {
       {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* Mobile Content Order: Popis, Cenník, Prenájom */}
+        {/* Mobile Content Order: Prenájom, Cenník, Popis */}
         <div className="lg:hidden space-y-8">
-          {/* Mobile Car Description */}
-          <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-            <h2 className="text-2xl font-semibold text-white mb-4">Popis</h2>
-            <div className="text-gray-300 leading-relaxed">
-              {car.description || getCarDescription(car.brand, car.model)}
-            </div>
-          </div>
-
-          {/* Mobile Pricing Table */}
-          <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-            <h3 className="text-xl font-semibold text-white mb-4">Cenník prenájmu</h3>
-
-            <div className="divide-y divide-gray-800">
-              <div className="py-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <span className="text-white">1-2 dni</span>
-                  <span className="text-[rgb(250,146,8)] font-semibold text-right">45€</span>
-                </div>
-              </div>
-
-              <div className="py-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <span className="text-white">3-6 dní</span>
-                  <span className="text-[rgb(250,146,8)] font-semibold text-right">40€</span>
-                </div>
-              </div>
-
-              <div className="py-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <span className="text-white">7-13 dní</span>
-                  <span className="text-[rgb(250,146,8)] font-semibold text-right">35€</span>
-                </div>
-              </div>
-
-              <div className="py-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <span className="text-white">14-20 dní</span>
-                  <span className="text-[rgb(250,146,8)] font-semibold text-right">30€</span>
-                </div>
-              </div>
-
-              <div className="py-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <span className="text-white">21-27 dní</span>
-                  <span className="text-[rgb(250,146,8)] font-semibold text-right">28€</span>
-                </div>
-              </div>
-
-              <div className="py-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <span className="text-white">28+ dní</span>
-                  <span className="text-[rgb(250,146,8)] font-semibold text-right">25€</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Mobile Booking Form */}
           <div id="booking-section" className="rounded-lg p-6 shadow-lg border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
             <h2 className="text-2xl font-semibold text-white mb-6">Prenájom</h2>
@@ -807,6 +751,63 @@ const CarDetailsPage = () => {
               >
                 {car.status === 'available' ? 'Pokračovať v objednávke' : 'Momentálne nedostupné'}
               </button>
+            </div>
+          </div>
+
+          {/* Mobile Pricing Table */}
+          <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+            <h3 className="text-xl font-semibold text-white mb-4">Cenník prenájmu</h3>
+
+            <div className="divide-y divide-gray-800">
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <span className="text-white">1-2 dni</span>
+                  <span className="text-[rgb(250,146,8)] font-semibold text-right">45€</span>
+                </div>
+              </div>
+
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <span className="text-white">3-6 dní</span>
+                  <span className="text-[rgb(250,146,8)] font-semibold text-right">40€</span>
+                </div>
+              </div>
+
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <span className="text-white">7-13 dní</span>
+                  <span className="text-[rgb(250,146,8)] font-semibold text-right">35€</span>
+                </div>
+              </div>
+
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <span className="text-white">14-20 dní</span>
+                  <span className="text-[rgb(250,146,8)] font-semibold text-right">30€</span>
+                </div>
+              </div>
+
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <span className="text-white">21-27 dní</span>
+                  <span className="text-[rgb(250,146,8)] font-semibold text-right">28€</span>
+                </div>
+              </div>
+
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <span className="text-white">28+ dní</span>
+                  <span className="text-[rgb(250,146,8)] font-semibold text-right">25€</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Car Description */}
+          <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+            <h2 className="text-2xl font-semibold text-white mb-4">Popis</h2>
+            <div className="text-gray-300 leading-relaxed">
+              {car.description || getCarDescription(car.brand, car.model)}
             </div>
           </div>
         </div>
@@ -924,12 +925,15 @@ const CarDetailsPage = () => {
               </div>
             </div>
 
-            {/* Car Description */}
-            <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-              <h2 className="text-2xl font-semibold text-white mb-4">Popis</h2>
-              <div className="text-gray-300 leading-relaxed">
-                {car.description || getCarDescription(car.brand, car.model)}
-              </div>
+          </div>
+        </div>
+
+        {/* Car Description - Full Width */}
+        <div className="hidden lg:block mt-8">
+          <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+            <h2 className="text-2xl font-semibold text-white mb-4">Popis</h2>
+            <div className="text-gray-300 leading-relaxed">
+              {car.description || getCarDescription(car.brand, car.model)}
             </div>
           </div>
         </div>

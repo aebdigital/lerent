@@ -5,9 +5,21 @@ const BookingFormSection = () => {
     name: '',
     phone: '',
     email: '',
+    selectedCar: '',
     location: '',
     notes: ''
   });
+
+  // Available cars list
+  const availableCars = [
+    { id: 'audi-a6', name: 'AUDI A6', price: 90 },
+    { id: 'bmw-540i-xdrive', name: 'BMW 540I XDRIVE', price: 90 },
+    { id: 'audi-s4', name: 'AUDI S4', price: 90 },
+    { id: 'audi-s6', name: 'AUDI S6', price: 100 },
+    { id: 'maserati-levante', name: 'MASERATI LEVANTE', price: 130 },
+    { id: 'bmw-840i-xdrive', name: 'BMW 840I XDRIVE', price: 140 },
+    { id: 'bmw-x7-xdrive-40d', name: 'BMW X7 XDRIVE 40D', price: 200 }
+  ];
 
   const handleInputChange = (e) => {
     setFormData({
@@ -70,7 +82,26 @@ const BookingFormSection = () => {
               />
             </div>
           </div>
-          
+
+          {/* Vyber auta - full width */}
+          <div>
+            <label className="block text-white text-sm font-medium mb-2">Vyberte auto</label>
+            <select
+              name="selectedCar"
+              value={formData.selectedCar}
+              onChange={handleInputChange}
+              className="w-full text-white px-4 py-3 rounded-lg border border-gray-900 focus:border-orange-500 focus:outline-none appearance-none"
+              style={{backgroundColor: '#191919', borderColor: '#0a0a0a'}}
+            >
+              <option value="">Vyberte auto</option>
+              {availableCars.map((car) => (
+                <option key={car.id} value={car.id}>
+                  {car.name} - od {car.price}€/deň
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Miesto vyzdvihnutia - full width */}
           <div>
             <label className="block text-white text-sm font-medium mb-2">Miesto vyzdvihnutia</label>
