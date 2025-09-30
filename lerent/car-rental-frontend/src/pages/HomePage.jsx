@@ -403,7 +403,7 @@ const HomePage = () => {
           </div>
 
           {/* Main Content with Brand Filter on Left and Centered Car Grid */}
-          <div className="flex flex-col lg:flex-row gap-8 w-full max-w-7xl" style={{marginLeft: '-150px'}}>
+          <div className="flex flex-col lg:flex-row gap-8 w-full max-w-7xl mx-auto">
             {/* Brand Filter - Left Side */}
             <div className="w-full lg:w-64 lg:flex-shrink-0">
               <div className="rounded-lg p-6 lg:sticky lg:top-24" style={{backgroundColor: 'rgb(25, 25, 25)', marginTop: '-12px'}}>
