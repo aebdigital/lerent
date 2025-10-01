@@ -7,7 +7,7 @@ import ContactMapSection from '../components/ContactMapSection';
 import BookingFormSection from '../components/BookingFormSection';
 import Carousel from '../components/Carousel';
 import { carsAPI } from '../services/api';
-import HeroImg from '../Designer.png';
+import HeroImg from '../newhero.jpg';
 import VasenImg from '../vasen.webp';
 import Icon1 from '../icon1.svg';
 import Icon2 from '../icon2.svg';
