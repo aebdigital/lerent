@@ -23,10 +23,10 @@ const ReviewsSection = () => {
   ];
 
   return (
-    <section id="reviews" className="py-24" style={{backgroundColor: '#0d0d0d'}}>
+    <section id="reviews" className="py-24" style={{backgroundColor: '#000000'}}>
       <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-4 font-goldman">
-          SKÚSENOSTI, KTORÉ HOVORIA SAMY ZA SEBA
+          SKÚSENOSTI, KTORÉ HOVORIA ZA NÁS
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">

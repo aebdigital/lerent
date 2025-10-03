@@ -378,7 +378,7 @@ const BookingPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#0d0d0d'}}>
+      <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#000000'}}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[rgb(250,146,8)] mx-auto"></div>
           <p className="mt-4 text-white">Načítavajú sa detaily rezervácie...</p>
@@ -389,7 +389,7 @@ const BookingPage = () => {
 
   if (error && !selectedCar) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#0d0d0d'}}>
+      <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#000000'}}>
         <div className="text-center max-w-md mx-auto px-4">
           <div className="text-red-500 mb-4">
             <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
@@ -409,7 +409,7 @@ const BookingPage = () => {
   // Confirmation step
   if (currentStep === 5 && bookingResult) {
     return (
-      <div className="min-h-screen text-white" style={{backgroundColor: '#0d0d0d', fontFamily: 'AvantGarde, sans-serif'}}>
+      <div className="min-h-screen text-white" style={{backgroundColor: '#000000', fontFamily: 'AvantGarde, sans-serif'}}>
         {/* Mini Hero Section */}
         <div 
           className="relative h-[30vh] bg-cover bg-center"
@@ -450,7 +450,7 @@ const BookingPage = () => {
   }
 
   return (
-    <div className="min-h-screen text-white" style={{backgroundColor: '#0d0d0d', fontFamily: 'AvantGarde, sans-serif'}}>
+    <div className="min-h-screen text-white" style={{backgroundColor: '#000000', fontFamily: 'AvantGarde, sans-serif'}}>
       {/* Mini Hero Section */}
       <div 
         className="relative h-[30vh] bg-cover bg-center"
@@ -464,7 +464,7 @@ const BookingPage = () => {
       </div>
 
       {/* Progress Steps at Top */}
-      <div className="border-b border-gray-700" style={{backgroundColor: '#0d0d0d'}}>
+      <div className="border-b border-gray-700" style={{backgroundColor: '#000000'}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="max-w-4xl mx-auto">
             {/* Step boxes */}

@@ -2,7 +2,7 @@ import React from 'react';
 
 const ContactMapSection = () => {
   return (
-    <section id="contact" className="py-24" style={{backgroundColor: '#0d0d0d'}}>
+    <section id="contact" className="py-24" style={{backgroundColor: '#000000'}}>
       <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-4 font-goldman">
           AKO SA K NÁM DOSTAŤ
@@ -38,16 +38,16 @@ const ContactMapSection = () => {
           </div>
         </div>
         
-        <div className="h-96 overflow-hidden" style={{backgroundColor: '#0d0d0d'}}>
+        <div className="h-96 overflow-hidden" style={{backgroundColor: '#000000'}}>
           <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d250000!2d18.0920!3d48.3070!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f14!3m3!1m2!1s0x0%3A0x0!2zNDjCsDE4JzI1LjIiTiAxOMKwMDUnMzEuMiJF!5e0!3m2!1sen!2ssk!4v1699999999999!5m2!1sen!2ssk&q=Levická+3,+areál+STS,+Nitra"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2596.325896779728!2d18.110927!3d48.3174613!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476b3f0017a7734b%3A0x5b52f8d9b7ea2f1!2sLeRent!5e0!3m2!1sen!2ssk!4v1699999999999!5m2!1sen!2ssk"
             width="100%"
             height="100%"
             style={{ border: 0 }}
             allowFullScreen=""
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            title="Levická 3, areál STS, Nitra"
+            title="LeRent - Levická 3, areál STS, Nitra"
           ></iframe>
         </div>
       </div>

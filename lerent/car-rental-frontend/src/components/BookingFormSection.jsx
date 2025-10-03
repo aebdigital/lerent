@@ -34,10 +34,10 @@ const BookingFormSection = () => {
   };
 
   return (
-    <section id="booking" className="py-24" style={{backgroundColor: '#0d0d0d'}}>
+    <section id="booking" className="py-24" style={{backgroundColor: '#000000'}}>
       <div className="max-w-6xl mx-auto px-4">
         <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-12 font-goldman">
-          ZAREZERVUJTE SI AUTO
+          RÝCHLA REZERVÁCIA AUTA
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -49,7 +49,7 @@ const BookingFormSection = () => {
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              placeholder="Janko Hraško"
+              placeholder="Peter Novák"
               className="w-full text-white px-4 py-3 rounded-lg border border-gray-900 focus:border-orange-500 focus:outline-none"
               style={{backgroundColor: '#191919', borderColor: '#0a0a0a'}}
             />
@@ -76,7 +76,7 @@ const BookingFormSection = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="janko@hrasko.sk"
+                placeholder="meno@gmail.com"
                 className="w-full text-white px-4 py-3 rounded-lg border border-gray-900 focus:border-orange-500 focus:outline-none"
                 style={{backgroundColor: '#191919', borderColor: '#0a0a0a'}}
               />

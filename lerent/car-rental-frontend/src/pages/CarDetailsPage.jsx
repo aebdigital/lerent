@@ -410,7 +410,7 @@ const CarDetailsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen text-white" style={{backgroundColor: '#0d0d0d'}}>
+      <div className="min-h-screen text-white" style={{backgroundColor: '#000000'}}>
         {/* Mini Hero Section */}
         <div 
           className="relative h-[30vh] bg-cover bg-center flex items-center"
@@ -435,7 +435,7 @@ const CarDetailsPage = () => {
 
   if (error || !car) {
     return (
-      <div className="min-h-screen text-white" style={{backgroundColor: '#0d0d0d'}}>
+      <div className="min-h-screen text-white" style={{backgroundColor: '#000000'}}>
         {/* Mini Hero Section */}
         <div 
           className="relative h-[30vh] bg-cover bg-center flex items-center"
@@ -467,7 +467,7 @@ const CarDetailsPage = () => {
   }
 
   return (
-    <div className="min-h-screen text-white" style={{backgroundColor: '#0d0d0d', fontFamily: 'AvantGarde, sans-serif'}}>
+    <div className="min-h-screen text-white" style={{backgroundColor: '#000000', fontFamily: 'AvantGarde, sans-serif'}}>
       {/* Hero Section - Desktop Only */}
       <div className="hidden lg:block">
         <div
@@ -477,7 +477,9 @@ const CarDetailsPage = () => {
           }}
         >
           {/* Dark overlay for better text visibility */}
-          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0" style={{
+            background: 'linear-gradient(180deg, rgba(16, 16, 16, 0.00) 70%, #101010 100%), linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%)'
+          }}></div>
 
           {/* Video Button - Bottom Left */}
           <div className="absolute bottom-[10%] left-16 z-10">
@@ -611,7 +613,7 @@ const CarDetailsPage = () => {
       </div>
 
       {/* Car Specs Section - Mobile: 3x2 Grid, Desktop: Horizontal Row */}
-      <div className="w-full py-8" style={{backgroundColor: '#0d0d0d'}}>
+      <div className="w-full py-8" style={{backgroundColor: '#000000'}}>
         <div className="max-w-7xl mx-auto px-4">
           {/* Mobile Specs */}
           <div className="lg:hidden grid grid-cols-3 gap-1">

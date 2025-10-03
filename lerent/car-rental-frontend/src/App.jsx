@@ -12,6 +12,9 @@ import BlogPostPage from './pages/BlogPostPage';
 import PoisteniePage from './pages/PoisteniePage';
 import AutouveryPage from './pages/AutouveryPage';
 import SprostredkovaniePage from './pages/SprostredkovaniePage';
+import ONasPage from './pages/ONasPage';
+import PrenajomPage from './pages/PrenajomPage';
+import FAQPage from './pages/FAQPage';
 import './index.css';
 
 function App() {
@@ -21,6 +24,9 @@ function App() {
       <DefaultLayout>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/o-nas" element={<ONasPage />} />
+          <Route path="/prenajom" element={<PrenajomPage />} />
+          <Route path="/faq" element={<FAQPage />} />
           <Route path="/car/:id" element={<CarDetailsPage />} />
           <Route path="/booking" element={<BookingPage />} />
           <Route path="/terms" element={<TermsPage />} />

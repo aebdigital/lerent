@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Bars3Icon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon } from '@heroicons/react/24/outline';
 import Logo from '../logoRENT.svg';
 import Sidebar from './Sidebar';
 
 const Header = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
   const [forceBlackMobile, setForceBlackMobile] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -42,11 +41,6 @@ const Header = () => {
     { name: 'Kontakt', href: '#contact' },
   ];
 
-  const servicesDropdown = [
-    { name: 'Poistenie', href: '/poistenie' },
-    { name: 'Autoúvery', href: '/autouvery' },
-    { name: 'Sprostredkovanie prenájmu aut', href: '/sprostredkovanie' },
-  ];
 
   const handleNavClick = (href) => {
     if (href.startsWith('#')) {
@@ -114,71 +108,53 @@ const Header = () => {
 
           {/* Desktop Navigation - Center */}
           <div className="hidden lg:flex items-center justify-center space-x-10">
-            {/* Domov */}
+            
+            {/* O nás Link */}
             <button
-              onClick={() => handleNavClick('/')}
+              onClick={() => handleNavClick('/o-nas')}
               className={`font-medium transition-colors duration-200 relative pb-1 ${
-                isActive('/')
+                isActive('/o-nas')
                   ? 'text-white'
                   : 'text-white hover:text-gray-300'
               }`}
               style={{
                 fontSize: '19px',
-                borderBottom: isActive('/') ? '2px solid #02cdff' : '2px solid transparent'
+                borderBottom: isActive('/o-nas') ? '2px solid #02cdff' : '2px solid transparent'
               }}
             >
-              Domov
+              O nás
             </button>
             
-            {/* Služby Dropdown */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setServicesDropdownOpen(true)}
-              onMouseLeave={() => setServicesDropdownOpen(false)}
-            >
-              <button
-                className="font-medium transition-colors duration-200 relative pb-1 text-white hover:text-gray-300 flex items-center"
-                style={{fontSize: '19px'}}
-              >
-                Služby
-                <ChevronDownIcon className="ml-1 h-4 w-4" />
-              </button>
-              
-              {/* Dropdown Menu */}
-              {servicesDropdownOpen && (
-                <div className="absolute top-full left-0 pt-2 w-64 z-50">
-                  <div className="border border-gray-600 rounded-lg shadow-lg" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                    {servicesDropdown.map((item) => (
-                      <button
-                        key={item.name}
-                        onClick={() => {
-                          handleNavClick(item.href);
-                          setServicesDropdownOpen(false);
-                        }}
-                        className="block w-full text-left px-4 py-3 text-white hover:bg-gray-800 first:rounded-t-lg last:rounded-b-lg transition-colors duration-200"
-                      >
-                        {item.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Blog Link */}
+            {/* Prenájom Link */}
             <button
-              onClick={() => handleNavClick('/blog')}
+              onClick={() => handleNavClick('/prenajom')}
               className={`font-medium transition-colors duration-200 relative pb-1 ${
-                isActive('/blog')
+                isActive('/prenajom')
                   ? 'text-white'
                   : 'text-white hover:text-gray-300'
               }`}
               style={{
                 fontSize: '19px',
-                borderBottom: isActive('/blog') ? '2px solid #02cdff' : '2px solid transparent'
+                borderBottom: isActive('/prenajom') ? '2px solid #02cdff' : '2px solid transparent'
               }}
             >
-              Blog
+              Prenájom
+            </button>
+            
+            {/* FAQ Link */}
+            <button
+              onClick={() => handleNavClick('/faq')}
+              className={`font-medium transition-colors duration-200 relative pb-1 ${
+                isActive('/faq')
+                  ? 'text-white'
+                  : 'text-white hover:text-gray-300'
+              }`}
+              style={{
+                fontSize: '19px',
+                borderBottom: isActive('/faq') ? '2px solid #02cdff' : '2px solid transparent'
+              }}
+            >
+              FAQ
             </button>
             
             {/* Rest of navigation */}
@@ -203,14 +179,15 @@ const Header = () => {
 
           {/* Napíšte nám Email Link */}
           <div className="hidden lg:flex items-center justify-center space-x-2 text-white">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
             <a 
               href="mailto:info@lerent.sk" 
-              className="flex items-center space-x-2 hover:text-gray-300 transition-colors"
+              className="flex flex-col hover:text-gray-300 transition-colors"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-              </svg>
               <span className="font-medium" style={{fontSize: '19px'}}>Napíšte nám</span>
+              <span className="text-sm text-gray-300">info@lerent.sk</span>
             </a>
           </div>
 
