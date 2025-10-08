@@ -1,4 +1,22 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+
+// Fade In Up Animation Component
+const FadeInUp = ({ children, delay = 0 }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      transition={{ duration: 0.6, delay, ease: [0.4, 0, 0.2, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 const ReviewsSection = () => {
   const testimonials = [
@@ -25,12 +43,15 @@ const ReviewsSection = () => {
   return (
     <section id="reviews" className="py-24" style={{backgroundColor: '#000000'}}>
       <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-4 font-goldman">
-          SKÚSENOSTI, KTORÉ HOVORIA ZA NÁS
-        </h2>
-        
+        <FadeInUp>
+          <h2 className="text-4xl md:text-5xl font-medium text-white text-center mb-4 font-goldman">
+            SKÚSENOSTI, KTORÉ HOVORIA ZA NÁS
+          </h2>
+        </FadeInUp>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
           {testimonials.map((testimonial, index) => (
+            <FadeInUp key={index} delay={0.2 + index * 0.1}>
             <div 
               key={index} 
               className="rounded-lg p-6 relative"
@@ -59,6 +80,7 @@ const ReviewsSection = () => {
                 </div>
               </div>
             </div>
+            </FadeInUp>
           ))}
         </div>
       </div>

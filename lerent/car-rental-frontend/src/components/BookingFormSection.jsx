@@ -1,4 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+
+// Fade In Up Animation Component
+const FadeInUp = ({ children, delay = 0 }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      transition={{ duration: 0.6, delay, ease: [0.4, 0, 0.2, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 const BookingFormSection = () => {
   const [formData, setFormData] = useState({
@@ -36,11 +54,14 @@ const BookingFormSection = () => {
   return (
     <section id="booking" className="py-24" style={{backgroundColor: '#000000'}}>
       <div className="max-w-6xl mx-auto px-4">
-        <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-12 font-goldman">
-          RÝCHLA REZERVÁCIA AUTA
-        </h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <FadeInUp>
+          <h2 className="text-4xl md:text-5xl font-medium text-white text-center mb-12 font-goldman">
+            RÝCHLA REZERVÁCIA AUTA
+          </h2>
+        </FadeInUp>
+
+        <FadeInUp delay={0.2}>
+          <form onSubmit={handleSubmit} className="space-y-6">
           {/* Meno - full width */}
           <div>
             <label className="block text-white text-sm font-medium mb-2">Meno</label>
@@ -147,7 +168,8 @@ const BookingFormSection = () => {
               Rezervovať
             </button>
           </div>
-        </form>
+          </form>
+        </FadeInUp>
       </div>
     </section>
   );

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDownIcon, FunnelIcon, ArrowDownIcon, ArrowUpIcon, ClockIcon } from '@heroicons/react/24/outline';
-import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { ChevronDownIcon, FunnelIcon, ArrowsUpDownIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
 import CarCard from '../components/CarCard';
 import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
@@ -37,23 +37,6 @@ import SliderImg1 from '../vasen.webp';
 import SliderImg2 from '../hero_car_orange.jpg';
 import SliderImg3 from '../autouver.jpg';
 
-// Fade In Up Animation Component
-const FadeInUp = ({ children, delay = 0 }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 50 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-      transition={{ duration: 0.6, delay, ease: [0.4, 0, 0.2, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [selectedBrand, setSelectedBrand] = useState(null);
@@ -64,8 +47,8 @@ const HomePage = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Slider images - using car images from the grid
-  const sliderImages = [AudiS6Img, MaseratiImg, BMW840iImg];
+  // Slider images
+  const sliderImages = [SliderImg1, SliderImg2, SliderImg3];
   
   // Car classes for filtering
   const carClasses = [
@@ -414,17 +397,14 @@ const HomePage = () => {
           <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
-        <div className="relative z-10 h-full flex flex-col items-center text-center px-4" style={{ paddingTop: '10vh' }}>
+        <div className="relative z-10 h-full flex flex-col items-center text-center px-4" style={{ paddingTop: '15vh' }}>
           {/* Subheading at top */}
-          <p className="text-xl md:text-2xl text-white mb-auto">
+          <p className="text-xl md:text-2xl text-white mb-12">
             Autopožičovňa s individuálnym prístupom
           </p>
 
-          {/* Spacer to push content down */}
-          <div className="flex-grow"></div>
-
-          {/* Slider with smaller height - positioned lower */}
-          <div className="relative w-full max-w-4xl mb-6 overflow-hidden" style={{ height: '28vh' }}>
+          {/* Slider with 40vh height */}
+          <div className="relative w-full max-w-5xl mb-12 overflow-hidden rounded-lg" style={{ height: '40vh' }}>
             {sliderImages.map((image, index) => (
               <div
                 key={index}
@@ -435,14 +415,11 @@ const HomePage = () => {
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
-              >
-                {/* Darker overlay */}
-                <div className="absolute inset-0 bg-black/50"></div>
-              </div>
+              />
             ))}
 
             {/* Slider indicators */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
               {sliderImages.map((_, index) => (
                 <button
                   key={index}
@@ -455,23 +432,22 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Title and arrow at the bottom */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-medium text-white mb-6 font-goldman">
+          {/* Title and arrow moved down */}
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-medium text-white mb-8 font-goldman">
             PONUKA AUTOMOBILOV
           </h1>
-          <ChevronDownIcon className="h-8 w-8 text-white animate-bounce mb-8" />
+          <ChevronDownIcon className="h-8 w-8 text-white animate-bounce" />
         </div>
       </section>
 
       {/* Car Categories Section */}
       <section className="py-8" style={{backgroundColor: '#000000', paddingBottom: '100px'}}>
         <div className="max-w-7xl mx-auto px-4">
-
+          
           {/* Car Class Icons - 8 categories in 2 rows */}
-          <FadeInUp>
-            <div className="flex justify-center mb-8">
-              <div className="grid grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 lg:gap-4 w-full max-w-7xl">
-                {carClasses.map((carClass) => (
+          <div className="flex justify-center mb-8">
+            <div className="grid grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 lg:gap-4 w-full max-w-7xl">
+              {carClasses.map((carClass) => (
                 <button
                   key={carClass.value}
                   onClick={() => {
@@ -499,13 +475,11 @@ const HomePage = () => {
                   </span>
                 </button>
               ))}
-              </div>
             </div>
-          </FadeInUp>
+          </div>
 
           {/* Brand Filter and Sort Dropdown Row */}
-          <FadeInUp delay={0.2}>
-            <div className="flex flex-col lg:flex-row items-center justify-between mb-8 gap-4">
+          <div className="flex flex-col lg:flex-row items-center justify-between mb-8 gap-4">
             {/* Brand Filter - Left/Center */}
             <div className="flex flex-wrap justify-center lg:justify-start gap-3 sm:gap-4 lg:gap-6">
               {brandFilters.map((brand) => (
@@ -549,24 +523,27 @@ const HomePage = () => {
             <div className="relative dropdown-container">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="text-white px-6 py-4 border border-gray-600 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3 font-goldman text-lg font-medium"
+                className="text-white px-6 py-4 border border-gray-600 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between gap-3 font-goldman text-lg font-medium"
                 style={{backgroundColor: '#000000'}}
               >
-                {sortBy === 'price-asc' && (
-                  <>
-                    <span className="text-2xl">€</span>
-                    <ArrowDownIcon className="h-6 w-6" />
-                  </>
-                )}
-                {sortBy === 'price-desc' && (
-                  <>
-                    <span className="text-2xl">€</span>
-                    <ArrowUpIcon className="h-6 w-6" />
-                  </>
-                )}
-                {sortBy === 'availability' && (
-                  <ClockIcon className="h-6 w-6" />
-                )}
+                <FunnelIcon className="h-6 w-6 text-white" />
+                <span className="flex items-center gap-2">
+                  {sortBy === 'price-asc' && (
+                    <>
+                      <span>$</span>
+                      <ArrowsUpDownIcon className="h-5 w-5 rotate-180" />
+                    </>
+                  )}
+                  {sortBy === 'price-desc' && (
+                    <>
+                      <span>$</span>
+                      <ArrowsUpDownIcon className="h-5 w-5" />
+                    </>
+                  )}
+                  {sortBy === 'availability' && (
+                    <ClockIcon className="h-5 w-5" />
+                  )}
+                </span>
                 <ChevronDownIcon
                   className={`h-5 w-5 text-white transition-transform duration-300 ${
                     isDropdownOpen ? 'rotate-180' : 'rotate-0'
@@ -576,12 +553,12 @@ const HomePage = () => {
 
               {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 border border-gray-600 rounded-lg shadow-xl z-50 overflow-hidden animate-slideDown" style={{backgroundColor: '#000000', minWidth: '280px'}}>
+                <div className="absolute top-full left-0 right-0 mt-2 border border-gray-600 rounded-lg shadow-xl z-50 overflow-hidden animate-slideDown" style={{backgroundColor: '#000000'}}>
                   {sortOptions.map((option, index) => (
                     <button
                       key={option.value}
                       onClick={() => handleSortChange(option.value)}
-                      className={`w-full px-3 py-2 text-left hover:bg-[rgb(250,146,8)] hover:text-white transition-all duration-200 font-goldman text-xl font-medium leading-none whitespace-nowrap ${
+                      className={`w-full px-6 py-4 text-left hover:bg-[rgb(250,146,8)] hover:text-white transition-all duration-200 font-goldman text-lg font-medium ${
                         sortBy === option.value ? 'bg-[rgba(250,146,8,0.1)] text-[rgb(250,146,8)]' : 'text-white'
                       } ${index !== sortOptions.length - 1 ? 'border-b border-gray-600' : ''}`}
                       style={{
@@ -594,48 +571,41 @@ const HomePage = () => {
                 </div>
               )}
             </div>
-            </div>
-          </FadeInUp>
+          </div>
 
           {/* Car Grid - Centered, 3 columns */}
           <div className="w-full max-w-7xl mx-auto">
 
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-              layout
-            >
-              <AnimatePresence mode="popLayout">
-                {filteredCars.map((car, index) => (
-                  <motion.div
-                    key={car._id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{
-                      layout: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
-                      opacity: { duration: 0.3 },
-                      scale: { duration: 0.3 }
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 car-grid-container" style={{
+              transition: 'grid-template-rows 0.5s ease-out, height 0.5s ease-out'
+            }}>
+              {filteredCars.map((car, index) => (
+                <div
+                  key={`${car._id}-${activeTab}-${selectedBrand}`}
+                  className="aspect-[4/3] relative car-grid-item"
+                  style={{
+                    animationDelay: `${index * 0.05}s`,
+                    gridColumn: 'auto',
+                    gridRow: 'auto'
+                  }}
+                >
+                  <div 
+                    className="absolute inset-0 bg-orange-500"
+                    style={{
+                      clipPath: 'polygon(0px 0px, 90% 0px, 100% 10%, 100% 100%, 10% 100%, 0px 90%)',
+                      backgroundColor: 'rgb(250,146,8)'
                     }}
-                    className="aspect-[4/3] relative"
+                  ></div>
+                  <Link
+                    to={`/car/${car._id}`}
+                    className="relative overflow-hidden aspect-[4/3] block w-full h-full"
+                    style={{
+                      clipPath: 'polygon(2px 2px, calc(90% - 2px) 2px, calc(100% - 2px) calc(10% + 2px), calc(100% - 2px) calc(100% - 2px), calc(10% + 2px) calc(100% - 2px), 2px calc(90% - 2px))',
+                      backgroundImage: `url(${car.image})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
                   >
-                    <div
-                      className="absolute inset-0 bg-orange-500"
-                      style={{
-                        clipPath: 'polygon(0px 0px, 90% 0px, 100% 10%, 100% 100%, 10% 100%, 0px 90%)',
-                        backgroundColor: 'rgb(250,146,8)'
-                      }}
-                    ></div>
-                    <Link
-                      to={`/car/${car._id}`}
-                      className="relative overflow-hidden aspect-[4/3] block w-full h-full"
-                      style={{
-                        clipPath: 'polygon(2px 2px, calc(90% - 2px) 2px, calc(100% - 2px) calc(10% + 2px), calc(100% - 2px) calc(100% - 2px), calc(10% + 2px) calc(100% - 2px), 2px calc(90% - 2px))',
-                        backgroundImage: `url(${car.image})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center'
-                      }}
-                    >
                     {/* Dark overlay for images */}
                     <div className="absolute inset-0 bg-black opacity-20 z-5"></div>
 
@@ -687,10 +657,9 @@ const HomePage = () => {
                       </div>
                     </div>
                   </Link>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
+                </div>
+              ))}
+            </div>
           </div>
 
         </div>
@@ -719,11 +688,9 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           {/* Mobile Layout - Text first, image below */}
           <div className="lg:hidden mb-8">
-            <FadeInUp>
-              <h2 className="text-3xl sm:text-4xl font-medium text-white mb-6 font-goldman text-center">
-                VÁŠEŇ PRE AUTÁ, ZÁVÄZOK VOČI ZÁKAZNÍKOM.
-              </h2>
-            </FadeInUp>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6 font-goldman text-center">
+              VÁŠEŇ PRE AUTÁ, ZÁVÄZOK VOČI ZÁKAZNÍKOM.
+            </h2>
             
             <p className="text-gray-300 mb-8 text-center px-4">
               Individuálny, férový a ústretový prístup k našim zákazníkom. Dôraz na starostlivosť o náš vozový park. Čísla, ktoré hovoria za nás:
@@ -758,20 +725,15 @@ const HomePage = () => {
           {/* Desktop Layout - Text on right */}
           <div className="hidden lg:flex justify-end">
             <div className="w-2/3 pl-12">
-              <FadeInUp>
-                <h2 className="text-4xl md:text-5xl font-medium text-white mb-8 font-goldman">
-                  VÁŠEŇ PRE AUTÁ, ZÁVÄZOK VOČI ZÁKAZNÍKOM.
-                </h2>
-              </FadeInUp>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 font-goldman">
+                VÁŠEŇ PRE AUTÁ, ZÁVÄZOK VOČI ZÁKAZNÍKOM.
+              </h2>
               
-              <FadeInUp delay={0.2}>
-                <p className="text-gray-300 mb-12 max-w-2xl">
-                  Individuálny, férový a ústretový prístup k našim zákazníkom. Dôraz na starostlivosť o náš vozový park. Čísla, ktoré hovoria za nás:
-                </p>
-              </FadeInUp>
-
-              <FadeInUp delay={0.4}>
-                <div className="grid grid-cols-3 gap-8">
+              <p className="text-gray-300 mb-12 max-w-2xl">
+                Individuálny, férový a ústretový prístup k našim zákazníkom. Dôraz na starostlivosť o náš vozový park. Čísla, ktoré hovoria za nás:
+              </p>
+              
+              <div className="grid grid-cols-3 gap-8">
                 <div className="text-left">
                   <div className="text-5xl font-bold text-[rgb(250,146,8)] mb-2">10</div>
                   <div className="text-white font-bold">Prémiových áut v našej flotile</div>
@@ -784,8 +746,7 @@ const HomePage = () => {
                   <div className="text-5xl font-bold text-[rgb(250,146,8)] mb-2">580</div>
                   <div className="text-white font-bold">Spokojných klientov</div>
                 </div>
-                </div>
-              </FadeInUp>
+              </div>
             </div>
           </div>
         </div>
