@@ -424,7 +424,7 @@ const HomePage = () => {
           <div className="flex-grow"></div>
 
           {/* Slider with smaller height - positioned lower */}
-          <div className="relative w-full max-w-4xl mb-6 overflow-hidden" style={{ height: '28vh' }}>
+          <div className="relative w-full max-w-2xl mb-6 overflow-hidden" style={{ height: '28vh' }}>
             {sliderImages.map((image, index) => (
               <div
                 key={index}
@@ -440,6 +440,20 @@ const HomePage = () => {
                 <div className="absolute inset-0 bg-black/50"></div>
               </div>
             ))}
+
+            {/* Shadow overlays on all 4 sides */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: 'linear-gradient(180deg, #000000 0%, rgba(0, 0, 0, 0) 20%, rgba(0, 0, 0, 0) 80%, #000000 100%)'
+              }}
+            ></div>
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: 'linear-gradient(90deg, #000000 0%, rgba(0, 0, 0, 0) 20%, rgba(0, 0, 0, 0) 80%, #000000 100%)'
+              }}
+            ></div>
 
             {/* Slider indicators */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
