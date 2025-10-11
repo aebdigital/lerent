@@ -14,7 +14,6 @@ import HeroImg from '../test.png';
 import Blog3Img from '../test.png';
 import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
-import BookingFormSection from '../components/BookingFormSection';
 
 const BlogPostPage = () => {
   const { id } = useParams();
@@ -287,7 +286,6 @@ const BlogPostPage = () => {
       {/* Shared Sections */}
       <ReviewsSection />
       <ContactMapSection />
-      <BookingFormSection />
     </div>
   );
 };

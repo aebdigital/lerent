@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Bars3Icon } from '@heroicons/react/24/outline';
+import { Bars3Icon, HomeIcon } from '@heroicons/react/24/outline';
 import Logo from '../logoRENT.svg';
 import Sidebar from './Sidebar';
 
@@ -87,23 +87,13 @@ const Header = () => {
           backgroundColor: isScrolled || forceBlackMobile ? 'rgb(25, 25, 25)' : 'transparent'
         }}>
       <nav className="px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between lg:justify-between lg:flex lg:w-full">
-          
-          {/* Logo */}
+        <div className="flex h-20 items-center lg:grid lg:grid-cols-3 lg:gap-4">
+
+          {/* Logo - Left */}
           <div className="flex items-center justify-start">
             <Link to="/" className="flex items-center">
               <img src={Logo} alt="Nitra Car" className="h-14 w-auto" />
             </Link>
-          </div>
-
-          {/* Phone Number */}
-          <div className="hidden lg:flex items-center justify-center space-x-2 text-white">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-            </svg>
-            <a href="tel:+421905318164" className="font-medium hover:text-gray-300 transition-colors" style={{fontSize: '19px'}}>
-              +421 905 318 164
-            </a>
           </div>
 
           {/* Desktop Navigation - Center */}
@@ -140,7 +130,17 @@ const Header = () => {
             >
               Prenájom
             </button>
-            
+
+            {/* HOME Icon */}
+            <button
+              onClick={() => handleNavClick('/')}
+              className="transition-colors duration-200 hover:opacity-80"
+              aria-label="Home"
+              style={{marginTop: '-4px'}}
+            >
+              <HomeIcon className="h-7 w-7" style={{color: '#fa9208'}} />
+            </button>
+
             {/* FAQ Link */}
             <button
               onClick={() => handleNavClick('/faq')}
@@ -177,24 +177,25 @@ const Header = () => {
             ))}
           </div>
 
-          {/* Napíšte nám Email Link */}
-          <div className="hidden lg:flex items-center justify-center space-x-2 text-white">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-            </svg>
-            <a 
-              href="mailto:info@lerent.sk" 
-              className="flex flex-col hover:text-gray-300 transition-colors"
-            >
-              <span className="font-medium" style={{fontSize: '19px'}}>Napíšte nám</span>
-              <span className="text-sm text-gray-300">info@lerent.sk</span>
-            </a>
-          </div>
+          {/* Right section - Email + Phone */}
+          <div className="hidden lg:flex items-center justify-end space-x-4">
+            {/* Napíšte nám Email Link */}
+            <div className="flex items-center space-x-2 text-white">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+              <a
+                href="mailto:info@lerent.sk"
+                className="flex flex-col hover:text-gray-300 transition-colors"
+              >
+                <span className="font-medium" style={{fontSize: '19px'}}>Napíšte nám</span>
+                <span className="text-sm text-gray-300">info@lerent.sk</span>
+              </a>
+            </div>
 
-          {/* Rezervovať Button */}
-          <div className="hidden lg:flex items-center justify-end">
+            {/* Phone Button */}
             <a
-              href="#booking"
+              href="tel:+421905318164"
               className="hover:opacity-90 px-5 py-3 text-base transition-colors duration-200"
               style={{
                 clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
@@ -204,7 +205,7 @@ const Header = () => {
                 fontWeight: 700
               }}
             >
-              Rezervovať
+              +421 905 318 164
             </a>
           </div>
 

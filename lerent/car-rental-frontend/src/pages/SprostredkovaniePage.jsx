@@ -1,7 +1,6 @@
 import React from 'react';
 import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
-import BookingFormSection from '../components/BookingFormSection';
 import PrenajomImg from '../prenajom.jpeg';
 import TestImg from '../test.png';
 
@@ -44,7 +43,6 @@ const SprostredkovaniePage = () => {
       </section>
 
       {/* Global Sections */}
-      <BookingFormSection />
       <ReviewsSection />
       <ContactMapSection />
     </div>

@@ -1,7 +1,6 @@
 import React from 'react';
 import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
-import BookingFormSection from '../components/BookingFormSection';
 
 const BlogPage = () => {
   return (
@@ -20,7 +19,6 @@ const BlogPage = () => {
       {/* Shared Sections */}
       <ReviewsSection />
       <ContactMapSection />
-      <BookingFormSection />
     </div>
   );
 };

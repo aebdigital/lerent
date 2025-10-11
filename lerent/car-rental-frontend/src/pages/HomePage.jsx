@@ -8,7 +8,7 @@ import ContactMapSection from '../components/ContactMapSection';
 import BookingFormSection from '../components/BookingFormSection';
 import Carousel from '../components/Carousel';
 import { carsAPI } from '../services/api';
-import HeroImg from '../newhero.jpg';
+import HeroImg from '../main page final1.jpg';
 import VasenImg from '../vasen.webp';
 import Icon1 from '../icon1.svg';
 import Icon2 from '../icon2.svg';
@@ -414,21 +414,91 @@ const HomePage = () => {
           <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
-        <div className="relative z-10 h-full flex flex-col items-center text-center px-4" style={{ paddingTop: '10vh' }}>
-          {/* Subheading at top */}
-          <p className="text-xl md:text-2xl text-white mb-auto">
-            Autopožičovňa s individuálnym prístupom
-          </p>
+        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full">
+          {/* Left side - Text and Form */}
+          <div className="text-white max-w-xl ml-8" style={{paddingTop: '196px'}}>
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-medium leading-tight mb-6">
+              Autopožičovňa s individuálnym prístupom
+            </h1>
 
-          {/* Spacer to push content down */}
-          <div className="flex-grow"></div>
+            {/* Compact Booking Form under heading */}
+            <div className="w-full">
+              <form className="space-y-3 bg-black/40 backdrop-blur-sm p-6 rounded-lg border border-gray-700">
+                <h2 className="text-2xl md:text-3xl font-medium text-white mb-4 text-left">
+                  Rýchla rezervácia
+                </h2>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Meno"
+                  className="w-full text-white px-4 py-2 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none"
+                  style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
+                />
 
-          {/* Slider with smaller height - positioned lower */}
-          <div className="relative w-full max-w-2xl mb-6 overflow-hidden" style={{ height: '28vh' }}>
+                <input
+                  type="tel"
+                  name="phone"
+                  placeholder="Váš telefón"
+                  className="w-full text-white px-4 py-2 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none"
+                  style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
+                />
+
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="E-mail"
+                  className="w-full text-white px-4 py-2 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none"
+                  style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
+                />
+
+                <select
+                  name="selectedCar"
+                  className="w-full text-white px-4 py-2 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
+                  style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
+                >
+                  <option value="">Vyberte auto</option>
+                  <option value="audi-a6">AUDI A6 - od 90€/deň</option>
+                  <option value="bmw-540i-xdrive">BMW 540I XDRIVE - od 90€/deň</option>
+                  <option value="audi-s4">AUDI S4 - od 90€/deň</option>
+                  <option value="audi-s6">AUDI S6 - od 100€/deň</option>
+                  <option value="maserati-levante">MASERATI LEVANTE - od 130€/deň</option>
+                  <option value="bmw-840i-xdrive">BMW 840I XDRIVE - od 140€/deň</option>
+                  <option value="bmw-x7-xdrive-40d">BMW X7 XDRIVE 40D - od 200€/deň</option>
+                </select>
+
+                <select
+                  name="location"
+                  className="w-full text-white px-4 py-2 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
+                  style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
+                >
+                  <option value="">Miesto vyzdvihnutia</option>
+                  <option value="nitra">Nitra</option>
+                  <option value="bratislava">Bratislava</option>
+                  <option value="kosice">Košice</option>
+                </select>
+
+                <button
+                  type="submit"
+                  className="w-full hover:opacity-90 py-2 font-bold text-sm transition-colors"
+                  style={{
+                    clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
+                    borderRadius: '0px',
+                    backgroundColor: '#fa9208',
+                    color: '#191919'
+                  }}
+                >
+                  Rezervovať
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {/* Slider - moved to bottom right */}
+          <div className="hidden lg:block absolute bottom-8 right-16 overflow-hidden rounded-lg shadow-2xl" style={{width: '614px', height: '410px'}}>
             {sliderImages.map((image, index) => (
               <div
                 key={index}
-                className="absolute inset-0 transition-opacity duration-1000"
+                className="absolute inset-0 w-full h-full transition-opacity duration-1000"
                 style={{
                   opacity: currentSlide === index ? 1 : 0,
                   backgroundImage: `url(${image})`,
@@ -437,21 +507,22 @@ const HomePage = () => {
                 }}
               >
                 {/* Darker overlay */}
-                <div className="absolute inset-0 bg-black/50"></div>
+                <div className="absolute inset-0 bg-black/30"></div>
               </div>
             ))}
 
-            {/* Shadow overlays on all 4 sides */}
+            {/* Shadow overlays on all 4 sides - top/bottom - reduced intensity */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.6) 100%)'
+                background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.4) 100%)'
               }}
             ></div>
+            {/* Shadow overlays - left/right - reduced intensity */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.6) 100%)'
+                background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.4) 100%)'
               }}
             ></div>
 
@@ -461,19 +532,18 @@ const HomePage = () => {
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    currentSlide === index ? 'bg-[rgb(250,146,8)] w-8' : 'bg-white/50'
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    currentSlide === index ? 'bg-[rgb(250,146,8)] w-6' : 'bg-white/50'
                   }`}
                 />
               ))}
             </div>
           </div>
+        </div>
 
-          {/* Title and arrow at the bottom */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-medium text-white mb-6 font-goldman">
-            PONUKA AUTOMOBILOV
-          </h1>
-          <ChevronDownIcon className="h-8 w-8 text-white animate-bounce mb-8" />
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+          <ChevronDownIcon className="h-8 w-8 text-white animate-bounce" />
         </div>
       </section>
 
@@ -631,20 +701,15 @@ const HomePage = () => {
                       opacity: { duration: 0.3 },
                       scale: { duration: 0.3 }
                     }}
-                    className="aspect-[4/3] relative"
+                    className="aspect-[4/3] relative p-[3px]"
+                    style={{
+                      backgroundColor: 'rgb(250,146,8)'
+                    }}
                   >
-                    <div
-                      className="absolute inset-0 bg-orange-500"
-                      style={{
-                        clipPath: 'polygon(0px 0px, 90% 0px, 100% 10%, 100% 100%, 10% 100%, 0px 90%)',
-                        backgroundColor: 'rgb(250,146,8)'
-                      }}
-                    ></div>
                     <Link
                       to={`/car/${car._id}`}
                       className="relative overflow-hidden aspect-[4/3] block w-full h-full"
                       style={{
-                        clipPath: 'polygon(2px 2px, calc(90% - 2px) 2px, calc(100% - 2px) calc(10% + 2px), calc(100% - 2px) calc(100% - 2px), calc(10% + 2px) calc(100% - 2px), 2px calc(90% - 2px))',
                         backgroundImage: `url(${car.image})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center'
@@ -690,8 +755,7 @@ const HomePage = () => {
                           <button
                             className="text-black hover:opacity-90 text-black text-sm font-bold transition-colors px-8 py-3"
                             style={{
-                              clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
-                              borderRadius: '0px',
+                              borderRadius: '8px',
                               backgroundColor: '#fa9208'
                             }}
                           >
@@ -806,7 +870,6 @@ const HomePage = () => {
       </section>
 
 
-      <BookingFormSection />
       <ReviewsSection />
 
 

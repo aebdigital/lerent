@@ -1,5 +1,4 @@
 import React from 'react';
-import BookingFormSection from '../components/BookingFormSection';
 import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
 import HeroImg from '../newhero.jpg';
@@ -120,7 +119,6 @@ const PrenajomPage = () => {
         </div>
       </section>
 
-      <BookingFormSection />
       <ReviewsSection />
       <ContactMapSection />
     </div>
