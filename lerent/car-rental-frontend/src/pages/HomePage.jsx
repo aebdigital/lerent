@@ -414,9 +414,9 @@ const HomePage = () => {
           <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
-        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full">
+        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex items-end pb-8">
           {/* Left side - Text and Form */}
-          <div className="text-white max-w-xl ml-8" style={{paddingTop: '196px'}}>
+          <div className="text-white max-w-xl ml-8">
             <h1 className="text-4xl md:text-5xl lg:text-7xl font-medium leading-tight mb-6">
               Autopožičovňa s individuálnym prístupom
             </h1>
@@ -479,10 +479,8 @@ const HomePage = () => {
 
                 <button
                   type="submit"
-                  className="w-full hover:opacity-90 py-2 font-bold text-sm transition-colors"
+                  className="w-full hover:opacity-90 py-2 font-bold text-sm transition-colors rounded-lg"
                   style={{
-                    clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
-                    borderRadius: '0px',
                     backgroundColor: '#fa9208',
                     color: '#191919'
                   }}
@@ -494,7 +492,7 @@ const HomePage = () => {
           </div>
 
           {/* Slider - moved to bottom right */}
-          <div className="hidden lg:block absolute bottom-8 right-16 overflow-hidden rounded-lg shadow-2xl" style={{width: '614px', height: '410px'}}>
+          <div className="hidden lg:block absolute bottom-8 right-16 overflow-hidden rounded-lg shadow-2xl" style={{width: '522px', height: '349px'}}>
             {sliderImages.map((image, index) => (
               <div
                 key={index}
@@ -548,7 +546,7 @@ const HomePage = () => {
       </section>
 
       {/* Car Categories Section */}
-      <section className="py-8" style={{backgroundColor: '#000000', paddingBottom: '100px'}}>
+      <section className="py-8" style={{backgroundColor: '#000000', paddingTop: '150px', paddingBottom: '100px'}}>
         <div className="max-w-7xl mx-auto px-4">
 
           {/* Car Class Icons - 8 categories in 2 rows */}
@@ -703,7 +701,8 @@ const HomePage = () => {
                     }}
                     className="aspect-[4/3] relative p-[3px]"
                     style={{
-                      backgroundColor: 'rgb(250,146,8)'
+                      backgroundColor: 'rgb(250,146,8)',
+                      borderRadius: '8px'
                     }}
                   >
                     <Link
@@ -712,7 +711,8 @@ const HomePage = () => {
                       style={{
                         backgroundImage: `url(${car.image})`,
                         backgroundSize: 'cover',
-                        backgroundPosition: 'center'
+                        backgroundPosition: 'center',
+                        borderRadius: '6px'
                       }}
                     >
                     {/* Dark overlay for images */}
