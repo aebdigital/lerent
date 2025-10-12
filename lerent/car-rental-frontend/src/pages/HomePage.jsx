@@ -416,7 +416,7 @@ const HomePage = () => {
 
         <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex items-end pb-8">
           {/* Left side - Text and Form */}
-          <div className="text-white ml-8" style={{width: '35%', maxWidth: '35%'}}>
+          <div className="text-white ml-8" style={{width: '40%', maxWidth: '40%'}}>
             <h1 className="text-3xl md:text-4xl lg:text-6xl font-medium leading-tight mb-6">
               Autopožičovňa s individuálnym prístupom
             </h1>
