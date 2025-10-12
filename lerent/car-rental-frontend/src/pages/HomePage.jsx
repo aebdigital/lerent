@@ -416,8 +416,8 @@ const HomePage = () => {
 
         <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex items-end pb-8">
           {/* Left side - Text and Form */}
-          <div className="text-white max-w-xl ml-8">
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-medium leading-tight mb-6">
+          <div className="text-white ml-8" style={{width: '35%', maxWidth: '35%'}}>
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-medium leading-tight mb-6">
               Autopožičovňa s individuálnym prístupom
             </h1>
 
@@ -492,7 +492,7 @@ const HomePage = () => {
           </div>
 
           {/* Slider - moved to bottom right */}
-          <div className="hidden lg:block absolute bottom-8 right-16 overflow-hidden rounded-lg shadow-2xl" style={{width: '522px', height: '349px'}}>
+          <div className="hidden lg:block absolute bottom-8 right-16 overflow-hidden rounded-lg shadow-2xl" style={{width: '522px', height: '30vh'}}>
             {sliderImages.map((image, index) => (
               <div
                 key={index}
