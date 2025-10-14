@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { ChevronDownIcon, FunnelIcon, ArrowDownIcon, ArrowUpIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import CarCard from '../components/CarCard';
@@ -7,13 +6,10 @@ import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
 import BookingFormSection from '../components/BookingFormSection';
 import Carousel from '../components/Carousel';
+import CustomDatePicker from '../components/CustomDatePicker';
 import { carsAPI } from '../services/api';
 import HeroImg from '../main page final1.jpg';
 import VasenImg from '../vasen.webp';
-import Icon1 from '../icon1.svg';
-import Icon2 from '../icon2.svg';
-import Icon3 from '../icon3.svg';
-import Icon4 from '../icon4.svg';
 import CarClassImg from '../testfilter2.png';
 import AudiA6Img from '../audia6.JPG';
 import BMW540iImg from '../bmw540i.png';
@@ -288,6 +284,8 @@ const HomePage = () => {
 
   // Add missing formData state
   const [formData, setFormData] = useState({});
+  const [pickupDate, setPickupDate] = useState('');
+  const [returnDate, setReturnDate] = useState('');
 
   const handleInputChange = (e) => {
     setFormData({
@@ -403,6 +401,53 @@ const HomePage = () => {
           transform: scale(0.8);
           transition: opacity 0.3s ease-out, transform 0.3s ease-out;
         }
+
+        /* Hide native date input text and make fully clickable */
+        input[type="date"]::-webkit-datetime-edit {
+          color: transparent;
+          background: transparent;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          width: 100%;
+          height: 100%;
+          color: transparent;
+          background: transparent;
+          cursor: pointer;
+        }
+        input[type="date"]::-webkit-inner-spin-button {
+          display: none;
+        }
+        input[type="date"] {
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          color-scheme: dark;
+        }
+        input[type="date"]::-webkit-datetime-edit-text,
+        input[type="date"]::-webkit-datetime-edit-month-field,
+        input[type="date"]::-webkit-datetime-edit-day-field,
+        input[type="date"]::-webkit-datetime-edit-year-field {
+          color: transparent;
+        }
+
+        /* Modern calendar picker styling */
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+          background: rgba(250, 146, 8, 0.1);
+          border-radius: 8px;
+        }
+
+        /* Calendar dropdown - unfortunately very limited browser support for styling */
+        input[type="date"]::-webkit-calendar-picker {
+          background: #1a1a1a;
+          border-radius: 12px;
+          padding: 16px;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
       `}</style>
       
       {/* Hero Section */}
@@ -414,42 +459,22 @@ const HomePage = () => {
           <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
-        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex items-end pb-8">
-          {/* Left side - Text and Form */}
+        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex flex-col justify-end pb-8 gap-4">
+          {/* Top - Heading */}
           <div className="text-white ml-8" style={{width: '40%', maxWidth: '40%'}}>
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-medium leading-tight mb-6">
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-medium leading-tight">
               Autopožičovňa s individuálnym prístupom
             </h1>
+          </div>
 
-            {/* Compact Booking Form under heading */}
-            <div className="w-full">
-              <form className="space-y-3 bg-black/40 backdrop-blur-sm p-6 rounded-lg border border-gray-700">
+          {/* Bottom - Form and Slider */}
+          <div className="hidden lg:flex gap-6 ml-8 mr-16">
+            {/* Form - 50% width with background */}
+            <div className="p-6 rounded-lg border border-gray-700" style={{flex: '0 0 50%', backgroundColor: 'rgba(42, 42, 42, 0.95)'}}>
+              <form className="space-y-3">
                 <h2 className="text-2xl md:text-3xl font-medium text-white mb-4 text-left">
                   Rýchla rezervácia
                 </h2>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Meno"
-                  className="w-full text-white px-4 py-2 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none"
-                  style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
-                />
-
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Váš telefón"
-                  className="w-full text-white px-4 py-2 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none"
-                  style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
-                />
-
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="E-mail"
-                  className="w-full text-white px-4 py-2 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none"
-                  style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
-                />
 
                 <select
                   name="selectedCar"
@@ -477,6 +502,18 @@ const HomePage = () => {
                   <option value="kosice">Košice</option>
                 </select>
 
+                {/* Date inputs as 3rd and 4th rows */}
+                <CustomDatePicker
+                  value={pickupDate}
+                  onChange={setPickupDate}
+                  placeholder="Vyberte dátum prevzatia"
+                />
+                <CustomDatePicker
+                  value={returnDate}
+                  onChange={setReturnDate}
+                  placeholder="Vyberte dátum vrátenia"
+                />
+
                 <button
                   type="submit"
                   className="w-full hover:opacity-90 py-2 font-bold text-sm transition-colors rounded-lg"
@@ -489,52 +526,52 @@ const HomePage = () => {
                 </button>
               </form>
             </div>
-          </div>
 
-          {/* Slider - moved to bottom right */}
-          <div className="hidden lg:block absolute bottom-8 right-16 overflow-hidden rounded-lg shadow-2xl" style={{width: '522px', height: '30vh'}}>
-            {sliderImages.map((image, index) => (
-              <div
-                key={index}
-                className="absolute inset-0 w-full h-full transition-opacity duration-1000"
-                style={{
-                  opacity: currentSlide === index ? 1 : 0,
-                  backgroundImage: `url(${image})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                {/* Darker overlay */}
-                <div className="absolute inset-0 bg-black/30"></div>
-              </div>
-            ))}
-
-            {/* Shadow overlays on all 4 sides - top/bottom - reduced intensity */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.4) 100%)'
-              }}
-            ></div>
-            {/* Shadow overlays - left/right - reduced intensity */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.4) 100%)'
-              }}
-            ></div>
-
-            {/* Slider indicators */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
-              {sliderImages.map((_, index) => (
-                <button
+            {/* Slider - 50% width without background */}
+            <div className="relative overflow-hidden rounded-lg shadow-2xl" style={{flex: '0 0 50%', height: '30vh'}}>
+              {sliderImages.map((image, index) => (
+                <div
                   key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    currentSlide === index ? 'bg-[rgb(250,146,8)] w-6' : 'bg-white/50'
-                  }`}
-                />
+                  className="absolute inset-0 w-full h-full transition-opacity duration-1000"
+                  style={{
+                    opacity: currentSlide === index ? 1 : 0,
+                    backgroundImage: `url(${image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                >
+                  {/* Darker overlay */}
+                  <div className="absolute inset-0 bg-black/30"></div>
+                </div>
               ))}
+
+              {/* Shadow overlays on all 4 sides - top/bottom - reduced intensity */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.4) 100%)'
+                }}
+              ></div>
+              {/* Shadow overlays - left/right - reduced intensity */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.4) 100%)'
+                }}
+              ></div>
+
+              {/* Slider indicators */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+                {sliderImages.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      currentSlide === index ? 'bg-[rgb(250,146,8)] w-6' : 'bg-white/50'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -588,8 +625,8 @@ const HomePage = () => {
           {/* Brand Filter and Sort Dropdown Row */}
           <FadeInUp delay={0.2}>
             <div className="flex flex-col lg:flex-row items-center justify-between mb-8 gap-4">
-            {/* Brand Filter - Left/Center */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-3 sm:gap-4 lg:gap-6">
+            {/* Brand Filter - Left/Center with grey background container */}
+            <div className="flex flex-wrap justify-center lg:justify-start gap-3 sm:gap-4 lg:gap-6 p-4 rounded-lg" style={{backgroundColor: 'rgb(35, 35, 35)'}}>
               {brandFilters.map((brand) => (
                 <button
                   key={brand.value}
@@ -602,7 +639,7 @@ const HomePage = () => {
                       ? 'border-2 border-[rgb(250,146,8)]'
                       : 'border-2 border-transparent hover:opacity-80'
                   }`}
-                  style={{backgroundColor: selectedBrand === brand.value ? 'rgba(250,146,8,0.1)' : 'rgb(25, 25, 25)'}}
+                  style={{backgroundColor: selectedBrand === brand.value ? 'rgba(250,146,8,0.1)' : 'transparent'}}
                 >
                   <img
                     src={brand.value === 'bmw'
@@ -705,9 +742,9 @@ const HomePage = () => {
                       borderRadius: '8px'
                     }}
                   >
-                    <Link
-                      to={`/car/${car._id}`}
-                      className="relative overflow-hidden aspect-[4/3] block w-full h-full"
+                    <div
+                      onClick={() => window.location.href = `/car/${car._id}`}
+                      className="relative overflow-hidden aspect-[4/3] block w-full h-full cursor-pointer"
                       style={{
                         backgroundImage: `url(${car.image})`,
                         backgroundSize: 'cover',
@@ -719,52 +756,40 @@ const HomePage = () => {
                     <div className="absolute inset-0 bg-black opacity-20 z-5"></div>
 
                     <div className="relative z-10 h-full flex flex-col">
-                      {/* Car name and price - top left */}
-                      <div className="absolute top-6 left-6">
-                        <h3 className="text-2xl font-bold text-white mb-2 uppercase" style={{textShadow: '1px 1px 3px rgba(0,0,0,0.5)'}}>{car.brand} {car.model}</h3>
-                        <p className="text-lg text-white font-bold font-goldman" style={{textShadow: '1px 1px 3px rgba(0,0,0,0.5)'}}>od {car.price}€/deň</p>
-                      </div>
-
                       {/* Spacer for layout */}
                       <div className="flex-1"></div>
 
-                      {/* Bottom section with car info and button */}
-                      <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
-                        {/* Car info 2x2 grid with icons */}
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-base text-white">
-                          <div className="flex items-center space-x-3">
-                            <img src={Icon1} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
-                            <span className="font-medium" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.4)'}}>{car.power}</span>
+                      {/* Bottom section with orange background */}
+                      <div className="absolute bottom-0 left-0 right-0 p-4" style={{backgroundColor: 'rgba(250, 146, 8, 0.95)'}}>
+                        <div className="flex items-center justify-between">
+                          {/* Car name and specs in one line */}
+                          <div className="flex items-center gap-x-3 text-xs text-white">
+                            <h3 className="text-lg font-bold text-white uppercase">{car.brand} {car.model}</h3>
+                            <span className="font-medium">{car.power}</span>
+                            <span className="font-medium">{car.transmission}</span>
+                            <span className="font-medium">{car.fuel}</span>
                           </div>
-                          <div className="flex items-center space-x-3">
-                            <img src={Icon2} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
-                            <span className="font-medium" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.4)'}}>{car.transmission}</span>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                            <img src={Icon3} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
-                            <span className="font-medium" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.4)'}}>{car.type}</span>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                            <img src={Icon4} alt="" className="w-6 h-6" style={{filter: 'brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'}} />
-                            <span className="font-medium" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.4)'}}>{car.fuel}</span>
-                          </div>
-                        </div>
 
-                        {/* Button - positioned on the right with spacing */}
-                        <div className="ml-8">
-                          <button
-                            className="text-black hover:opacity-90 text-black text-sm font-bold transition-colors px-8 py-3"
-                            style={{
-                              borderRadius: '8px',
-                              backgroundColor: '#fa9208'
-                            }}
-                          >
-                            Rezervovať
-                          </button>
+                          {/* Rezervovat Button - white with black text */}
+                          <div className="ml-4">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.location.href = `/booking?car=${car._id}`;
+                              }}
+                              className="hover:opacity-90 text-xs font-bold transition-colors px-5 py-2 rounded-lg"
+                              style={{
+                                backgroundColor: '#ffffff',
+                                color: '#191919'
+                              }}
+                            >
+                              Rezervovať
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                   </motion.div>
                 ))}
               </AnimatePresence>

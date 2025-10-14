@@ -196,10 +196,8 @@ const Header = () => {
             {/* Phone Button */}
             <a
               href="tel:+421905318164"
-              className="hover:opacity-90 px-5 py-3 text-base transition-colors duration-200"
+              className="hover:opacity-90 px-5 py-3 text-base transition-colors duration-200 border border-gray-600 rounded-lg"
               style={{
-                clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
-                borderRadius: '0px',
                 backgroundColor: '#fa9208',
                 color: '#191919',
                 fontWeight: 700
