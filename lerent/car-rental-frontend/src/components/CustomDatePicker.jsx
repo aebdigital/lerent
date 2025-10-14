@@ -50,8 +50,10 @@ const CustomDatePicker = ({ value, onChange, placeholder }) => {
   };
 
   const handleDateSelect = (day) => {
-    const selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    const formattedDate = selectedDate.toISOString().split('T')[0];
+    const year = currentMonth.getFullYear();
+    const month = String(currentMonth.getMonth() + 1).padStart(2, '0');
+    const dayStr = String(day).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${dayStr}`;
     onChange(formattedDate);
     setIsOpen(false);
   };
