@@ -528,58 +528,64 @@ const HomePage = () => {
             </div>
 
             {/* Slider - 50% width without background */}
-            <div className="relative overflow-hidden rounded-lg shadow-2xl" style={{flex: '0 0 50%', height: '30vh'}}>
-              {sliderImages.map((image, index) => (
-                <div
-                  key={index}
-                  className="absolute inset-0 w-full h-full transition-opacity duration-1000"
-                  style={{
-                    opacity: currentSlide === index ? 1 : 0,
-                    backgroundImage: `url(${image})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                  }}
-                >
-                  {/* Darker overlay */}
-                  <div className="absolute inset-0 bg-black/30"></div>
-                </div>
-              ))}
-
-              {/* Shadow overlays on all 4 sides - top/bottom - reduced intensity */}
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.4) 100%)'
-                }}
-              ></div>
-              {/* Shadow overlays - left/right - reduced intensity */}
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.4) 100%)'
-                }}
-              ></div>
-
-              {/* Slider indicators */}
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
-                {sliderImages.map((_, index) => (
-                  <button
+            <div className="flex flex-col" style={{flex: '0 0 50%'}}>
+              <div className="relative overflow-hidden rounded-lg shadow-2xl" style={{height: '30vh'}}>
+                {sliderImages.map((image, index) => (
+                  <div
                     key={index}
-                    onClick={() => setCurrentSlide(index)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      currentSlide === index ? 'bg-[rgb(250,146,8)] w-6' : 'bg-white/50'
-                    }`}
-                  />
+                    className="absolute inset-0 w-full h-full transition-opacity duration-1000"
+                    style={{
+                      opacity: currentSlide === index ? 1 : 0,
+                      backgroundImage: `url(${image})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
+                  >
+                    {/* Darker overlay */}
+                    <div className="absolute inset-0 bg-black/30"></div>
+                  </div>
                 ))}
+
+                {/* Shadow overlays on all 4 sides - top/bottom - reduced intensity */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.4) 100%)'
+                  }}
+                ></div>
+                {/* Shadow overlays - left/right - reduced intensity */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.4) 100%)'
+                  }}
+                ></div>
+
+                {/* Slider indicators */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+                  {sliderImages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentSlide(index)}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        currentSlide === index ? 'bg-[rgb(250,146,8)] w-6' : 'bg-white/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Text under slider only */}
+              <div className="text-white mt-4 text-center">
+                <h3 className="text-2xl md:text-3xl font-medium font-goldman">
+                  Prémiová flotila vozidiel
+                </h3>
               </div>
             </div>
+
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-          <ChevronDownIcon className="h-8 w-8 text-white animate-bounce" />
-        </div>
       </section>
 
       {/* Car Categories Section */}
@@ -736,7 +742,7 @@ const HomePage = () => {
                       opacity: { duration: 0.3 },
                       scale: { duration: 0.3 }
                     }}
-                    className="aspect-[4/3] relative p-[3px]"
+                    className="aspect-[4/3] relative"
                     style={{
                       backgroundColor: 'rgb(250,146,8)',
                       borderRadius: '8px'
@@ -762,22 +768,24 @@ const HomePage = () => {
                       {/* Bottom section with orange background */}
                       <div className="absolute bottom-0 left-0 right-0 p-4" style={{backgroundColor: 'rgba(250, 146, 8, 0.95)'}}>
                         <div className="flex items-center justify-between">
-                          {/* Car name and specs in one line */}
-                          <div className="flex items-center gap-x-3 text-xs text-white">
+                          {/* Car name and specs together in left container */}
+                          <div className="flex flex-col gap-1">
                             <h3 className="text-lg font-bold text-white uppercase">{car.brand} {car.model}</h3>
-                            <span className="font-medium">{car.power}</span>
-                            <span className="font-medium">{car.transmission}</span>
-                            <span className="font-medium">{car.fuel}</span>
+                            <div className="flex items-center gap-x-3 text-xs text-white">
+                              <span className="font-medium">{car.power}</span>
+                              <span className="font-medium">{car.transmission}</span>
+                              <span className="font-medium">{car.fuel}</span>
+                            </div>
                           </div>
 
-                          {/* Rezervovat Button - white with black text */}
-                          <div className="ml-4">
+                          {/* Rezervovat Button and Price */}
+                          <div className="ml-4 flex flex-col gap-1">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 window.location.href = `/booking?car=${car._id}`;
                               }}
-                              className="hover:opacity-90 text-xs font-bold transition-colors px-5 py-2 rounded-lg"
+                              className="hover:opacity-90 text-xs font-bold transition-colors px-3 py-1 rounded-lg whitespace-nowrap"
                               style={{
                                 backgroundColor: '#ffffff',
                                 color: '#191919'
@@ -785,6 +793,9 @@ const HomePage = () => {
                             >
                               Rezervovať
                             </button>
+                            <div className="text-sm font-bold text-white text-center">
+                              od {car.dailyRate}€
+                            </div>
                           </div>
                         </div>
                       </div>
