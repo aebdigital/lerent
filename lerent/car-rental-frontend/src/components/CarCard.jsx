@@ -89,7 +89,8 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
   // Get fuel type display
   const getFuelDisplay = () => {
     switch(fuelType) {
-      case 'petrol': return 'benzín';
+      case 'petrol':
+      case 'gasoline': return 'benzín';
       case 'diesel': return 'diesel';
       case 'electric': return 'elektrické';
       case 'hybrid': return 'hybrid';
@@ -102,19 +103,30 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
     switch(transmission) {
       case 'manual': return 'manuál';
       case 'automatic': return 'auto.';
+      case 'cvt': return 'CVT';
       default: return transmission?.toLowerCase() || 'auto.';
     }
   };
 
-  // Get fuel consumption display
+  // Get fuel consumption display - uses API data if available
   const getFuelConsumption = () => {
-    // Mock data for fuel consumption - in real app this would come from API
-    return '5.1 l / 100 km';
+    if (car.fuelConsumption) {
+      return `${car.fuelConsumption} l/100km`;
+    }
+    // Fallback estimate based on fuel type
+    switch(fuelType) {
+      case 'electric': return '0 l/100km';
+      case 'hybrid': return '4.5 l/100km';
+      case 'diesel': return '5.8 l/100km';
+      case 'gasoline':
+      case 'petrol': return '6.2 l/100km';
+      default: return '5.5 l/100km';
+    }
   };
 
   return (
-    <Link to={buildCarUrl()} className="block">
-      <div className="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200 relative mb-6">
+    <Link to={buildCarUrl()} className="group block transition-all duration-200 mb-6">
+      <div className="rounded-lg hover:shadow-lg relative">
         {/* AKCIA Banner */}
         {isPromo && (
           <div className="absolute top-0 left-0 z-10">
@@ -125,13 +137,44 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
         )}
 
         {/* Car Layout */}
-        <div className="flex" style={{backgroundColor: 'rgb(250,146,8)'}}>
+        <div className="flex rounded-lg overflow-hidden transition-all duration-300 hover:shadow-orange-glow" style={{
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.18)',
+          boxShadow: '0 8px 32px 0 rgba(250, 146, 8, 0.37)'
+        }}>
           {/* LEFT CONTAINER - Car Name and Specs */}
           <div className="w-3/5 p-6">
             {/* Car Name ON TOP */}
-            <h2 className="text-2xl font-bold text-white mb-6">
+            <h2 className="text-2xl font-bold text-white mb-2">
               {brand} {model}
             </h2>
+            {/* Category Badge */}
+            {category && (
+              <div className="mb-4">
+                <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full" style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  color: 'white',
+                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}>
+                  {category === 'economy' ? 'Ekonomická' :
+                   category === 'ekonomicka' ? 'Ekonomická' :
+                   category === 'stredna' ? 'Stredná' :
+                   category === 'compact' ? 'Kompaktná' :
+                   category === 'midsize' ? 'Stredná' :
+                   category === 'fullsize' ? 'Veľká' :
+                   category === 'luxury' ? 'Luxusná' :
+                   category === 'vyssia' ? 'Vyššia' :
+                   category === 'suv' ? 'SUV' :
+                   category === 'minivan' ? 'Minivan' :
+                   category === 'viacmiestne' ? 'Viacmiestne' :
+                   category === 'convertible' ? 'Kabriolet' :
+                   category === 'sports' ? 'Športové' :
+                   category}
+                </span>
+              </div>
+            )}
 
             {/* Car Specifications BELOW NAME */}
             <div className="grid grid-cols-2 grid-rows-3 rounded-lg overflow-hidden" style={{backgroundColor: 'rgba(255,255,255,0.9)'}}>
@@ -176,7 +219,7 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <span className="text-gray-700 font-medium text-sm">4</span>
+                <span className="text-gray-700 font-medium text-sm">{car.doors || 4}</span>
               </div>
 
               {/* Power */}
@@ -194,10 +237,10 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
           {/* RIGHT CONTAINER - Image, Button, Price */}
           <div className="w-2/5 flex flex-col">
             {/* Car Image */}
-            <div className="flex-1 min-h-[200px] bg-gray-50 relative">
+            <div className="flex-1 min-h-[200px] bg-gray-50 relative overflow-hidden transition-transform duration-300 ease-out hover:scale-110 hover:-translate-y-2">
               {images && images.length > 0 ? (
-                <img 
-                  src={images[0].url || images[0]} 
+                <img
+                  src={images[0].url || images[0]}
                   alt={carName}
                   className="w-full h-full object-cover"
                 />

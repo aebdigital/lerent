@@ -1,6 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import DefaultLayout from './layouts/DefaultLayout';
 import ScrollToTop from './components/ScrollToTop';
+import PageTransition from './components/PageTransition';
 import ApiStatus from './components/ApiStatus';
 import HomePage from './pages/HomePage';
 import BookingPage from './pages/BookingPage';
@@ -13,30 +16,54 @@ import PoisteniePage from './pages/PoisteniePage';
 import AutouveryPage from './pages/AutouveryPage';
 import SprostredkovaniePage from './pages/SprostredkovaniePage';
 import ONasPage from './pages/ONasPage';
-import PrenajomPage from './pages/PrenajomPage';
+import SluzbyPage from './pages/SluzbyPage';
 import FAQPage from './pages/FAQPage';
+import { initGSAPAnimations, initScrollAnimations } from './utils/gsapAnimations';
 import './index.css';
 
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+        <Route path="/o-nas" element={<PageTransition><ONasPage /></PageTransition>} />
+        <Route path="/sluzby" element={<PageTransition><SluzbyPage /></PageTransition>} />
+        <Route path="/faq" element={<PageTransition><FAQPage /></PageTransition>} />
+        <Route path="/car/:id" element={<PageTransition><CarDetailsPage /></PageTransition>} />
+        <Route path="/booking" element={<PageTransition><BookingPage /></PageTransition>} />
+        <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
+        <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
+        <Route path="/blog" element={<PageTransition><BlogPage /></PageTransition>} />
+        <Route path="/blog/:id" element={<PageTransition><BlogPostPage /></PageTransition>} />
+        <Route path="/poistenie" element={<PageTransition><PoisteniePage /></PageTransition>} />
+        <Route path="/autouvery" element={<PageTransition><AutouveryPage /></PageTransition>} />
+        <Route path="/sprostredkovanie" element={<PageTransition><SprostredkovaniePage /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 function App() {
+  useEffect(() => {
+    // Initialize GSAP and Lenis when component mounts
+    const lenis = initGSAPAnimations();
+    initScrollAnimations();
+
+    // Cleanup function
+    return () => {
+      if (lenis && typeof lenis.destroy === 'function') {
+        lenis.destroy();
+      }
+    };
+  }, []);
+
   return (
     <Router>
       <ScrollToTop />
       <DefaultLayout>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/o-nas" element={<ONasPage />} />
-          <Route path="/prenajom" element={<PrenajomPage />} />
-          <Route path="/faq" element={<FAQPage />} />
-          <Route path="/car/:id" element={<CarDetailsPage />} />
-          <Route path="/booking" element={<BookingPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/blog/:id" element={<BlogPostPage />} />
-          <Route path="/poistenie" element={<PoisteniePage />} />
-          <Route path="/autouvery" element={<AutouveryPage />} />
-          <Route path="/sprostredkovanie" element={<SprostredkovaniePage />} />
-        </Routes>
+        <AnimatedRoutes />
       </DefaultLayout>
       <ApiStatus />
     </Router>

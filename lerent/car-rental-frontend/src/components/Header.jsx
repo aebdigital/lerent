@@ -44,18 +44,38 @@ const Header = () => {
 
   const handleNavClick = (href) => {
     if (href.startsWith('#')) {
-      // Check if the target section exists on current page
-      const element = document.querySelector(href);
-      if (element) {
-        // Section exists on current page, scroll to it with offset for fixed header
-        const offsetTop = element.getBoundingClientRect().top + window.pageYOffset - 100;
-        window.scrollTo({
-          top: offsetTop,
-          behavior: 'smooth'
-        });
+      // Check if we're on homepage
+      if (location.pathname === '/') {
+        // On homepage, check if element exists
+        const element = document.querySelector(href);
+        if (element) {
+          const offsetTop = element.getBoundingClientRect().top + window.pageYOffset - 100;
+          window.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth'
+          });
+        }
       } else {
-        // Section doesn't exist on current page, navigate to home page
+        // Not on homepage, navigate there first then scroll
         navigate('/' + href);
+        // Use multiple attempts to ensure element is loaded
+        const scrollToElement = (attempts = 0) => {
+          if (attempts > 10) return; // Give up after 10 attempts
+
+          setTimeout(() => {
+            const element = document.querySelector(href);
+            if (element) {
+              const offsetTop = element.getBoundingClientRect().top + window.pageYOffset - 100;
+              window.scrollTo({
+                top: offsetTop,
+                behavior: 'smooth'
+              });
+            } else {
+              scrollToElement(attempts + 1);
+            }
+          }, 200 + (attempts * 100));
+        };
+        scrollToElement();
       }
     } else {
       // Check if we're already on the target page
@@ -84,13 +104,15 @@ const Header = () => {
         isScrolled || forceBlackMobile ? 'shadow-lg' : 'bg-transparent'
       }`}
         style={{
-          backgroundColor: isScrolled || forceBlackMobile ? 'rgb(25, 25, 25)' : 'transparent'
+          backgroundColor: isScrolled || forceBlackMobile ? 'rgba(0, 0, 0, 0.3)' : 'transparent',
+          backdropFilter: isScrolled || forceBlackMobile ? 'blur(20px)' : 'none',
+          WebkitBackdropFilter: isScrolled || forceBlackMobile ? 'blur(20px)' : 'none'
         }}>
       <nav className="px-4 md:px-8 lg:px-16">
-        <div className="flex h-20 items-center lg:grid lg:grid-cols-3 lg:gap-4">
+        <div className="flex h-20 items-center justify-between lg:grid lg:grid-cols-3 lg:gap-4">
 
           {/* Logo - Left */}
-          <div className="flex items-center justify-start ml-8">
+          <div className="flex items-center justify-start max-[390px]:ml-0 ml-8">
             <Link to="/" className="flex items-center">
               <img src={Logo} alt="Nitra Car" className="h-14 w-auto" />
             </Link>
@@ -115,20 +137,20 @@ const Header = () => {
               O nás
             </button>
             
-            {/* Prenájom Link */}
+            {/* Služby Link */}
             <button
-              onClick={() => handleNavClick('/prenajom')}
+              onClick={() => handleNavClick('/sluzby')}
               className={`font-medium transition-colors duration-200 relative pb-1 ${
-                isActive('/prenajom')
+                isActive('/sluzby')
                   ? 'text-white'
                   : 'text-white hover:text-gray-300'
               }`}
               style={{
                 fontSize: '19px',
-                borderBottom: isActive('/prenajom') ? '2px solid #02cdff' : '2px solid transparent'
+                borderBottom: isActive('/sluzby') ? '2px solid #02cdff' : '2px solid transparent'
               }}
             >
-              Prenájom
+              Služby
             </button>
 
             {/* HOME Icon */}
@@ -208,7 +230,7 @@ const Header = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="lg:hidden">
+          <div className="lg:hidden max-[390px]:mr-0 mr-8">
             <button
               type="button"
               className="text-white hover:text-gray-300 p-2"

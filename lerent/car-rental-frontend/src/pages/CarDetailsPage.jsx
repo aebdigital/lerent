@@ -238,9 +238,30 @@ const CarDetailsPage = () => {
     const loadCarDetails = async () => {
       try {
         setLoading(true);
-        // Use static data instead of API
-        const carData = staticCarsData.find(car => car._id === id) || staticCarsData[0];
-        setCar(carData);
+        setError(null);
+
+        // Fetch car details from API
+        const carData = await carsAPI.getCarDetails(id);
+
+        if (!carData) {
+          // Fallback to static data if API fails
+          console.warn('API returned no data, using static fallback');
+          const fallbackCar = staticCarsData.find(car => car._id === id) || staticCarsData[0];
+          setCar(fallbackCar);
+        } else {
+          console.log('Car details loaded from API:', carData);
+          console.log('Pricing data:', {
+            'pricing.rates': carData.pricing?.rates,
+            'pricing.dailyRate': carData.pricing?.dailyRate,
+            'pricing.deposit': carData.pricing?.deposit,
+            dailyRate: carData.dailyRate,
+            weeklyRate: carData.weeklyRate,
+            monthlyRate: carData.monthlyRate,
+            priceList: carData.priceList,
+            deposit: carData.deposit
+          });
+          setCar(carData);
+        }
 
         // Load availability
         const startDate = new Date();
@@ -249,12 +270,22 @@ const CarDetailsPage = () => {
 
         try {
           const availability = await carsAPI.getCarAvailability(id, startDate, endDate);
+          console.log('📅 Setting unavailable dates for car:', id);
+          console.log('   Unavailable dates array:', availability.unavailableDates || []);
           setUnavailableDates(availability.unavailableDates || []);
         } catch (err) {
           console.warn('Could not load availability:', err);
+          setUnavailableDates([]);
         }
       } catch (err) {
+        console.error('Error loading car details:', err);
         setError('Nepodarilo sa načítať detaily vozidla');
+        // Use static fallback on error
+        const fallbackCar = staticCarsData.find(car => car._id === id) || staticCarsData[0];
+        if (fallbackCar) {
+          setCar(fallbackCar);
+          setError(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -360,10 +391,41 @@ const CarDetailsPage = () => {
     }));
   };
 
+  // Calculate price per day based on tiered pricing from API
+  const getPricePerDay = (days) => {
+    if (!car) return 0;
+
+    // If car has pricing.rates (tiered pricing), use it
+    if (car.pricing?.rates) {
+      const rates = car.pricing.rates;
+
+      // Match the number of days to the appropriate tier
+      if (days === 1 && rates['1day']) return rates['1day'];
+      if (days >= 2 && days <= 3 && rates['2-3days']) return rates['2-3days'];
+      if (days >= 4 && days <= 10 && rates['4-10days']) return rates['4-10days'];
+      if (days >= 11 && days <= 17 && rates['11-17days']) return rates['11-17days'];
+      if (days >= 18 && days <= 24 && rates['18-24days']) return rates['18-24days'];
+      if (days >= 25 && days <= 29 && rates['25-29days']) return rates['25-29days'];
+      if (days >= 30 && rates['30plus']) {
+        // For 30+ days, return a special indicator or the base daily rate
+        return car.pricing?.dailyRate || car.dailyRate || rates['25-29days'] || 50;
+      }
+
+      // Fallback to pricing.dailyRate or car.dailyRate
+      return car.pricing?.dailyRate || car.dailyRate || 50;
+    }
+
+    // Fallback to simple dailyRate, weeklyRate, monthlyRate
+    if (days >= 30 && car.monthlyRate) return car.monthlyRate / 30;
+    if (days >= 7 && car.weeklyRate) return car.weeklyRate / 7;
+    return car.dailyRate || 50;
+  };
+
   const calculatePrice = () => {
     if (!car || !bookingData.pickupDate || !bookingData.returnDate) return 0;
     const days = Math.ceil((bookingData.returnDate - bookingData.pickupDate) / (1000 * 60 * 60 * 24));
-    const basePrice = car.dailyRate * days;
+    const pricePerDay = getPricePerDay(days);
+    const basePrice = pricePerDay * days;
     return basePrice + deliveryPrice;
   };
 
@@ -621,28 +683,38 @@ const CarDetailsPage = () => {
               <BoltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
                 <div className="text-xs text-gray-300">Výkon</div>
-                <div className="font-semibold text-xs text-white">{car.power}</div>
+                <div className="font-semibold text-xs text-white">{car.power || `${car.year}`}</div>
               </div>
             </div>
             <div className="flex flex-col items-center text-center">
               <GlobeAltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
                 <div className="text-xs text-gray-300">Palivo</div>
-                <div className="font-semibold text-xs text-white">{car.fuelType}</div>
-              </div>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <CogIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
-              <div>
-                <div className="text-xs text-gray-300">Spotreba</div>
-                <div className="font-semibold text-xs text-white">5 l/100km</div>
+                <div className="font-semibold text-xs text-white capitalize">
+                  {car.fuelType === 'gasoline' ? 'Benzín' :
+                   car.fuelType === 'diesel' ? 'Nafta' :
+                   car.fuelType === 'electric' ? 'Elektro' :
+                   car.fuelType === 'hybrid' ? 'Hybrid' :
+                   car.fuelType || 'N/A'}
+                </div>
               </div>
             </div>
             <div className="flex flex-col items-center text-center">
               <UsersIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
+                <div className="text-xs text-gray-300">Počet miest</div>
+                <div className="font-semibold text-xs text-white">{car.seats || 5}</div>
+              </div>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <CogIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
+              <div>
                 <div className="text-xs text-gray-300">Prevodovka</div>
-                <div className="font-semibold text-xs text-white">{car.transmission}</div>
+                <div className="font-semibold text-xs text-white capitalize">
+                  {car.transmission === 'automatic' ? 'Automat' :
+                   car.transmission === 'manual' ? 'Manuál' :
+                   car.transmission || 'N/A'}
+                </div>
               </div>
             </div>
             <div className="flex flex-col items-center text-center">
@@ -652,38 +724,19 @@ const CarDetailsPage = () => {
                 <div className="font-semibold text-xs text-white">{car.year}</div>
               </div>
             </div>
+            {car.color && (
+              <div className="flex flex-col items-center text-center">
+                <div className="h-4 w-4 flex-shrink-0 mb-1 rounded-full border-2 border-[rgb(250,146,8)]" style={{backgroundColor: car.color.toLowerCase()}}></div>
+                <div>
+                  <div className="text-xs text-gray-300">Farba</div>
+                  <div className="font-semibold text-xs text-white capitalize">{car.color}</div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Desktop Specs - Horizontal Row */}
-          <div className="hidden lg:grid lg:grid-cols-5 lg:gap-8">
-            <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-              <BoltIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
-              <div>
-                <div className="text-sm text-gray-300">Výkon</div>
-                <div className="font-semibold text-base text-white">{car.power}</div>
-              </div>
-            </div>
-            <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-              <GlobeAltIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
-              <div>
-                <div className="text-sm text-gray-300">Palivo</div>
-                <div className="font-semibold text-base text-white">{car.fuelType}</div>
-              </div>
-            </div>
-            <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-              <CogIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
-              <div>
-                <div className="text-sm text-gray-300">Spotreba</div>
-                <div className="font-semibold text-base text-white">5 l/100km</div>
-              </div>
-            </div>
-            <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-              <UsersIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
-              <div>
-                <div className="text-sm text-gray-300">Prevodovka</div>
-                <div className="font-semibold text-base text-white">{car.transmission}</div>
-              </div>
-            </div>
+          <div className="hidden lg:grid lg:grid-cols-6 lg:gap-4">
             <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
               <CalendarIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
               <div>
@@ -691,6 +744,57 @@ const CarDetailsPage = () => {
                 <div className="font-semibold text-base text-white">{car.year}</div>
               </div>
             </div>
+            <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+              <GlobeAltIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
+              <div>
+                <div className="text-sm text-gray-300">Palivo</div>
+                <div className="font-semibold text-base text-white capitalize">
+                  {car.fuelType === 'gasoline' ? 'Benzín' :
+                   car.fuelType === 'diesel' ? 'Nafta' :
+                   car.fuelType === 'electric' ? 'Elektro' :
+                   car.fuelType === 'hybrid' ? 'Hybrid' :
+                   car.fuelType || 'N/A'}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+              <CogIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
+              <div>
+                <div className="text-sm text-gray-300">Prevodovka</div>
+                <div className="font-semibold text-base text-white capitalize">
+                  {car.transmission === 'automatic' ? 'Automat' :
+                   car.transmission === 'manual' ? 'Manuál' :
+                   car.transmission || 'N/A'}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+              <UsersIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
+              <div>
+                <div className="text-sm text-gray-300">Počet miest</div>
+                <div className="font-semibold text-base text-white">{car.seats || 5}</div>
+              </div>
+            </div>
+            {car.doors && (
+              <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                <svg className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <div>
+                  <div className="text-sm text-gray-300">Počet dverí</div>
+                  <div className="font-semibold text-base text-white">{car.doors}</div>
+                </div>
+              </div>
+            )}
+            {car.color && (
+              <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                <div className="h-6 w-6 rounded-full border-2 border-[rgb(250,146,8)] flex-shrink-0" style={{backgroundColor: car.color.toLowerCase()}}></div>
+                <div>
+                  <div className="text-sm text-gray-300">Farba</div>
+                  <div className="font-semibold text-base text-white capitalize">{car.color}</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -731,6 +835,18 @@ const CarDetailsPage = () => {
 
               {/* Pricing Information */}
               <div className="rounded-lg p-4 space-y-3" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
+                {bookingData.pickupDate && bookingData.returnDate && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Počet dní:</span>
+                      <span className="font-semibold text-white">{Math.ceil((bookingData.returnDate - bookingData.pickupDate) / (1000 * 60 * 60 * 24))}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Cena za deň:</span>
+                      <span className="font-semibold text-white">{getPricePerDay(Math.ceil((bookingData.returnDate - bookingData.pickupDate) / (1000 * 60 * 60 * 24))).toFixed(2)}€</span>
+                    </div>
+                  </>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-300">Depozit:</span>
                   <span className="font-semibold text-white">{getDeposit().toFixed(2)}€</span>
@@ -749,9 +865,9 @@ const CarDetailsPage = () => {
                   backgroundColor: '#fa9208',
                   color: '#191919'
                 }}
-                disabled={car.status !== 'available'}
+                disabled={car.status !== 'available' && car.status !== 'active'}
               >
-                {car.status === 'available' ? 'Pokračovať v objednávke' : 'Momentálne nedostupné'}
+                {(car.status === 'available' || car.status === 'active') ? 'Pokračovať v objednávke' : 'Momentálne nedostupné'}
               </button>
             </div>
           </div>
@@ -761,47 +877,73 @@ const CarDetailsPage = () => {
             <h3 className="text-xl font-semibold text-white mb-4">Cenník prenájmu</h3>
 
             <div className="divide-y divide-gray-800">
-              <div className="py-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <span className="text-white">1-2 dni</span>
-                  <span className="text-[rgb(250,146,8)] font-semibold text-right">45€</span>
-                </div>
-              </div>
+              {/* If pricing.rates exists, show all pricing tiers */}
+              {car.pricing?.rates && Object.keys(car.pricing.rates).length > 0 ? (
+                <>
+                  {Object.entries(car.pricing.rates).map(([duration, price], index) => (
+                    <div key={index} className="py-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <span className="text-white capitalize">{duration.replace('day', ' deň').replace('days', ' dní').replace('plus', '+')}</span>
+                        <span className="text-[rgb(250,146,8)] font-semibold text-right">
+                          {typeof price === 'number' ? `${price}€` : price}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : car.priceList && car.priceList.length > 0 ? (
+                <>
+                  {/* Alternative: priceList array format */}
+                  {car.priceList.map((priceItem, index) => (
+                    <div key={index} className="py-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <span className="text-white">{priceItem.duration || priceItem.label || `Položka ${index + 1}`}</span>
+                        <span className="text-[rgb(250,146,8)] font-semibold text-right">{priceItem.price || priceItem.rate}€</span>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <>
+                  {/* Fallback to individual rate fields */}
+                  {car.dailyRate && (
+                    <div className="py-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <span className="text-white">Deň</span>
+                        <span className="text-[rgb(250,146,8)] font-semibold text-right">{car.dailyRate}€</span>
+                      </div>
+                    </div>
+                  )}
 
-              <div className="py-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <span className="text-white">3-6 dní</span>
-                  <span className="text-[rgb(250,146,8)] font-semibold text-right">40€</span>
-                </div>
-              </div>
+                  {car.weeklyRate && (
+                    <div className="py-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <span className="text-white">Týždeň</span>
+                        <span className="text-[rgb(250,146,8)] font-semibold text-right">{car.weeklyRate}€</span>
+                      </div>
+                    </div>
+                  )}
 
-              <div className="py-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <span className="text-white">7-13 dní</span>
-                  <span className="text-[rgb(250,146,8)] font-semibold text-right">35€</span>
-                </div>
-              </div>
+                  {car.monthlyRate && (
+                    <div className="py-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <span className="text-white">Mesiac</span>
+                        <span className="text-[rgb(250,146,8)] font-semibold text-right">{car.monthlyRate}€</span>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
 
-              <div className="py-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <span className="text-white">14-20 dní</span>
-                  <span className="text-[rgb(250,146,8)] font-semibold text-right">30€</span>
+              {/* Show deposit if available - check both car.deposit and car.pricing.deposit */}
+              {(car.deposit || car.pricing?.deposit) && (
+                <div className="py-3 border-t-2 border-gray-700 mt-2">
+                  <div className="grid grid-cols-2 gap-4">
+                    <span className="text-white font-semibold">Depozit</span>
+                    <span className="text-white font-semibold text-right">{car.deposit || car.pricing.deposit}€</span>
+                  </div>
                 </div>
-              </div>
-
-              <div className="py-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <span className="text-white">21-27 dní</span>
-                  <span className="text-[rgb(250,146,8)] font-semibold text-right">28€</span>
-                </div>
-              </div>
-
-              <div className="py-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <span className="text-white">28+ dní</span>
-                  <span className="text-[rgb(250,146,8)] font-semibold text-right">25€</span>
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -823,47 +965,73 @@ const CarDetailsPage = () => {
               <h3 className="text-xl font-semibold text-white mb-4">Cenník prenájmu</h3>
 
               <div className="divide-y divide-gray-800">
-                <div className="py-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <span className="text-white">1-2 dni</span>
-                    <span className="text-[rgb(250,146,8)] font-semibold text-right">45€</span>
-                  </div>
-                </div>
+                {/* If pricing.rates exists, show all pricing tiers */}
+                {car.pricing?.rates && Object.keys(car.pricing.rates).length > 0 ? (
+                  <>
+                    {Object.entries(car.pricing.rates).map(([duration, price], index) => (
+                      <div key={index} className="py-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <span className="text-white capitalize">{duration.replace('day', ' deň').replace('days', ' dní').replace('plus', '+')}</span>
+                          <span className="text-[rgb(250,146,8)] font-semibold text-right">
+                            {typeof price === 'number' ? `${price}€` : price}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                ) : car.priceList && car.priceList.length > 0 ? (
+                  <>
+                    {/* Alternative: priceList array format */}
+                    {car.priceList.map((priceItem, index) => (
+                      <div key={index} className="py-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <span className="text-white">{priceItem.duration || priceItem.label || `Položka ${index + 1}`}</span>
+                          <span className="text-[rgb(250,146,8)] font-semibold text-right">{priceItem.price || priceItem.rate}€</span>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {/* Fallback to individual rate fields */}
+                    {car.dailyRate && (
+                      <div className="py-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <span className="text-white">Deň</span>
+                          <span className="text-[rgb(250,146,8)] font-semibold text-right">{car.dailyRate}€</span>
+                        </div>
+                      </div>
+                    )}
 
-                <div className="py-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <span className="text-white">3-6 dní</span>
-                    <span className="text-[rgb(250,146,8)] font-semibold text-right">40€</span>
-                  </div>
-                </div>
+                    {car.weeklyRate && (
+                      <div className="py-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <span className="text-white">Týždeň</span>
+                          <span className="text-[rgb(250,146,8)] font-semibold text-right">{car.weeklyRate}€</span>
+                        </div>
+                      </div>
+                    )}
 
-                <div className="py-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <span className="text-white">7-13 dní</span>
-                    <span className="text-[rgb(250,146,8)] font-semibold text-right">35€</span>
-                  </div>
-                </div>
+                    {car.monthlyRate && (
+                      <div className="py-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <span className="text-white">Mesiac</span>
+                          <span className="text-[rgb(250,146,8)] font-semibold text-right">{car.monthlyRate}€</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
 
-                <div className="py-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <span className="text-white">14-20 dní</span>
-                    <span className="text-[rgb(250,146,8)] font-semibold text-right">30€</span>
+                {/* Show deposit if available - check both car.deposit and car.pricing.deposit */}
+                {(car.deposit || car.pricing?.deposit) && (
+                  <div className="py-3 border-t-2 border-gray-700 mt-2">
+                    <div className="grid grid-cols-2 gap-4">
+                      <span className="text-white font-semibold">Depozit</span>
+                      <span className="text-white font-semibold text-right">{car.deposit || car.pricing.deposit}€</span>
+                    </div>
                   </div>
-                </div>
-
-                <div className="py-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <span className="text-white">21-27 dní</span>
-                    <span className="text-[rgb(250,146,8)] font-semibold text-right">28€</span>
-                  </div>
-                </div>
-
-                <div className="py-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <span className="text-white">28+ dní</span>
-                    <span className="text-[rgb(250,146,8)] font-semibold text-right">25€</span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
@@ -902,6 +1070,18 @@ const CarDetailsPage = () => {
 
                 {/* Pricing Information */}
                 <div className="rounded-lg p-4 space-y-3" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
+                  {bookingData.pickupDate && bookingData.returnDate && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Počet dní:</span>
+                        <span className="font-semibold text-white">{Math.ceil((bookingData.returnDate - bookingData.pickupDate) / (1000 * 60 * 60 * 24))}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Cena za deň:</span>
+                        <span className="font-semibold text-white">{getPricePerDay(Math.ceil((bookingData.returnDate - bookingData.pickupDate) / (1000 * 60 * 60 * 24))).toFixed(2)}€</span>
+                      </div>
+                    </>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-gray-300">Depozit:</span>
                     <span className="font-semibold text-white">{getDeposit().toFixed(2)}€</span>
@@ -920,9 +1100,9 @@ const CarDetailsPage = () => {
                     backgroundColor: '#fa9208',
                     color: '#191919'
                   }}
-                  disabled={car.status !== 'available'}
+                  disabled={car.status !== 'available' && car.status !== 'active'}
                 >
-                  {car.status === 'available' ? 'Pokračovať v objednávke' : 'Momentálne nedostupné'}
+                  {(car.status === 'available' || car.status === 'active') ? 'Pokračovať v objednávke' : 'Momentálne nedostupné'}
                 </button>
               </div>
             </div>
@@ -939,6 +1119,50 @@ const CarDetailsPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Features Section */}
+        {car.features && car.features.length > 0 && (
+          <div className="mt-8">
+            <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+              <h2 className="text-2xl font-semibold text-white mb-4">Výbava</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {car.features.map((feature, index) => (
+                  <div key={index} className="flex items-center space-x-2 text-gray-300">
+                    <CheckCircleIcon className="h-5 w-5 text-[rgb(250,146,8)] flex-shrink-0" />
+                    <span className="capitalize">
+                      {feature.replace(/-/g, ' ').replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Location Information */}
+        {car.location && (
+          <div className="mt-8">
+            <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+              <h2 className="text-2xl font-semibold text-white mb-4">Miesto prevzatia</h2>
+              <div className="flex items-start space-x-3">
+                <MapPinIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0 mt-1" />
+                <div className="text-gray-300">
+                  <div className="font-semibold text-white mb-1">{car.location.name}</div>
+                  {car.location.address && (
+                    <div className="text-sm">
+                      {car.location.address.street && <div>{car.location.address.street}</div>}
+                      <div>
+                        {car.location.address.city && car.location.address.city}
+                        {car.location.address.zipCode && `, ${car.location.address.zipCode}`}
+                      </div>
+                      {car.location.address.country && <div>{car.location.address.country}</div>}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Reviews Section */}
         <ReviewsSection />

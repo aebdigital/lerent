@@ -1,8 +1,12 @@
-// Production API base URL
-const API_BASE = 'https://carflow-reservation-system.onrender.com/api';
+// API base URL from environment variables (Vite uses VITE_ prefix)
+// If VITE_API_BASE_URL is empty or undefined, use relative path for Vite proxy
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = API_BASE_URL
+  ? `${API_BASE_URL}/api`  // Production: use full URL
+  : '/api';                 // Development: use relative path (Vite proxy)
 
-// Tenant email for RIVAL company
-const TENANT_EMAIL = 'rival@test.sk';
+// Tenant email from environment variables
+const TENANT_EMAIL = import.meta.env.VITE_TENANT_EMAIL || 'lerent@lerent.sk';
 
 // Import car images as modules for production compatibility
 import ArkanaImg from '../test.png';
@@ -19,9 +23,15 @@ const API_CONFIG = {
   useTenantEndpoints: true,
   // Fallback to general endpoints if tenant-specific fail
   enableFallback: true,
-  // Use mock data for development (set to true to avoid backend calls)
-  useMockData: true
+  // Use mock data for development (controlled by environment variable)
+  useMockData: import.meta.env.VITE_USE_MOCK_DATA === 'true'
 };
+
+// Log configuration on load
+console.log('🚀 API Configuration:');
+console.log('  Base URL:', API_BASE);
+console.log('  Tenant:', TENANT_EMAIL);
+console.log('  Using Mock Data:', API_CONFIG.useMockData);
 
 // Mock data for development/fallback
 const mockCarsData = [
@@ -394,7 +404,12 @@ export const carsAPI = {
         if (response.ok) {
           const result = await handleResponse(response);
           console.log('Cars returned from tenant API:', result.data?.length || 0, 'cars');
-          return result.data || [];
+          console.log('Additional services from API:', result.filters?.additionalServices || []);
+          // Return full result object with data and filters
+          return {
+            data: result.data || [],
+            filters: result.filters || {}
+          };
         }
       } catch (error) {
         console.warn('Tenant-specific API failed, trying fallback:', error.message);
@@ -494,6 +509,18 @@ export const carsAPI = {
 
         if (response.ok) {
           const result = await handleResponse(response);
+          console.log('✅ Car availability data from API:', result.data);
+          console.log('   Unavailable dates:', result.data?.unavailableDates);
+
+          // Note: Backend currently doesn't return unavailableDates array
+          // When backend is updated to include this field, calendars will automatically
+          // show unavailable dates as grayed out
+          // Expected format: { unavailableDates: ['2025-10-25', '2025-10-26', ...] }
+          if (!result.data?.unavailableDates) {
+            console.warn('⚠️ Backend availability API does not return unavailableDates array');
+            console.warn('   Add this field to enable date blocking in calendars');
+          }
+
           return result.data || { isAvailable: true, status: 'available' };
         }
       } catch (error) {
@@ -543,6 +570,126 @@ export const carsAPI = {
 
     const result = await handleResponse(response);
     return result.data || [];
+  }
+};
+
+// Additional Services API
+export const servicesAPI = {
+  // Get all services for a tenant
+  getServices: async () => {
+    // Use mock data if configured
+    if (API_CONFIG.useMockData) {
+      console.log('Using mock data for services');
+      return [];
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/services`, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        const result = await handleResponse(response);
+        console.log('📋 Services from API:', result.data || []);
+        return result.data || [];
+      }
+    } catch (error) {
+      console.warn('Failed to fetch services:', error.message);
+      return [];
+    }
+
+    return [];
+  },
+
+  // Get services for a specific vehicle
+  getServicesForVehicle: async (vehicleId) => {
+    // Use mock data if configured
+    if (API_CONFIG.useMockData) {
+      console.log('Using mock data for vehicle services');
+      return [];
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/services/vehicle/${vehicleId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        const result = await handleResponse(response);
+        console.log('📋 Vehicle services from API:', result.data || []);
+        return result.data || [];
+      }
+    } catch (error) {
+      console.warn('Failed to fetch vehicle services:', error.message);
+      return [];
+    }
+
+    return [];
+  },
+
+  // Calculate service price
+  calculateServicePrice: async (serviceData) => {
+    // Use mock data if configured
+    if (API_CONFIG.useMockData) {
+      console.log('Using mock data for service price calculation');
+      return { totalPrice: 0, breakdown: [] };
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/services/calculate-price`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(serviceData)
+      });
+
+      if (response.ok) {
+        const result = await handleResponse(response);
+        console.log('💰 Service price calculation:', result.data || {});
+        return result.data || { totalPrice: 0, breakdown: [] };
+      }
+    } catch (error) {
+      console.warn('Failed to calculate service price:', error.message);
+      return { totalPrice: 0, breakdown: [] };
+    }
+
+    return { totalPrice: 0, breakdown: [] };
+  }
+};
+
+// Insurance API
+export const insuranceAPI = {
+  // Get extended insurance for a specific car
+  getExtendedInsurance: async (carId) => {
+    // Use mock data if configured
+    if (API_CONFIG.useMockData) {
+      console.log('Using mock data for insurance');
+      return [];
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars/${carId}/extended-insurance`, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        const result = await handleResponse(response);
+        console.log('🛡️ Insurance options from API:', result.data || []);
+        return result.data || [];
+      }
+    } catch (error) {
+      console.warn('Failed to fetch insurance options:', error.message);
+      return [];
+    }
+
+    return [];
   }
 };
 
@@ -788,5 +935,7 @@ export default {
   auth: authAPI,
   cars: carsAPI,
   reservations: reservationsAPI,
-  booking: bookingAPI
+  booking: bookingAPI,
+  services: servicesAPI,
+  insurance: insuranceAPI
 }; 

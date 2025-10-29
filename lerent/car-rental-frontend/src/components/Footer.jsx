@@ -1,7 +1,24 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../logoRENT.svg';
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const scrollToHero = (e) => {
+    e.preventDefault();
+
+    if (location.pathname === '/') {
+      // Already on homepage, just scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // Navigate to homepage first, then scroll
+      navigate('/');
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+    }
+  };
   return (
     <footer className="bg-black text-white py-12">
       <div className="max-w-7xl mx-auto px-4">
@@ -73,18 +90,18 @@ const Footer = () => {
           </div>
 
           {/* Right Side - Rezervovať Button */}
-          <div className="flex justify-center lg:justify-end">
-            <a
-              href="#booking"
-              className="text-black hover:opacity-90 text-black px-6 sm:px-8 py-3 font-bold text-base sm:text-lg transition-colors"
+          <div className="flex justify-center max-[390px]:justify-start lg:justify-end">
+            <button
+              onClick={scrollToHero}
+              className="hover:opacity-90 px-5 py-3 text-base transition-colors duration-200 border border-gray-600 rounded-lg"
               style={{
-                clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
-                borderRadius: '0px',
-                backgroundColor: '#fa9208'
+                backgroundColor: '#fa9208',
+                color: '#191919',
+                fontWeight: 700
               }}
             >
               Rezervovať
-            </a>
+            </button>
           </div>
         </div>
 

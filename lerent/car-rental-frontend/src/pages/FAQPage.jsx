@@ -54,19 +54,19 @@ const FAQPage = () => {
   return (
     <div className="min-h-screen text-white" style={{backgroundColor: '#000000'}}>
       {/* Hero Section */}
-      <section className="pt-32 pb-16" style={{backgroundColor: '#000000'}}>
+      <section className="pt-32 pb-8" style={{backgroundColor: '#000000'}}>
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-4xl md:text-6xl font-bold text-white text-center mb-8 font-goldman">
             ČASTO KLADENÉ OTÁZKY
           </h1>
-          <p className="text-xl text-gray-300 text-center max-w-3xl mx-auto mb-12">
+          <p className="text-xl text-gray-300 text-center max-w-3xl mx-auto mb-4">
             Odpovede na najčastejšie otázky o prenájme vozidiel
           </p>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-16" style={{backgroundColor: '#000000'}}>
+      <section className="py-8" style={{backgroundColor: '#000000'}}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="space-y-4">
             {faqs.map((faq, index) => (
@@ -104,6 +104,25 @@ const FAQPage = () => {
         </div>
       </section>
 
+      {/* Podmienky prenájmu Section */}
+      <section className="py-16" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 font-goldman">
+            PODMIENKY PRENÁJMU
+          </h2>
+          <a
+            href="/terms"
+            className="inline-block hover:opacity-90 px-8 py-3 text-base font-bold transition-colors duration-200 border border-gray-600 rounded-lg"
+            style={{
+              backgroundColor: '#fa9208',
+              color: '#191919'
+            }}
+          >
+            Všeobecné obchodné podmienky
+          </a>
+        </div>
+      </section>
+
       {/* Contact Section */}
       <section className="py-16" style={{backgroundColor: '#000000'}}>
         <div className="max-w-4xl mx-auto px-4 text-center">
@@ -116,23 +135,23 @@ const FAQPage = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a
               href="tel:+421905318164"
-              className="inline-block hover:opacity-90 px-8 py-4 text-lg font-bold transition-colors"
+              className="hover:opacity-90 px-5 py-3 text-base transition-colors duration-200 border border-gray-600 rounded-lg"
               style={{
-                clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
-                borderRadius: '0px',
                 backgroundColor: '#fa9208',
-                color: '#000000'
+                color: '#191919',
+                fontWeight: 700
               }}
             >
               +421 905 318 164
             </a>
             <a
               href="mailto:info@lerent.sk"
-              className="inline-block hover:opacity-90 px-8 py-4 text-lg font-bold transition-colors border-2 border-[rgb(250,146,8)] text-[rgb(250,146,8)]"
+              className="hover:opacity-90 px-5 py-3 text-base transition-colors duration-200 border-2 rounded-lg"
               style={{
-                clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
-                borderRadius: '0px',
-                backgroundColor: 'transparent'
+                backgroundColor: '#000000',
+                borderColor: '#fa9208',
+                color: '#fa9208',
+                fontWeight: 700
               }}
             >
               info@lerent.sk

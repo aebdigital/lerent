@@ -103,8 +103,8 @@ const CustomDatePicker = ({ value, onChange, placeholder }) => {
     <div className="relative" ref={containerRef}>
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 text-sm rounded-lg border border-gray-700 focus-within:border-orange-500 cursor-pointer"
-        style={{ backgroundColor: 'rgba(25, 25, 25, 0.8)', height: '38px' }}
+        className="w-full px-4 py-3 text-sm rounded-lg border border-gray-700 focus-within:border-orange-500 cursor-pointer"
+        style={{ backgroundColor: 'rgba(25, 25, 25, 0.8)' }}
       >
         <div className="flex items-center justify-between h-full">
           <span className={`text-sm ${value ? 'text-white' : 'text-gray-400'}`}>

@@ -299,40 +299,65 @@ const HomePage = () => {
     console.log('Form submitted:', formData);
   };
 
-  // Load cars from static data
+  // Load cars from API
   useEffect(() => {
-    setLoading(true);
-    
-    // Simulate loading delay
-    setTimeout(() => {
-      setCars(allCars);
-      setFilteredCars(allCars);
-      setLoading(false);
-    }, 500);
+    const loadCars = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch cars from API
+        const response = await carsAPI.getAvailableCars();
+        console.log('Loaded cars from API:', response);
+
+        // Extract car data from response
+        const carsData = response.data || response;
+
+        // If API returns no cars, fall back to static data
+        if (carsData && carsData.length > 0) {
+          setCars(carsData);
+          setFilteredCars(carsData);
+        } else {
+          console.log('No cars returned from API, using static data');
+          setCars(allCars);
+          setFilteredCars(allCars);
+        }
+      } catch (err) {
+        console.error('Failed to load cars from API:', err);
+        setError('Nepodarilo sa načítať autá. Používame statické dáta.');
+        // Fallback to static data
+        setCars(allCars);
+        setFilteredCars(allCars);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCars();
   }, []);
 
   // Apply filters
   useEffect(() => {
-    let filtered = [...allCars];
+    let filtered = [...cars];
 
     // Car class filter (activeTab)
     if (activeTab !== 'all') {
       if (activeTab === 'sedan') {
-        filtered = filtered.filter(car => car.bodyType === 'Sedan');
+        filtered = filtered.filter(car => car.bodyType === 'Sedan' || car.category === 'sedan');
       } else if (activeTab === 'kombi') {
-        filtered = filtered.filter(car => car.bodyType === 'Kombi');
+        filtered = filtered.filter(car => car.bodyType === 'Kombi' || car.category === 'kombi');
       } else if (activeTab === 'sport') {
-        filtered = filtered.filter(car => car.bodyType === 'Coupe' || car.brand === 'MASERATI');
+        filtered = filtered.filter(car => car.bodyType === 'Coupe' || car.brand === 'MASERATI' || car.category === 'sport');
       } else if (activeTab === 'suv') {
-        filtered = filtered.filter(car => car.bodyType === 'SUV');
+        filtered = filtered.filter(car => car.bodyType === 'SUV' || car.category === 'suv');
       } else if (activeTab === 'premium') {
-        filtered = filtered.filter(car => car.dailyRate >= 130);
+        filtered = filtered.filter(car => car.dailyRate >= 130 || car.category === 'premium' || car.category === 'vyssia');
       } else if (activeTab === 'multiSeat') {
-        filtered = filtered.filter(car => car.bodyType === 'SUV');
+        filtered = filtered.filter(car => car.seats >= 7 || car.category === 'viacmiestne');
       } else if (activeTab === 'electric') {
-        filtered = filtered.filter(car => car.fuelType === 'Elektro');
+        filtered = filtered.filter(car => car.fuelType === 'Elektro' || car.fuelType === 'electric' || car.fuelType === 'hybrid');
       } else if (activeTab === 'utility') {
-        filtered = filtered.filter(car => car.bodyType === 'Úžitkové');
+        filtered = filtered.filter(car => car.bodyType === 'Úžitkové' || car.category === 'uzitkove');
       }
     }
 
@@ -358,7 +383,7 @@ const HomePage = () => {
     });
 
     setFilteredCars(filtered);
-  }, [activeTab, selectedBrand, sortBy]);
+  }, [activeTab, selectedBrand, sortBy, cars]);
 
   return (
     <div className="min-h-screen text-white" style={{backgroundColor: '#000000'}}>
@@ -459,26 +484,42 @@ const HomePage = () => {
           <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
-        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex flex-col justify-end pb-8 gap-4">
+        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex flex-col justify-end pb-8 gap-8 max-[390px]:gap-6">
           {/* Top - Heading */}
-          <div className="text-white ml-8" style={{width: '40%', maxWidth: '40%'}}>
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-medium leading-tight">
-              Autopožičovňa s individuálnym prístupom
+          <div className="text-white ml-2 sm:ml-8 max-[390px]:ml-2 max-[390px]:mr-2 max-[390px]:relative max-[390px]:w-auto" style={{width: '40%', maxWidth: '40%'}}>
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-medium leading-tight max-[390px]:text-3xl max-[390px]:leading-tight">
+              <span className="hidden max-[390px]:inline">Autopožičovňa s<br />individuálnym prístupom</span>
+              <span className="max-[390px]:hidden">Autopožičovňa s individuálnym prístupom</span>
             </h1>
           </div>
 
-          {/* Bottom - Form and Slider */}
+          {/* Bottom - Form only */}
           <div className="hidden lg:flex gap-6 ml-8 mr-16">
-            {/* Form - 50% width with background */}
-            <div className="p-6 rounded-lg border border-gray-700" style={{flex: '0 0 50%', backgroundColor: 'rgba(42, 42, 42, 0.95)'}}>
-              <form className="space-y-3">
-                <h2 className="text-2xl md:text-3xl font-medium text-white mb-4 text-left">
-                  Rýchla rezervácia
+            {/* Form - horizontal layout with glass effect */}
+            <div
+              className="p-6 rounded-2xl flex items-center gap-6"
+              style={{
+                flex: '1',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                boxShadow: '0 8px 32px 0 rgba(250, 146, 8, 0.37)'
+              }}
+            >
+              {/* Title on Left */}
+              <div className="flex-shrink-0">
+                <h2 className="text-2xl font-bold text-white whitespace-nowrap">
+                  Rýchla<br />rezervácia
                 </h2>
+              </div>
 
+              {/* Form inputs in horizontal columns */}
+              <form className="flex items-center gap-4 flex-1">
+                {/* Car Selection */}
                 <select
                   name="selectedCar"
-                  className="w-full text-white px-4 py-2 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
+                  className="flex-1 text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
                   style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
                 >
                   <option value="">Vyberte auto</option>
@@ -491,9 +532,10 @@ const HomePage = () => {
                   <option value="bmw-x7-xdrive-40d">BMW X7 XDRIVE 40D - od 200€/deň</option>
                 </select>
 
+                {/* Location Selection */}
                 <select
                   name="location"
-                  className="w-full text-white px-4 py-2 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
+                  className="flex-1 text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
                   style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
                 >
                   <option value="">Miesto vyzdvihnutia</option>
@@ -502,21 +544,28 @@ const HomePage = () => {
                   <option value="kosice">Košice</option>
                 </select>
 
-                {/* Date inputs as 3rd and 4th rows */}
-                <CustomDatePicker
-                  value={pickupDate}
-                  onChange={setPickupDate}
-                  placeholder="Vyberte dátum prevzatia"
-                />
-                <CustomDatePicker
-                  value={returnDate}
-                  onChange={setReturnDate}
-                  placeholder="Vyberte dátum vrátenia"
-                />
+                {/* Date From */}
+                <div className="flex-1">
+                  <CustomDatePicker
+                    value={pickupDate}
+                    onChange={setPickupDate}
+                    placeholder="Dátum prevzatia"
+                  />
+                </div>
 
+                {/* Date To */}
+                <div className="flex-1">
+                  <CustomDatePicker
+                    value={returnDate}
+                    onChange={setReturnDate}
+                    placeholder="Dátum vrátenia"
+                  />
+                </div>
+
+                {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full hover:opacity-90 py-2 font-bold text-sm transition-colors rounded-lg"
+                  className="hover:opacity-90 px-8 py-3 font-bold text-sm transition-colors rounded-lg whitespace-nowrap"
                   style={{
                     backgroundColor: '#fa9208',
                     color: '#191919'
@@ -526,70 +575,189 @@ const HomePage = () => {
                 </button>
               </form>
             </div>
+          </div>
 
-            {/* Slider - 50% width without background */}
-            <div className="flex flex-col" style={{flex: '0 0 50%'}}>
-              <div className="relative overflow-hidden rounded-lg shadow-2xl" style={{height: '30vh'}}>
-                {sliderImages.map((image, index) => (
-                  <div
-                    key={index}
-                    className="absolute inset-0 w-full h-full transition-opacity duration-1000"
-                    style={{
-                      opacity: currentSlide === index ? 1 : 0,
-                      backgroundImage: `url(${image})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center'
-                    }}
-                  >
-                    {/* Darker overlay */}
-                    <div className="absolute inset-0 bg-black/30"></div>
-                  </div>
-                ))}
+          {/* Mobile Form - vertical layout (only under 390px) */}
+          <div className="max-[390px]:flex max-[390px]:flex-col hidden gap-4 mx-2 mb-4">
+            <div
+              className="p-4 rounded-2xl flex flex-col gap-4"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                boxShadow: '0 8px 32px 0 rgba(250, 146, 8, 0.37)'
+              }}
+            >
+              {/* Title */}
+              <h2 className="text-xl font-bold text-white text-center">
+                Rýchla rezervácia
+              </h2>
 
-                {/* Shadow overlays on all 4 sides - top/bottom - reduced intensity */}
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.4) 100%)'
-                  }}
-                ></div>
-                {/* Shadow overlays - left/right - reduced intensity */}
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 85%, rgba(0, 0, 0, 0.4) 100%)'
-                  }}
-                ></div>
+              {/* Form inputs in vertical rows */}
+              <form className="flex flex-col gap-3">
+                {/* Car Selection */}
+                <select
+                  name="selectedCar"
+                  className="w-full text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
+                  style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
+                >
+                  <option value="">Vyberte auto</option>
+                  <option value="audi-a6">AUDI A6 - od 90€/deň</option>
+                  <option value="bmw-540i-xdrive">BMW 540I XDRIVE - od 90€/deň</option>
+                  <option value="audi-s4">AUDI S4 - od 90€/deň</option>
+                  <option value="audi-s6">AUDI S6 - od 100€/deň</option>
+                  <option value="maserati-levante">MASERATI LEVANTE - od 130€/deň</option>
+                  <option value="bmw-840i-xdrive">BMW 840I XDRIVE - od 140€/deň</option>
+                  <option value="bmw-x7-xdrive-40d">BMW X7 XDRIVE 40D - od 200€/deň</option>
+                </select>
 
-                {/* Slider indicators */}
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
-                  {sliderImages.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentSlide(index)}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        currentSlide === index ? 'bg-[rgb(250,146,8)] w-6' : 'bg-white/50'
-                      }`}
-                    />
-                  ))}
+                {/* Location Selection */}
+                <select
+                  name="location"
+                  className="w-full text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
+                  style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
+                >
+                  <option value="">Miesto vyzdvihnutia</option>
+                  <option value="nitra">Nitra</option>
+                  <option value="bratislava">Bratislava</option>
+                  <option value="kosice">Košice</option>
+                </select>
+
+                {/* Date From */}
+                <div className="w-full">
+                  <CustomDatePicker
+                    value={pickupDate}
+                    onChange={setPickupDate}
+                    placeholder="Dátum prevzatia"
+                  />
                 </div>
-              </div>
 
-              {/* Text under slider only */}
-              <div className="text-white mt-4 text-center">
-                <h3 className="text-2xl md:text-3xl font-medium font-goldman">
-                  Prémiová flotila vozidiel
-                </h3>
-              </div>
+                {/* Date To */}
+                <div className="w-full">
+                  <CustomDatePicker
+                    value={returnDate}
+                    onChange={setReturnDate}
+                    placeholder="Dátum vrátenia"
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className="w-full hover:opacity-90 px-8 py-3 font-bold text-sm transition-colors rounded-lg"
+                  style={{
+                    backgroundColor: '#fa9208',
+                    color: '#191919'
+                  }}
+                >
+                  Rezervovať
+                </button>
+              </form>
             </div>
-
           </div>
         </div>
 
       </section>
 
+      {/* Premium Fleet Section - Slider */}
+      <section className="py-8 lg:py-12 bg-black overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4">
+          <div
+            className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-0 items-center p-8 rounded-2xl"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.18)',
+              boxShadow: '0 8px 32px 0 rgba(250, 146, 8, 0.37)'
+            }}
+          >
+
+            {/* Left Side - Text Content */}
+            <div className="order-1 max-[390px]:order-1 lg:order-1 flex items-center justify-center max-[390px]:justify-start lg:justify-start max-[390px]:min-h-[120px]" style={{minHeight: '280px', zIndex: 2}}>
+              <FadeInUp>
+                <h2
+                  className="font-goldman font-medium leading-tight text-4xl sm:text-5xl lg:text-5xl xl:text-6xl max-[390px]:text-left"
+                  style={{
+                    background: 'linear-gradient(180deg, #ffffff 0%, rgb(250, 146, 8) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}
+                >
+                  <div>Prémiová</div>
+                  <div>flotila</div>
+                  <div>vozidiel</div>
+                </h2>
+              </FadeInUp>
+            </div>
+
+            {/* Right Side - Image Slider with Overlap */}
+            <div className="order-2 max-[390px]:order-2 lg:order-2 relative max-[390px]:ml-0 lg:-ml-[10%]" style={{zIndex: 1}}>
+              <FadeInUp delay={0.1}>
+                <div
+                  className="relative overflow-hidden rounded-2xl max-[390px]:mx-auto max-[390px]:h-[200px]"
+                  style={{
+                    height: '280px',
+                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(250, 146, 8, 0.1)'
+                  }}
+                >
+                  {sliderImages.map((image, index) => (
+                    <div
+                      key={index}
+                      className="absolute inset-0 w-full h-full transition-opacity duration-1000"
+                      style={{
+                        opacity: currentSlide === index ? 1 : 0,
+                        backgroundImage: `url(${image})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }}
+                    >
+                      {/* Subtle overlay */}
+                      <div className="absolute inset-0 bg-black/20"></div>
+                    </div>
+                  ))}
+
+                  {/* Reflection/Light flare at bottom */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
+                    style={{
+                      background: 'linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.1) 100%)',
+                      opacity: 0.6
+                    }}
+                  ></div>
+
+                  {/* Enhanced corner highlights */}
+                  <div
+                    className="absolute inset-0 pointer-events-none rounded-2xl"
+                    style={{
+                      background: 'radial-gradient(circle at top left, rgba(250, 146, 8, 0.15) 0%, transparent 50%)'
+                    }}
+                  ></div>
+
+                  {/* Slider indicators */}
+                  <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+                    {sliderImages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentSlide(index)}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          currentSlide === index ? 'bg-[rgb(250,146,8)] w-8' : 'bg-white/50'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </FadeInUp>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* Car Categories Section */}
-      <section className="py-8" style={{backgroundColor: '#000000', paddingTop: '150px', paddingBottom: '100px'}}>
+      <section className="py-8" style={{backgroundColor: '#000000', paddingTop: '50px', paddingBottom: '100px'}}>
         <div className="max-w-7xl mx-auto px-4">
 
           {/* Car Class Icons - 8 categories in 2 rows */}
@@ -640,10 +808,10 @@ const HomePage = () => {
                     // Single selection - clicking same brand deselects it
                     setSelectedBrand(selectedBrand === brand.value ? null : brand.value);
                   }}
-                  className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${
+                  className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 transform hover:scale-105 ${
                     selectedBrand === brand.value
-                      ? 'border-2 border-[rgb(250,146,8)]'
-                      : 'border-2 border-transparent hover:opacity-80'
+                      ? 'border-2 border-[rgb(250,146,8)] scale-105'
+                      : 'border-2 border-transparent hover:border-[rgb(250,146,8)]'
                   }`}
                   style={{backgroundColor: selectedBrand === brand.value ? 'rgba(250,146,8,0.1)' : 'transparent'}}
                 >
@@ -737,6 +905,7 @@ const HomePage = () => {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
                     transition={{
                       layout: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
                       opacity: { duration: 0.3 },
@@ -744,7 +913,11 @@ const HomePage = () => {
                     }}
                     className="aspect-[4/3] relative"
                     style={{
-                      backgroundColor: 'rgb(250,146,8)',
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                      backdropFilter: 'blur(20px)',
+                      WebkitBackdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255, 255, 255, 0.18)',
+                      boxShadow: '0 8px 32px 0 rgba(250, 146, 8, 0.37)',
                       borderRadius: '8px'
                     }}
                   >
@@ -752,7 +925,7 @@ const HomePage = () => {
                       onClick={() => window.location.href = `/car/${car._id}`}
                       className="relative overflow-hidden aspect-[4/3] block w-full h-full cursor-pointer"
                       style={{
-                        backgroundImage: `url(${car.image})`,
+                        backgroundImage: `url(${car.image || (car.images && car.images[0] && car.images[0].url) || ''})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         borderRadius: '6px'
@@ -765,16 +938,38 @@ const HomePage = () => {
                       {/* Spacer for layout */}
                       <div className="flex-1"></div>
 
-                      {/* Bottom section with orange background */}
-                      <div className="absolute bottom-0 left-0 right-0 p-4" style={{backgroundColor: 'rgba(250, 146, 8, 0.95)'}}>
+                      {/* Bottom section with glassmorphism background */}
+                      <div className="absolute bottom-0 left-0 right-0 p-4" style={{
+                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255, 255, 255, 0.18)'
+                      }}>
                         <div className="flex items-center justify-between">
                           {/* Car name and specs together in left container */}
                           <div className="flex flex-col gap-1">
                             <h3 className="text-lg font-bold text-white uppercase">{car.brand} {car.model}</h3>
                             <div className="flex items-center gap-x-3 text-xs text-white">
-                              <span className="font-medium">{car.power}</span>
-                              <span className="font-medium">{car.transmission}</span>
-                              <span className="font-medium">{car.fuel}</span>
+                              {/* Show Year if available */}
+                              {car.year && <span className="font-medium">{car.year}</span>}
+
+                              {/* Show Transmission (API field) or power (static field) */}
+                              {car.transmission && <span className="font-medium capitalize">{car.transmission}</span>}
+                              {!car.transmission && car.power && <span className="font-medium">{car.power}</span>}
+
+                              {/* Show Fuel Type */}
+                              {(car.fuelType || car.fuel) && (
+                                <span className="font-medium capitalize">
+                                  {car.fuelType === 'gasoline' ? 'Benzín' :
+                                   car.fuelType === 'diesel' ? 'Nafta' :
+                                   car.fuelType === 'electric' ? 'Elektro' :
+                                   car.fuelType === 'hybrid' ? 'Hybrid' :
+                                   car.fuelType || car.fuel}
+                                </span>
+                              )}
+
+                              {/* Show Seats if available */}
+                              {car.seats && <span className="font-medium">{car.seats} miest</span>}
                             </div>
                           </div>
 
@@ -829,7 +1024,7 @@ const HomePage = () => {
             ></div>
           </div>
         </div>
-        
+
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           {/* Mobile Layout - Text first, image below */}
           <div className="lg:hidden mb-8">
@@ -838,31 +1033,31 @@ const HomePage = () => {
                 VÁŠEŇ PRE AUTÁ, ZÁVÄZOK VOČI ZÁKAZNÍKOM.
               </h2>
             </FadeInUp>
-            
+
             <p className="text-gray-300 mb-8 text-center px-4">
               Individuálny, férový a ústretový prístup k našim zákazníkom. Dôraz na starostlivosť o náš vozový park. Čísla, ktoré hovoria za nás:
             </p>
-            
+
             {/* Mobile Image */}
             <div className="mb-8 px-4">
-              <img 
-                src={VasenImg} 
+              <img
+                src={VasenImg}
                 alt="Luxury car"
                 className="w-full h-64 sm:h-80 object-cover rounded-lg"
               />
             </div>
-            
+
             {/* Mobile Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 px-4">
-              <div className="text-center">
+              <div className="text-center max-[390px]:text-left">
                 <div className="text-4xl sm:text-5xl font-bold text-[rgb(250,146,8)] mb-2">10</div>
                 <div className="text-white font-bold text-sm sm:text-base">Prémiových áut v našej flotile</div>
               </div>
-              <div className="text-center">
+              <div className="text-center max-[390px]:text-left">
                 <div className="text-4xl sm:text-5xl font-bold text-[rgb(250,146,8)] mb-2">2.0M+</div>
                 <div className="text-white font-bold text-sm sm:text-base">Kilometrov najazdených šťastnými klientmi</div>
               </div>
-              <div className="text-center">
+              <div className="text-center max-[390px]:text-left">
                 <div className="text-4xl sm:text-5xl font-bold text-[rgb(250,146,8)] mb-2">580</div>
                 <div className="text-white font-bold text-sm sm:text-base">Spokojných klientov</div>
               </div>
@@ -877,7 +1072,7 @@ const HomePage = () => {
                   VÁŠEŇ PRE AUTÁ, ZÁVÄZOK VOČI ZÁKAZNÍKOM.
                 </h2>
               </FadeInUp>
-              
+
               <FadeInUp delay={0.2}>
                 <p className="text-gray-300 mb-12 max-w-2xl">
                   Individuálny, férový a ústretový prístup k našim zákazníkom. Dôraz na starostlivosť o náš vozový park. Čísla, ktoré hovoria za nás:

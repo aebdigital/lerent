@@ -11,7 +11,7 @@ import {
 import Button from '../components/Button';
 import CarImage from '../components/CarImage';
 import DatePicker from '../components/DatePicker';
-import { carsAPI, bookingAPI, authAPI } from '../services/api';
+import { carsAPI, bookingAPI, authAPI, servicesAPI, insuranceAPI } from '../services/api';
 import HeroImg from '../test.png';
 
 const BookingPage = () => {
@@ -26,6 +26,8 @@ const BookingPage = () => {
   const [bookingResult, setBookingResult] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [unavailableDates, setUnavailableDates] = useState([]);
+  const [additionalServices, setAdditionalServices] = useState([]);
+  const [insuranceOptions, setInsuranceOptions] = useState([]);
   
   // Generate time slots in 30-minute intervals
   const generateTimeSlots = () => {
@@ -198,16 +200,48 @@ const BookingPage = () => {
             prev.returnLocation,
         }));
         
+        // Load additional services from API
+        try {
+          // First try to load from dedicated services endpoint
+          const services = await servicesAPI.getServices();
+          if (services && services.length > 0) {
+            console.log('📋 Additional services from services API:', services);
+            setAdditionalServices(services);
+          } else {
+            // Fallback to loading from cars API response
+            const response = await carsAPI.getAvailableCars();
+            if (response && response.filters && response.filters.additionalServices) {
+              console.log('📋 Additional services from cars API:', response.filters.additionalServices);
+              setAdditionalServices(response.filters.additionalServices);
+            } else {
+              console.log('ℹ️ No additional services found in API response');
+            }
+          }
+        } catch (err) {
+          console.warn('Could not load additional services:', err);
+        }
+
         // Load selected car
         if (selectedCarId) {
           const car = await carsAPI.getCarDetails(selectedCarId);
           setSelectedCar(car);
-          
+
+          // Load insurance options for this car
+          try {
+            const insurance = await insuranceAPI.getExtendedInsurance(selectedCarId);
+            if (insurance && insurance.length > 0) {
+              console.log('🛡️ Insurance options loaded:', insurance);
+              setInsuranceOptions(insurance);
+            }
+          } catch (err) {
+            console.warn('Could not load insurance options:', err);
+          }
+
           // Load initial availability for next 6 months
           const startDate = new Date();
           const endDate = new Date();
           endDate.setMonth(endDate.getMonth() + 6);
-          
+
           try {
             const availability = await carsAPI.getCarAvailability(selectedCarId, startDate, endDate);
             setUnavailableDates(availability.unavailableDates || []);
@@ -365,10 +399,41 @@ const BookingPage = () => {
     }
   };
 
+  // Calculate price per day based on tiered pricing from API
+  const getPricePerDay = (days) => {
+    if (!selectedCar) return 0;
+
+    // If car has pricing.rates (tiered pricing), use it
+    if (selectedCar.pricing?.rates) {
+      const rates = selectedCar.pricing.rates;
+
+      // Match the number of days to the appropriate tier
+      if (days === 1 && rates['1day']) return rates['1day'];
+      if (days >= 2 && days <= 3 && rates['2-3days']) return rates['2-3days'];
+      if (days >= 4 && days <= 10 && rates['4-10days']) return rates['4-10days'];
+      if (days >= 11 && days <= 17 && rates['11-17days']) return rates['11-17days'];
+      if (days >= 18 && days <= 24 && rates['18-24days']) return rates['18-24days'];
+      if (days >= 25 && days <= 29 && rates['25-29days']) return rates['25-29days'];
+      if (days >= 30 && rates['30plus']) {
+        // For 30+ days, return the base daily rate
+        return selectedCar.pricing?.dailyRate || selectedCar.dailyRate || rates['25-29days'] || 50;
+      }
+
+      // Fallback to pricing.dailyRate or car.dailyRate
+      return selectedCar.pricing?.dailyRate || selectedCar.dailyRate || 50;
+    }
+
+    // Fallback to simple dailyRate, weeklyRate, monthlyRate
+    if (days >= 30 && selectedCar.monthlyRate) return selectedCar.monthlyRate / 30;
+    if (days >= 7 && selectedCar.weeklyRate) return selectedCar.weeklyRate / 7;
+    return selectedCar.dailyRate || 50;
+  };
+
   const calculateTotal = () => {
     if (!selectedCar || !formData.pickupDate || !formData.returnDate) return 0;
     const days = Math.ceil((formData.returnDate - formData.pickupDate) / (1000 * 60 * 60 * 24));
-    return selectedCar.dailyRate * days;
+    const pricePerDay = getPricePerDay(days);
+    return pricePerDay * days;
   };
 
   const calculateDays = () => {
@@ -581,61 +646,89 @@ const BookingPage = () => {
                     <h2 className="text-2xl font-bold text-white mb-6 text-left">
                       Vyberte si poistenie
                     </h2>
-                    
+
                     <div className="grid grid-cols-1 gap-4">
-                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="radio"
-                            name="insuranceType"
-                            value="basic"
-                            checked={formData.insuranceType === 'basic'}
-                            onChange={handleInputChange}
-                            className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
-                          />
-                          <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-white">Základné poistenie</h3>
-                            <p className="text-gray-300 text-sm mt-1">Zákonné poistenie zodpovednosti + kasko poistenie s spoluúčasťou 1000€</p>
-                            <p className="text-[rgb(250,146,8)] font-semibold mt-2">Zahrnuté v cene</p>
-                          </div>
-                        </div>
-                      </label>
-                      
-                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="radio"
-                            name="insuranceType"
-                            value="premium"
-                            checked={formData.insuranceType === 'premium'}
-                            onChange={handleInputChange}
-                            className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
-                          />
-                          <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-white">Prémiové poistenie</h3>
-                            <p className="text-gray-300 text-sm mt-1">Komplexné poistenie s nulovou spoluúčasťou + poistenie skiel a pneumatík</p>
-                            <p className="text-[rgb(250,146,8)] font-semibold mt-2">+15€/deň</p>
-                          </div>
-                        </div>
-                      </label>
-                      
-                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="radio"
-                            name="insuranceType"
-                            value="full"
-                            checked={formData.insuranceType === 'full'}
-                            onChange={handleInputChange}
-                            className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
-                          />
-                          <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-white">Úplné poistenie</h3>
-                            <p className="text-gray-300 text-sm mt-1">Maximálna ochrana - nulová spoluúčasť + krádež + vandalizmus + poistenie osobných vecí</p>
-                            <p className="text-[rgb(250,146,8)] font-semibold mt-2">+25€/deň</p>
-                          </div>
-                        </div>
-                      </label>
+                      {/* Render insurance options from API if available, otherwise use hardcoded fallback */}
+                      {insuranceOptions && insuranceOptions.length > 0 ? (
+                        insuranceOptions.map((insurance, index) => (
+                          <label key={insurance._id || insurance.name || index} className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="radio"
+                                name="insuranceType"
+                                value={insurance.name || insurance.type || `insurance-${index}`}
+                                checked={formData.insuranceType === (insurance.name || insurance.type || `insurance-${index}`)}
+                                onChange={handleInputChange}
+                                className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
+                              />
+                              <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-white">{insurance.displayName || insurance.name || insurance.type || 'Poistenie'}</h3>
+                                <p className="text-gray-300 text-sm mt-1">{insurance.description || ''}</p>
+                                <p className="text-[rgb(250,146,8)] font-semibold mt-2">
+                                  {insurance.pricePerDay ? `+${insurance.pricePerDay}€/deň` : insurance.price ? `+${insurance.price}€` : insurance.included ? 'Zahrnuté v cene' : ''}
+                                </p>
+                              </div>
+                            </div>
+                          </label>
+                        ))
+                      ) : (
+                        <>
+                          {/* Hardcoded fallback insurance options */}
+                          <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="radio"
+                                name="insuranceType"
+                                value="basic"
+                                checked={formData.insuranceType === 'basic'}
+                                onChange={handleInputChange}
+                                className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
+                              />
+                              <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-white">Základné poistenie</h3>
+                                <p className="text-gray-300 text-sm mt-1">Zákonné poistenie zodpovednosti + kasko poistenie s spoluúčasťou 1000€</p>
+                                <p className="text-[rgb(250,146,8)] font-semibold mt-2">Zahrnuté v cene</p>
+                              </div>
+                            </div>
+                          </label>
+
+                          <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="radio"
+                                name="insuranceType"
+                                value="premium"
+                                checked={formData.insuranceType === 'premium'}
+                                onChange={handleInputChange}
+                                className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
+                              />
+                              <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-white">Prémiové poistenie</h3>
+                                <p className="text-gray-300 text-sm mt-1">Komplexné poistenie s nulovou spoluúčasťou + poistenie skiel a pneumatík</p>
+                                <p className="text-[rgb(250,146,8)] font-semibold mt-2">+15€/deň</p>
+                              </div>
+                            </div>
+                          </label>
+
+                          <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="radio"
+                                name="insuranceType"
+                                value="full"
+                                checked={formData.insuranceType === 'full'}
+                                onChange={handleInputChange}
+                                className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
+                              />
+                              <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-white">Úplné poistenie</h3>
+                                <p className="text-gray-300 text-sm mt-1">Maximálna ochrana - nulová spoluúčasť + krádež + vandalizmus + poistenie osobných vecí</p>
+                                <p className="text-[rgb(250,146,8)] font-semibold mt-2">+25€/deň</p>
+                              </div>
+                            </div>
+                          </label>
+                        </>
+                      )}
                     </div>
                     
                     <div className="flex justify-between mt-8">
@@ -660,39 +753,66 @@ const BookingPage = () => {
                     </h2>
                     
                     <div className="space-y-4">
-                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="checkbox"
-                            name="gps"
-                            checked={formData.gps}
-                            onChange={handleInputChange}
-                            className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
-                          />
-                          <div>
-                            <h3 className="text-lg font-semibold text-white">GPS Navigácia</h3>
-                            <p className="text-gray-300 text-sm">Moderný GPS systém s mapami Slovenska a Európy</p>
-                          </div>
-                        </div>
-                        <span className="text-[rgb(250,146,8)] font-semibold">+5€/deň</span>
-                      </label>
-                      
-                      <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="checkbox"
-                            name="childSeat"
-                            checked={formData.childSeat}
-                            onChange={handleInputChange}
-                            className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
-                          />
-                          <div>
-                            <h3 className="text-lg font-semibold text-white">Detská sedačka</h3>
-                            <p className="text-gray-300 text-sm">Bezpečnostná detská sedačka pre deti 9-36 kg</p>
-                          </div>
-                        </div>
-                        <span className="text-[rgb(250,146,8)] font-semibold">+3€/deň</span>
-                      </label>
+                      {/* Render additional services from API if available, otherwise use hardcoded fallback */}
+                      {additionalServices && additionalServices.length > 0 ? (
+                        additionalServices.map((service) => (
+                          <label key={service._id || service.name} className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="checkbox"
+                                name={service.name}
+                                checked={formData[service.name] || false}
+                                onChange={handleInputChange}
+                                className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
+                              />
+                              <div>
+                                <h3 className="text-lg font-semibold text-white">{service.displayName || service.name}</h3>
+                                <p className="text-gray-300 text-sm">{service.description || ''}</p>
+                              </div>
+                            </div>
+                            <span className="text-[rgb(250,146,8)] font-semibold">
+                              {service.pricePerDay ? `+${service.pricePerDay}€/deň` : service.price ? `+${service.price}€` : ''}
+                            </span>
+                          </label>
+                        ))
+                      ) : (
+                        <>
+                          {/* Hardcoded fallback services */}
+                          <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="checkbox"
+                                name="gps"
+                                checked={formData.gps}
+                                onChange={handleInputChange}
+                                className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
+                              />
+                              <div>
+                                <h3 className="text-lg font-semibold text-white">GPS Navigácia</h3>
+                                <p className="text-gray-300 text-sm">Moderný GPS systém s mapami Slovenska a Európy</p>
+                              </div>
+                            </div>
+                            <span className="text-[rgb(250,146,8)] font-semibold">+5€/deň</span>
+                          </label>
+
+                          <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="checkbox"
+                                name="childSeat"
+                                checked={formData.childSeat}
+                                onChange={handleInputChange}
+                                className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
+                              />
+                              <div>
+                                <h3 className="text-lg font-semibold text-white">Detská sedačka</h3>
+                                <p className="text-gray-300 text-sm">Bezpečnostná detská sedačka pre deti 9-36 kg</p>
+                              </div>
+                            </div>
+                            <span className="text-[rgb(250,146,8)] font-semibold">+3€/deň</span>
+                          </label>
+                        </>
+                      )}
                       
                       <div className="rounded-lg p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                         <label className="block text-sm font-medium text-white mb-2">
@@ -1138,6 +1258,10 @@ const BookingPage = () => {
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-300">Počet dní:</span>
                       <span className="font-medium text-white">{calculateDays()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-300">Cena za deň:</span>
+                      <span className="font-medium text-white">{getPricePerDay(calculateDays()).toFixed(2)}€</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-300">Cena prenájmu:</span>
