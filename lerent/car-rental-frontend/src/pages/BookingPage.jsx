@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { 
-  CheckCircleIcon, 
+import {
   CheckIcon,
   ShieldCheckIcon,
   PlusIcon,
   UserIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import Button from '../components/Button';
 import CarImage from '../components/CarImage';
 import DatePicker from '../components/DatePicker';
