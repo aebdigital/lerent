@@ -59,6 +59,8 @@ const HomePage = () => {
   const [error, setError] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
 
   // Slider images - using car images from the grid
   const sliderImages = [AudiS6Img, MaseratiImg, BMW840iImg];
@@ -484,12 +486,12 @@ const HomePage = () => {
           <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
-        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex flex-col justify-end pb-8 gap-8 max-[390px]:gap-6">
+        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex flex-col justify-end pb-8 gap-8 max-[480px]:gap-6">
           {/* Top - Heading */}
-          <div className="text-white ml-2 sm:ml-8 max-[390px]:ml-2 max-[390px]:mr-2 max-[390px]:relative max-[390px]:w-auto" style={{width: '40%', maxWidth: '40%'}}>
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-medium leading-tight max-[390px]:text-3xl max-[390px]:leading-tight">
-              <span className="hidden max-[390px]:inline">Autopožičovňa s<br />individuálnym prístupom</span>
-              <span className="max-[390px]:hidden">Autopožičovňa s individuálnym prístupom</span>
+          <div className="text-white ml-2 sm:ml-8 max-[480px]:ml-2 max-[480px]:mr-2 max-[480px]:relative max-[480px]:w-auto" style={{width: '40%', maxWidth: '40%'}}>
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-medium leading-tight max-[480px]:text-3xl max-[480px]:leading-tight">
+              <span className="hidden max-[480px]:inline">Autopožičovňa s<br />individuálnym prístupom</span>
+              <span className="max-[480px]:hidden">Autopožičovňa s individuálnym prístupom</span>
             </h1>
           </div>
 
@@ -577,8 +579,8 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Mobile Form - vertical layout (only under 390px) */}
-          <div className="max-[390px]:flex max-[390px]:flex-col hidden gap-4 mx-2 mb-4">
+          {/* Mobile Form - vertical layout (only under 480px) */}
+          <div className="hidden max-[480px]:flex max-[480px]:flex-col gap-4 mx-2 mb-4">
             <div
               className="p-4 rounded-2xl flex flex-col gap-4"
               style={{
@@ -661,10 +663,10 @@ const HomePage = () => {
       </section>
 
       {/* Premium Fleet Section - Slider */}
-      <section className="py-8 lg:py-12 bg-black overflow-hidden">
+      <section className="pb-0 pt-4 max-[480px]:pb-0 lg:py-12 bg-black overflow-hidden">
         <div className="max-w-7xl mx-auto px-4">
           <div
-            className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-0 items-center p-8 rounded-2xl"
+            className="relative grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 lg:gap-0 items-center p-8 max-[480px]:p-4 max-[480px]:pb-8 rounded-2xl"
             style={{
               background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
               backdropFilter: 'blur(20px)',
@@ -675,29 +677,33 @@ const HomePage = () => {
           >
 
             {/* Left Side - Text Content */}
-            <div className="order-1 max-[390px]:order-1 lg:order-1 flex items-center justify-center max-[390px]:justify-start lg:justify-start max-[390px]:min-h-[120px]" style={{minHeight: '280px', zIndex: 2}}>
+            <div className="order-1 max-[480px]:order-1 lg:order-1 flex items-center justify-center max-[480px]:justify-start lg:justify-start max-[480px]:min-h-0 min-h-[280px]" style={{zIndex: 2}}>
               <FadeInUp>
-                <h2
-                  className="font-goldman font-medium leading-tight text-4xl sm:text-5xl lg:text-5xl xl:text-6xl max-[390px]:text-left"
-                  style={{
-                    background: 'linear-gradient(180deg, #ffffff 0%, rgb(250, 146, 8) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }}
-                >
-                  <div>Prémiová</div>
-                  <div>flotila</div>
-                  <div>vozidiel</div>
-                </h2>
+                <div className="max-[480px]:mt-0">
+                  <h2
+                    className="font-goldman font-medium leading-tight text-3xl sm:text-4xl lg:text-4xl xl:text-5xl max-[480px]:text-left mb-4 max-[480px]:mb-2"
+                    style={{
+                      background: 'linear-gradient(180deg, #ffffff 0%, rgb(250, 146, 8) 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text'
+                    }}
+                  >
+                    <div>Prémiová flotila</div>
+                    <div>vozidiel</div>
+                  </h2>
+                  <p className="text-gray-300 text-base sm:text-lg lg:text-xl max-w-md max-[480px]:text-left max-[480px]:mb-0">
+                    Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.
+                  </p>
+                </div>
               </FadeInUp>
             </div>
 
             {/* Right Side - Image Slider with Overlap */}
-            <div className="order-2 max-[390px]:order-2 lg:order-2 relative max-[390px]:ml-0 lg:-ml-[10%]" style={{zIndex: 1}}>
+            <div className="order-2 max-[480px]:order-2 lg:order-2 relative max-[480px]:ml-0 max-[480px]:w-full lg:-ml-[10%]" style={{zIndex: 1}}>
               <FadeInUp delay={0.1}>
                 <div
-                  className="relative overflow-hidden rounded-2xl max-[390px]:mx-auto max-[390px]:h-[200px]"
+                  className="relative overflow-hidden rounded-2xl max-[480px]:mx-0 max-[480px]:w-full max-[480px]:aspect-video max-[480px]:h-auto max-[480px]:max-h-[200px]"
                   style={{
                     height: '280px',
                     boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(250, 146, 8, 0.1)'
@@ -757,12 +763,13 @@ const HomePage = () => {
       </section>
 
       {/* Car Categories Section */}
-      <section className="py-8" style={{backgroundColor: '#000000', paddingTop: '50px', paddingBottom: '100px'}}>
+      <section className="py-8 max-[480px]:pt-[15px]" style={{backgroundColor: '#000000', paddingTop: '50px', paddingBottom: '100px'}}>
         <div className="max-w-7xl mx-auto px-4">
 
           {/* Car Class Icons - 8 categories in 2 rows */}
           <FadeInUp>
-            <div className="flex justify-center mb-8">
+            {/* Desktop View - Grid */}
+            <div className="hidden sm:flex justify-center mb-8">
               <div className="grid grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 lg:gap-4 w-full max-w-7xl">
                 {carClasses.map((carClass) => (
                 <button
@@ -794,13 +801,57 @@ const HomePage = () => {
               ))}
               </div>
             </div>
+
+            {/* Mobile View - Dropdown */}
+            <div className="sm:hidden mb-4 px-4">
+              <div className="relative">
+                <button
+                  onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                  className="w-full flex items-center justify-between p-4 rounded-lg text-white border border-gray-600"
+                  style={{backgroundColor: 'rgb(25, 25, 25)'}}
+                >
+                  <span className="font-medium">
+                    Kategória: {carClasses.find(c => c.value === activeTab)?.name || 'Všetky'}
+                  </span>
+                  <ChevronDownIcon className={`w-5 h-5 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isCategoryDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-2 rounded-lg border border-gray-600 overflow-hidden" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                    {carClasses.map((carClass) => (
+                      <button
+                        key={carClass.value}
+                        onClick={() => {
+                          setActiveTab(activeTab === carClass.value ? 'all' : carClass.value);
+                          setIsCategoryDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center space-x-3 p-4 transition-all hover:bg-[rgba(250,146,8,0.1)] ${
+                          activeTab === carClass.value ? 'bg-[rgba(250,146,8,0.1)]' : ''
+                        }`}
+                      >
+                        <img
+                          src={carClass.icon}
+                          alt={carClass.name}
+                          className="w-12 h-8 object-contain"
+                        />
+                        <span className={`font-medium ${
+                          activeTab === carClass.value ? 'text-[rgb(250,146,8)]' : 'text-gray-300'
+                        }`}>
+                          {carClass.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </FadeInUp>
 
           {/* Brand Filter and Sort Dropdown Row */}
           <FadeInUp delay={0.2}>
             <div className="flex flex-col lg:flex-row items-center justify-between mb-8 gap-4">
-            {/* Brand Filter - Left/Center with grey background container */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-3 sm:gap-4 lg:gap-6 p-4 rounded-lg" style={{backgroundColor: 'rgb(35, 35, 35)'}}>
+            {/* Brand Filter - Desktop View */}
+            <div className="hidden sm:flex flex-wrap justify-center lg:justify-start gap-3 sm:gap-4 lg:gap-6 p-4 rounded-lg" style={{backgroundColor: 'rgb(35, 35, 35)'}}>
               {brandFilters.map((brand) => (
                 <button
                   key={brand.value}
@@ -838,8 +889,128 @@ const HomePage = () => {
               ))}
             </div>
 
-            {/* Custom Sort Dropdown - Right */}
-            <div className="relative dropdown-container">
+            {/* Brand Filter & Sort - Mobile Row */}
+            <div className="sm:hidden w-full px-4 mb-8 flex gap-2">
+              {/* Brand Filter - 70% width */}
+              <div className="relative" style={{width: '70%'}}>
+                <button
+                  onClick={() => setIsBrandDropdownOpen(!isBrandDropdownOpen)}
+                  className="w-full flex items-center justify-between p-4 rounded-lg text-white border border-gray-600"
+                  style={{backgroundColor: 'rgb(35, 35, 35)'}}
+                >
+                  <span className="font-medium">
+                    Značka: {brandFilters.find(b => b.value === selectedBrand)?.name || 'Všetky'}
+                  </span>
+                  <ChevronDownIcon className={`w-5 h-5 transition-transform ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isBrandDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-2 rounded-lg border border-gray-600 overflow-hidden" style={{backgroundColor: 'rgb(35, 35, 35)'}}>
+                    {brandFilters.map((brand) => (
+                      <button
+                        key={brand.value}
+                        onClick={() => {
+                          setSelectedBrand(selectedBrand === brand.value ? null : brand.value);
+                          setIsBrandDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center space-x-3 p-4 transition-all hover:bg-[rgba(250,146,8,0.1)] ${
+                          selectedBrand === brand.value ? 'bg-[rgba(250,146,8,0.1)]' : ''
+                        }`}
+                      >
+                        <img
+                          src={brand.value === 'bmw'
+                            ? 'https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg'
+                            : brand.value === 'audi'
+                            ? AudiLogo
+                            : MaseratiLogo
+                          }
+                          alt={brand.name}
+                          className="w-10 h-10 object-contain"
+                        />
+                        <span className={`font-medium ${
+                          selectedBrand === brand.value ? 'text-[rgb(250,146,8)]' : 'text-gray-300'
+                        }`}>
+                          {brand.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Sort Filter - 30% width */}
+              <div className="relative" style={{width: '30%'}}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="w-full h-full text-white p-4 border border-gray-600 rounded-lg flex items-center justify-center gap-1"
+                  style={{backgroundColor: '#000000'}}
+                >
+                  {sortBy === 'price-asc' && (
+                    <>
+                      <span className="text-base">€</span>
+                      <ArrowDownIcon className="h-4 w-4" />
+                    </>
+                  )}
+                  {sortBy === 'price-desc' && (
+                    <>
+                      <span className="text-base">€</span>
+                      <ArrowUpIcon className="h-4 w-4" />
+                    </>
+                  )}
+                  {sortBy === 'availability' && (
+                    <ClockIcon className="h-4 w-4" />
+                  )}
+                  <ChevronDownIcon
+                    className={`h-4 w-4 text-white transition-transform ${
+                      isDropdownOpen ? 'rotate-180' : 'rotate-0'
+                    }`}
+                  />
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-2 rounded-lg border border-gray-600 overflow-hidden" style={{backgroundColor: '#000000'}}>
+                    <button
+                      onClick={() => {
+                        setSortBy('price-asc');
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-center gap-2 p-3 transition-all hover:bg-[rgba(250,146,8,0.1)] ${
+                        sortBy === 'price-asc' ? 'bg-[rgba(250,146,8,0.1)]' : ''
+                      }`}
+                    >
+                      <span className="text-lg">€</span>
+                      <ArrowDownIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSortBy('price-desc');
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-center gap-2 p-3 transition-all hover:bg-[rgba(250,146,8,0.1)] ${
+                        sortBy === 'price-desc' ? 'bg-[rgba(250,146,8,0.1)]' : ''
+                      }`}
+                    >
+                      <span className="text-lg">€</span>
+                      <ArrowUpIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSortBy('availability');
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-center gap-2 p-3 transition-all hover:bg-[rgba(250,146,8,0.1)] ${
+                        sortBy === 'availability' ? 'bg-[rgba(250,146,8,0.1)]' : ''
+                      }`}
+                    >
+                      <ClockIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Custom Sort Dropdown - Desktop */}
+            <div className="relative dropdown-container hidden sm:block">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="text-white px-6 py-4 border border-gray-600 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3 font-goldman text-lg font-medium"
@@ -982,7 +1153,7 @@ const HomePage = () => {
                               }}
                               className="hover:opacity-90 text-xs font-bold transition-colors px-3 py-1 rounded-lg whitespace-nowrap"
                               style={{
-                                backgroundColor: '#ffffff',
+                                backgroundColor: '#fa9208',
                                 color: '#191919'
                               }}
                             >
@@ -1049,15 +1220,15 @@ const HomePage = () => {
 
             {/* Mobile Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 px-4">
-              <div className="text-center max-[390px]:text-left">
+              <div className="text-center max-[480px]:text-left">
                 <div className="text-4xl sm:text-5xl font-bold text-[rgb(250,146,8)] mb-2">10</div>
                 <div className="text-white font-bold text-sm sm:text-base">Prémiových áut v našej flotile</div>
               </div>
-              <div className="text-center max-[390px]:text-left">
+              <div className="text-center max-[480px]:text-left">
                 <div className="text-4xl sm:text-5xl font-bold text-[rgb(250,146,8)] mb-2">2.0M+</div>
                 <div className="text-white font-bold text-sm sm:text-base">Kilometrov najazdených šťastnými klientmi</div>
               </div>
-              <div className="text-center max-[390px]:text-left">
+              <div className="text-center max-[480px]:text-left">
                 <div className="text-4xl sm:text-5xl font-bold text-[rgb(250,146,8)] mb-2">580</div>
                 <div className="text-white font-bold text-sm sm:text-base">Spokojných klientov</div>
               </div>

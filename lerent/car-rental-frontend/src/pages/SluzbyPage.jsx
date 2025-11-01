@@ -119,7 +119,7 @@ const PrenajomPage = () => {
         <div
           className="absolute left-0 top-0 bottom-0 w-1/2 hidden lg:block"
           style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
             zIndex: 1
           }}
         />
@@ -199,7 +199,7 @@ const PrenajomPage = () => {
         <div
           className="absolute right-0 top-0 bottom-0 w-1/2 hidden lg:block"
           style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
             zIndex: 1
           }}
         />
@@ -293,7 +293,7 @@ const PrenajomPage = () => {
         <div
           className="absolute left-0 top-0 bottom-0 w-1/2 hidden lg:block"
           style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
             zIndex: 1
           }}
         />
