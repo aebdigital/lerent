@@ -1,5 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { locationsAPI, carsAPI } from '../services/api';
+import CustomDatePicker from './CustomDatePicker';
 
 // Fade In Up Animation Component
 const FadeInUp = ({ children, delay = 0 }) => {
@@ -19,25 +22,167 @@ const FadeInUp = ({ children, delay = 0 }) => {
 };
 
 const BookingFormSection = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     email: '',
     selectedCar: '',
     location: '',
+    pickupDate: null,
+    returnDate: null,
     notes: ''
   });
 
-  // Available cars list
-  const availableCars = [
-    { id: 'audi-a6', name: 'AUDI A6', price: 90 },
-    { id: 'bmw-540i-xdrive', name: 'BMW 540I XDRIVE', price: 90 },
-    { id: 'audi-s4', name: 'AUDI S4', price: 90 },
-    { id: 'audi-s6', name: 'AUDI S6', price: 100 },
-    { id: 'maserati-levante', name: 'MASERATI LEVANTE', price: 130 },
-    { id: 'bmw-840i-xdrive', name: 'BMW 840I XDRIVE', price: 140 },
-    { id: 'bmw-x7-xdrive-40d', name: 'BMW X7 XDRIVE 40D', price: 200 }
-  ];
+  const [locations, setLocations] = useState([]);
+  const [allCars, setAllCars] = useState([]);
+  const [availableCars, setAvailableCars] = useState([]);
+  const [unavailableDates, setUnavailableDates] = useState([]);
+  const [loadingCars, setLoadingCars] = useState(true);
+
+  // Load pickup/dropoff locations from API
+  useEffect(() => {
+    const loadLocations = async () => {
+      try {
+        const { locations: locs, defaultLocation } = await locationsAPI.getPickupLocations();
+        if (locs && locs.length > 0) {
+          console.log('📍 Loaded', locs.length, 'pickup locations for booking form');
+          // Use location names for the dropdown
+          const locationNames = locs.map(loc => loc.name);
+          setLocations(locationNames);
+
+          // Set default location if available
+          if (defaultLocation && !formData.location) {
+            setFormData(prev => ({
+              ...prev,
+              location: defaultLocation
+            }));
+          }
+        } else {
+          console.warn('⚠️ No locations returned from API, using fallback');
+          // Fallback to default options
+          setLocations(['Pobočka Nitra']);
+        }
+      } catch (err) {
+        console.error('❌ Error loading pickup locations:', err);
+        // Fallback to default options
+        setLocations(['Pobočka Nitra']);
+      }
+    };
+
+    loadLocations();
+  }, []);
+
+  // Load all cars from API
+  useEffect(() => {
+    const loadCars = async () => {
+      try {
+        setLoadingCars(true);
+        const response = await carsAPI.getAvailableCars();
+        console.log('🚗 Loaded cars for booking form:', response);
+
+        // Handle both array and object response formats
+        const carsData = Array.isArray(response) ? response : (response.data || []);
+
+        console.log('🚗 Total cars:', carsData.length);
+        setAllCars(carsData);
+        setAvailableCars(carsData); // Initially all cars are available
+      } catch (err) {
+        console.error('❌ Error loading cars:', err);
+        setAllCars([]);
+        setAvailableCars([]);
+      } finally {
+        setLoadingCars(false);
+      }
+    };
+
+    loadCars();
+  }, []);
+
+  // When user selects a car, fetch its unavailable dates
+  useEffect(() => {
+    const fetchCarAvailability = async () => {
+      if (!formData.selectedCar) {
+        setUnavailableDates([]);
+        return;
+      }
+
+      try {
+        // Get 6 months range for availability check
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + 6);
+
+        const availability = await carsAPI.getCarAvailability(
+          formData.selectedCar,
+          startDate.toISOString().split('T')[0],
+          endDate.toISOString().split('T')[0]
+        );
+
+        if (availability && availability.unavailableDates) {
+          const unavailable = availability.unavailableDates.map(dateStr => new Date(dateStr));
+          setUnavailableDates(unavailable);
+          console.log('📅 Loaded unavailable dates for car:', unavailable.length);
+        }
+      } catch (err) {
+        console.error('❌ Error fetching car availability:', err);
+        setUnavailableDates([]);
+      }
+    };
+
+    fetchCarAvailability();
+  }, [formData.selectedCar]);
+
+  // When user selects dates, filter available cars
+  useEffect(() => {
+    const filterCarsByDates = async () => {
+      if (!formData.pickupDate || !formData.returnDate) {
+        // No dates selected, show all cars
+        setAvailableCars(allCars);
+        return;
+      }
+
+      try {
+        const startDate = formData.pickupDate.toISOString().split('T')[0];
+        const endDate = formData.returnDate.toISOString().split('T')[0];
+
+        // Check availability for each car
+        const availabilityChecks = await Promise.all(
+          allCars.map(async (car) => {
+            try {
+              const availability = await carsAPI.getCarAvailability(car._id, startDate, endDate);
+              return {
+                car,
+                isAvailable: availability && availability.isAvailable
+              };
+            } catch (err) {
+              console.error(`Error checking availability for car ${car._id}:`, err);
+              return { car, isAvailable: false };
+            }
+          })
+        );
+
+        // Filter to only available cars
+        const available = availabilityChecks
+          .filter(check => check.isAvailable)
+          .map(check => check.car);
+
+        setAvailableCars(available);
+        console.log('🚗 Filtered to', available.length, 'available cars for selected dates');
+
+        // If selected car is not available, clear selection
+        if (formData.selectedCar && !available.find(car => car._id === formData.selectedCar)) {
+          setFormData(prev => ({ ...prev, selectedCar: '' }));
+        }
+      } catch (err) {
+        console.error('❌ Error filtering cars by dates:', err);
+        setAvailableCars(allCars);
+      }
+    };
+
+    filterCarsByDates();
+  }, [formData.pickupDate, formData.returnDate, allCars]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -46,9 +191,35 @@ const BookingFormSection = () => {
     });
   };
 
+  const handleDateSelect = (field, date) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: date
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+
+    // If a car is selected, navigate to reservation page with pre-filled data
+    if (formData.selectedCar) {
+      const selectedCarObj = allCars.find(car => car._id === formData.selectedCar);
+      const carName = selectedCarObj ? `${selectedCarObj.brand} ${selectedCarObj.model}` : '';
+
+      const queryParams = new URLSearchParams({
+        carId: formData.selectedCar,
+        carName: carName,
+        ...(formData.pickupDate && { pickupDate: formData.pickupDate.toISOString() }),
+        ...(formData.returnDate && { returnDate: formData.returnDate.toISOString() }),
+        ...(formData.location && { pickupLocation: formData.location, returnLocation: formData.location })
+      });
+
+      navigate(`/booking?${queryParams.toString()}`);
+    } else {
+      // No car selected, just log for now
+      console.log('Form submitted without car selection:', formData);
+      alert('Prosím vyberte auto');
+    }
   };
 
   return (
@@ -104,20 +275,54 @@ const BookingFormSection = () => {
             </div>
           </div>
 
+          {/* Date pickers - on one line */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-white text-sm font-medium mb-2">Dátum vyzdvihnutia</label>
+              <CustomDatePicker
+                selectedDate={formData.pickupDate}
+                onDateSelect={(date) => handleDateSelect('pickupDate', date)}
+                minDate={new Date()}
+                unavailableDates={unavailableDates}
+                placeholder="Vyberte dátum"
+              />
+            </div>
+            <div>
+              <label className="block text-white text-sm font-medium mb-2">Dátum vrátenia</label>
+              <CustomDatePicker
+                selectedDate={formData.returnDate}
+                onDateSelect={(date) => handleDateSelect('returnDate', date)}
+                minDate={formData.pickupDate ? new Date(formData.pickupDate.getTime() + 86400000) : new Date()}
+                unavailableDates={unavailableDates}
+                placeholder="Vyberte dátum"
+              />
+            </div>
+          </div>
+
           {/* Vyber auta - full width */}
           <div>
-            <label className="block text-white text-sm font-medium mb-2">Vyberte auto</label>
+            <label className="block text-white text-sm font-medium mb-2">
+              Vyberte auto
+              {formData.pickupDate && formData.returnDate && (
+                <span className="ml-2 text-xs text-gray-400">
+                  ({availableCars.length} dostupných)
+                </span>
+              )}
+            </label>
             <select
               name="selectedCar"
               value={formData.selectedCar}
               onChange={handleInputChange}
-              className="w-full text-white px-4 py-3 rounded-lg border border-gray-900 focus:border-orange-500 focus:outline-none appearance-none"
+              disabled={loadingCars}
+              className="w-full text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none disabled:opacity-50"
               style={{backgroundColor: '#191919', borderColor: '#0a0a0a'}}
             >
-              <option value="">Vyberte auto</option>
+              <option value="">
+                {loadingCars ? 'Načítavam autá...' : 'Vyberte auto'}
+              </option>
               {availableCars.map((car) => (
-                <option key={car.id} value={car.id}>
-                  {car.name} - od {car.price}€/deň
+                <option key={car._id} value={car._id}>
+                  {car.brand} {car.model} - od {car.pricing?.dailyRate || car.dailyRate || 0}€/deň
                 </option>
               ))}
             </select>
@@ -134,9 +339,11 @@ const BookingFormSection = () => {
               style={{backgroundColor: '#191919', borderColor: '#0a0a0a'}}
             >
               <option value="">Vyberte možnosť</option>
-              <option value="nitra">Nitra</option>
-              <option value="bratislava">Bratislava</option>
-              <option value="kosice">Košice</option>
+              {locations.map((location, index) => (
+                <option key={index} value={location}>
+                  {location}
+                </option>
+              ))}
             </select>
           </div>
           

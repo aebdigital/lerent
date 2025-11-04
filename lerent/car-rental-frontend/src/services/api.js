@@ -512,13 +512,51 @@ export const carsAPI = {
           console.log('✅ Car availability data from API:', result.data);
           console.log('   Unavailable dates:', result.data?.unavailableDates);
 
-          // Note: Backend currently doesn't return unavailableDates array
-          // When backend is updated to include this field, calendars will automatically
-          // show unavailable dates as grayed out
-          // Expected format: { unavailableDates: ['2025-10-25', '2025-10-26', ...] }
+          // If backend doesn't return unavailableDates, fetch calendar to build it
           if (!result.data?.unavailableDates) {
             console.warn('⚠️ Backend availability API does not return unavailableDates array');
-            console.warn('   Add this field to enable date blocking in calendars');
+            console.warn('   Fetching calendar to build unavailableDates...');
+
+            try {
+              // Fetch calendar for this car using the correct endpoint
+              const calendarResponse = await fetch(
+                `${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars/${carId}/calendar?startDate=${queryParams.get('startDate')}&endDate=${queryParams.get('endDate')}`,
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                  }
+                }
+              );
+
+              if (calendarResponse.ok) {
+                const calendarResult = await handleResponse(calendarResponse);
+                const calendar = calendarResult.data?.calendar;
+                console.log('📅 Found calendar data for car:', calendar);
+
+                // Build unavailableDates array from booked dates
+                const unavailableDates = [];
+
+                if (calendar && calendar.bookedDates && Array.isArray(calendar.bookedDates)) {
+                  calendar.bookedDates.forEach(bookedDate => {
+                    // Extract just the date part (YYYY-MM-DD) from the ISO string
+                    const dateStr = bookedDate.date.split('T')[0];
+                    if (!unavailableDates.includes(dateStr)) {
+                      unavailableDates.push(dateStr);
+                    }
+                  });
+                }
+
+                console.log('🔴 Generated unavailable dates from calendar:', unavailableDates);
+                console.log('   Total booked days:', unavailableDates.length);
+
+                return {
+                  ...result.data,
+                  unavailableDates: unavailableDates
+                };
+              }
+            } catch (calendarError) {
+              console.warn('Failed to fetch calendar for unavailable dates:', calendarError);
+            }
           }
 
           return result.data || { isAvailable: true, status: 'available' };
@@ -931,11 +969,70 @@ export const bookingAPI = {
   }
 };
 
+// Locations API
+export const locationsAPI = {
+  // Get pickup and dropoff locations for the tenant
+  getPickupLocations: async () => {
+    try {
+      console.log('📍 Fetching pickup locations from API...');
+
+      const response = await fetch(
+        `${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/pickup-locations`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+
+      const result = await handleResponse(response);
+
+      if (result.success && result.data && result.data.pickupLocations) {
+        console.log('✅ Pickup locations loaded:', result.data.pickupLocations.length, 'locations');
+        return {
+          locations: result.data.pickupLocations,
+          defaultLocation: result.data.defaultLocation
+        };
+      }
+
+      throw new Error('Invalid response format from pickup locations API');
+    } catch (error) {
+      console.error('❌ Error fetching pickup locations:', error);
+
+      // Return empty array as fallback
+      return {
+        locations: [],
+        defaultLocation: null
+      };
+    }
+  },
+
+  // Get default location from locations array
+  getDefaultLocation: (locations) => {
+    if (!locations || locations.length === 0) return null;
+    return locations.find(loc => loc.isDefault) || locations[0];
+  },
+
+  // Find location by ID
+  findLocationById: (locations, locationId) => {
+    if (!locations || !locationId) return null;
+    return locations.find(loc => loc.id === locationId);
+  },
+
+  // Find location by name
+  findLocationByName: (locations, locationName) => {
+    if (!locations || !locationName) return null;
+    return locations.find(loc => loc.name === locationName);
+  }
+};
+
 export default {
   auth: authAPI,
   cars: carsAPI,
   reservations: reservationsAPI,
   booking: bookingAPI,
   services: servicesAPI,
-  insurance: insuranceAPI
+  insurance: insuranceAPI,
+  locations: locationsAPI
 }; 

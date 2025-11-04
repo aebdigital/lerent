@@ -1,17 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon, CalendarIcon } from '@heroicons/react/24/outline';
 
-const DatePicker = ({ 
-  selectedDate, 
-  onDateSelect, 
-  minDate, 
-  maxDate, 
-  unavailableDates = [], 
-  placeholder = "Vyberte dátum" 
+const DatePicker = ({
+  selectedDate,
+  onDateSelect,
+  minDate,
+  maxDate,
+  unavailableDates = [],
+  placeholder = "Vyberte dátum",
+  otherSelectedDate = null, // The other date in the range (pickup or return)
+  isReturnPicker = false // Flag to indicate if this is the return date picker
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const containerRef = useRef(null);
+
 
   // Slovak month names
   const monthNames = [
@@ -58,6 +61,29 @@ const DatePicker = ({
     return unavailableDates.includes(dateStr);
   };
 
+  // Check if there are any unavailable dates between two dates
+  const hasUnavailableDatesBetween = (startDate, endDate) => {
+    if (!startDate || !endDate) return false;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Ensure start is before end
+    if (start > end) return false;
+
+    // Check each date in the range
+    const currentDate = new Date(start);
+    while (currentDate <= end) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      if (unavailableDates.includes(dateStr)) {
+        return true;
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return false;
+  };
+
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -92,10 +118,34 @@ const DatePicker = ({
   };
 
   const handleDateClick = (date) => {
-    if (!isDateDisabled(date)) {
-      onDateSelect(date);
-      setIsOpen(false);
+    if (isDateDisabled(date)) {
+      return;
     }
+
+    // If this is the return picker and we have a pickup date, validate the range
+    if (isReturnPicker && otherSelectedDate) {
+      const pickupDate = otherSelectedDate;
+      const returnDate = date;
+
+      if (hasUnavailableDatesBetween(pickupDate, returnDate)) {
+        alert('Nemôžete vybrať tento dátum, pretože v rozsahu sú nedostupné dni. Prosím vyberte iný dátum.');
+        return;
+      }
+    }
+
+    // If this is the pickup picker and we have a return date, validate the range
+    if (!isReturnPicker && otherSelectedDate) {
+      const pickupDate = date;
+      const returnDate = otherSelectedDate;
+
+      if (hasUnavailableDatesBetween(pickupDate, returnDate)) {
+        alert('Nemôžete vybrať tento dátum, pretože v rozsahu sú nedostupné dni. Prosím vyberte iný dátum.');
+        return;
+      }
+    }
+
+    onDateSelect(date);
+    setIsOpen(false);
   };
 
   const days = getDaysInMonth(currentMonth);
@@ -118,7 +168,13 @@ const DatePicker = ({
 
       {/* Calendar Dropdown */}
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-1 w-80 rounded-lg shadow-lg z-50 border border-gray-700" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+        <div
+          className={`absolute bottom-full mb-1 w-80 rounded-lg shadow-lg z-50 border border-gray-700`}
+          style={{
+            backgroundColor: 'rgb(25, 25, 25)',
+            ...(isReturnPicker ? { right: 0, transform: 'translateX(0)' } : { left: 0 })
+          }}
+        >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
             <button
@@ -161,7 +217,7 @@ const DatePicker = ({
                       selectedDate && date.toDateString() === selectedDate.toDateString()
                         ? 'text-white font-semibold'
                         : isDateUnavailable(date)
-                        ? 'text-red-400 bg-red-900 cursor-not-allowed'
+                        ? 'text-gray-300 bg-gray-800 cursor-not-allowed opacity-50'
                         : isDateDisabled(date)
                         ? 'text-gray-600 cursor-not-allowed'
                         : 'text-white hover:bg-gray-700'

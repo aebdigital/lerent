@@ -16,6 +16,7 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
     model,
     year,
     dailyRate,
+    pricing,
     deposit,
     category,
     features,
@@ -30,7 +31,7 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
 
   // Combine brand and model for display name
   const carName = `${brand} ${model}`;
-  
+
   // Show only available cars or all cars in fleet view
   const isAvailable = status === 'available';
 
@@ -266,7 +267,7 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
 
               {/* Price */}
               <div className="text-2xl font-bold text-white">
-                od {dailyRate || 40} eur
+                od {pricing?.dailyRate || dailyRate || 40} eur
               </div>
             </div>
           </div>

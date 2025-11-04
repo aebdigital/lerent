@@ -11,7 +11,8 @@ import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import Button from '../components/Button';
 import CarImage from '../components/CarImage';
 import DatePicker from '../components/DatePicker';
-import { carsAPI, bookingAPI, authAPI, servicesAPI, insuranceAPI } from '../services/api';
+import { carsAPI, bookingAPI, authAPI, servicesAPI, insuranceAPI, locationsAPI } from '../services/api';
+import paymentService from '../services/paymentService';
 import HeroImg from '../test.png';
 
 const BookingPage = () => {
@@ -28,6 +29,7 @@ const BookingPage = () => {
   const [unavailableDates, setUnavailableDates] = useState([]);
   const [additionalServices, setAdditionalServices] = useState([]);
   const [insuranceOptions, setInsuranceOptions] = useState([]);
+  const [locations, setLocations] = useState([]);
   
   // Generate time slots in 30-minute intervals
   const generateTimeSlots = () => {
@@ -73,6 +75,7 @@ const BookingPage = () => {
     phone: '',
     password: '',
     dateOfBirth: '',
+    birthNumber: '',
     licenseNumber: '',
     driverLicenseNumber: '',
     licenseExpiry: '',
@@ -84,8 +87,8 @@ const BookingPage = () => {
       country: 'SK'
     },
     
-    // Step 1: Insurance
-    insuranceType: '',
+    // Step 1: Insurance (optional, can select multiple)
+    selectedInsurance: [],
     
     // Step 2: Additional Services
     additionalDrivers: [],
@@ -108,56 +111,12 @@ const BookingPage = () => {
     { number: 4, title: 'Potvrdenie', icon: DocumentTextIcon }
   ];
 
-  // Predefined locations - Slovak locations (Bratislava)
-  const locations = [
-    {
-      name: 'Centrum - Bratislava',
-      address: 'Hlavná 123',
-      city: 'Bratislava',
-      state: 'Bratislavský kraj',
-      postalCode: '821 08',
-      country: 'SK'
-    },
-    {
-      name: 'Letisko - M. R. Štefánika',
-      address: 'Letisko M. R. Štefánika',
-      city: 'Bratislava',
-      state: 'Bratislavský kraj',
-      postalCode: '823 05',
-      country: 'SK'
-    },
-    {
-      name: 'Petržalka - Bratislava',
-      address: 'Petržalská 456',
-      city: 'Bratislava',
-      state: 'Bratislavský kraj',
-      postalCode: '851 01',
-      country: 'SK'
-    },
-    {
-      name: 'Ružinov - Bratislava',
-      address: 'Ružinovská 789',
-      city: 'Bratislava',
-      state: 'Bratislavský kraj',
-      postalCode: '821 01',
-      country: 'SK'
-    },
-    {
-      name: 'Nové Mesto - Bratislava',
-      address: 'Nové Mesto 321',
-      city: 'Bratislava',
-      state: 'Bratislavský kraj',
-      postalCode: '831 01',
-      country: 'SK'
-    }
-  ];
-
-  // Load selected car and current user
+  // Load selected car, current user, and locations
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        
+
         // Parse URL parameters for pre-filled data
         const pickupDateParam = searchParams.get('pickupDate');
         const returnDateParam = searchParams.get('returnDate');
@@ -165,11 +124,39 @@ const BookingPage = () => {
         const returnTimeParam = searchParams.get('returnTime');
         const pickupLocationParam = searchParams.get('pickupLocation');
         const returnLocationParam = searchParams.get('returnLocation');
-        
+
+        // Load pickup/dropoff locations from API
+        let loadedLocations = [];
+        try {
+          const { locations: locs, defaultLocation } = await locationsAPI.getPickupLocations();
+          if (locs && locs.length > 0) {
+            console.log('📍 Loaded', locs.length, 'pickup locations from API');
+            // Convert API location format to our internal format
+            loadedLocations = locs.map(loc => ({
+              id: loc.id,
+              name: loc.name,
+              address: loc.address,
+              city: loc.address?.split(',')[1]?.trim() || '',
+              state: '',
+              postalCode: '',
+              country: 'SK',
+              openingHours: loc.openingHours,
+              notes: loc.notes,
+              isDefault: loc.isDefault
+            }));
+            setLocations(loadedLocations);
+            console.log('✅ Locations set in state:', loadedLocations.length);
+          } else {
+            console.warn('⚠️ No locations returned from API');
+          }
+        } catch (err) {
+          console.error('❌ Error loading pickup locations:', err);
+        }
+
         // Load current user if logged in
         const user = await authAPI.getCurrentUser();
         setCurrentUser(user);
-        
+
         // If user is logged in, pre-fill form data
         if (user) {
           setFormData(prev => ({
@@ -184,7 +171,7 @@ const BookingPage = () => {
             address: user.address || prev.address
           }));
         }
-        
+
         // Pre-fill dates, times and locations from URL parameters
         setFormData(prev => ({
           ...prev,
@@ -192,21 +179,31 @@ const BookingPage = () => {
           returnDate: returnDateParam ? new Date(returnDateParam) : prev.returnDate,
           pickupTime: pickupTimeParam || prev.pickupTime,
           returnTime: returnTimeParam || prev.returnTime,
-          pickupLocation: pickupLocationParam ? 
-            locations.find(loc => loc.name === pickupLocationParam) || { name: pickupLocationParam, address: '', city: 'Bratislava', state: 'Bratislavský kraj', postalCode: '', country: 'SK' } : 
+          pickupLocation: pickupLocationParam ?
+            loadedLocations.find(loc => loc.name === pickupLocationParam) || { name: pickupLocationParam, address: '', city: 'Bratislava', state: 'Bratislavský kraj', postalCode: '', country: 'SK' } :
             prev.pickupLocation,
-          returnLocation: returnLocationParam ? 
-            locations.find(loc => loc.name === returnLocationParam) || { name: returnLocationParam, address: '', city: 'Bratislava', state: 'Bratislavský kraj', postalCode: '', country: 'SK' } : 
+          returnLocation: returnLocationParam ?
+            loadedLocations.find(loc => loc.name === returnLocationParam) || { name: returnLocationParam, address: '', city: 'Bratislava', state: 'Bratislavský kraj', postalCode: '', country: 'SK' } :
             prev.returnLocation,
         }));
         
-        // Load additional services from API
+        // Load additional services from API (excluding insurance)
         try {
           // First try to load from dedicated services endpoint
           const services = await servicesAPI.getServices();
           if (services && services.length > 0) {
-            console.log('📋 Additional services from services API:', services);
-            setAdditionalServices(services);
+            console.log('📋 All services from services API:', services);
+
+            // Filter out insurance services (they're handled in Step 1)
+            const nonInsuranceServices = services.filter(service =>
+              service.type !== 'insurance' &&
+              service.category !== 'insurance' &&
+              !service.name?.toLowerCase().includes('poistenie') &&
+              !service.name?.toLowerCase().includes('insurance')
+            );
+
+            console.log('📋 Non-insurance services for Step 2:', nonInsuranceServices);
+            setAdditionalServices(nonInsuranceServices);
           } else {
             // Fallback to loading from cars API response
             const response = await carsAPI.getAvailableCars();
@@ -226,12 +223,24 @@ const BookingPage = () => {
           const car = await carsAPI.getCarDetails(selectedCarId);
           setSelectedCar(car);
 
-          // Load insurance options for this car
+          // Load insurance options from additional services
           try {
-            const insurance = await insuranceAPI.getExtendedInsurance(selectedCarId);
-            if (insurance && insurance.length > 0) {
-              console.log('🛡️ Insurance options loaded:', insurance);
-              setInsuranceOptions(insurance);
+            const services = await servicesAPI.getServices();
+            console.log('📋 All services from API:', services);
+
+            // Filter for insurance services (type === 'insurance')
+            const insuranceServices = services.filter(service =>
+              service.type === 'insurance' ||
+              service.category === 'insurance' ||
+              service.name?.toLowerCase().includes('poistenie') ||
+              service.name?.toLowerCase().includes('insurance')
+            );
+
+            if (insuranceServices && insuranceServices.length > 0) {
+              console.log('🛡️ Insurance options loaded from services:', insuranceServices);
+              setInsuranceOptions(insuranceServices);
+            } else {
+              console.warn('No insurance services found in additional services');
             }
           } catch (err) {
             console.warn('Could not load insurance options:', err);
@@ -295,6 +304,30 @@ const BookingPage = () => {
     }));
   };
 
+  const handleInsuranceToggle = (insurance) => {
+    setFormData(prev => {
+      const isSelected = prev.selectedInsurance.some(
+        ins => ins._id === insurance._id || ins.name === insurance.name
+      );
+
+      if (isSelected) {
+        // Remove insurance
+        return {
+          ...prev,
+          selectedInsurance: prev.selectedInsurance.filter(
+            ins => ins._id !== insurance._id && ins.name !== insurance.name
+          )
+        };
+      } else {
+        // Add insurance
+        return {
+          ...prev,
+          selectedInsurance: [...prev.selectedInsurance, insurance]
+        };
+      }
+    });
+  };
+
   const handleLocationChange = (locationType, locationIndex) => {
     if (locationIndex === '' || locationIndex < 0) {
       setFormData(prev => ({
@@ -322,7 +355,7 @@ const BookingPage = () => {
   };
 
   const isStep1Valid = () => {
-    return formData.insuranceType !== '';
+    return true; // Insurance is optional, step 1 is always valid
   };
 
   const isStep2Valid = () => {
@@ -352,7 +385,7 @@ const BookingPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!selectedCar || !isStep3Valid()) {
       setError('Prosím vyplňte všetky požadované údaje');
       return;
@@ -362,39 +395,184 @@ const BookingPage = () => {
       setLoading(true);
       setError(null);
 
-      // Prepare booking data
-      const bookingData = {
-        selectedCarId: selectedCarId,
-        startDate: formData.pickupDate.toISOString(),
-        endDate: formData.returnDate.toISOString(),
-        pickupLocation: formData.pickupLocation,
-        dropoffLocation: formData.returnLocation,
-        additionalDrivers: formData.additionalDrivers,
-        specialRequests: formData.specialRequests
-      };
+      // Step 1: Create reservation with payment service
+      console.log('Creating reservation...');
 
-      // Prepare customer data (if new customer)
-      const customerData = currentUser ? null : {
+      // Debug: Log location data
+      console.log('Form Data Pickup Location:', formData.pickupLocation);
+      console.log('Form Data Return Location:', formData.returnLocation);
+
+      // Build location strings
+      const pickupLocationStr = formData.pickupLocation.name ||
+                                formData.pickupLocation.address ||
+                                `${formData.pickupLocation.city}, ${formData.pickupLocation.state}`;
+      const dropoffLocationStr = formData.returnLocation.name ||
+                                 formData.returnLocation.address ||
+                                 `${formData.returnLocation.city}, ${formData.returnLocation.state}`;
+
+      console.log('Pickup Location String:', pickupLocationStr);
+      console.log('Dropoff Location String:', dropoffLocationStr);
+
+      // Combine date and time for pickup and return
+      const pickupDateTime = new Date(formData.pickupDate);
+      const [pickupHours, pickupMinutes] = formData.pickupTime.split(':');
+      pickupDateTime.setHours(parseInt(pickupHours), parseInt(pickupMinutes), 0, 0);
+
+      const returnDateTime = new Date(formData.returnDate);
+      const [returnHours, returnMinutes] = formData.returnTime.split(':');
+      returnDateTime.setHours(parseInt(returnHours), parseInt(returnMinutes), 0, 0);
+
+      const reservationData = {
+        // Customer details
         firstName: formData.firstName,
         lastName: formData.lastName,
-        email: formData.email,
+        customerEmail: formData.email,
         phone: formData.phone,
-        password: formData.password,
         dateOfBirth: formData.dateOfBirth,
-        licenseNumber: formData.licenseNumber,
-        licenseExpiry: formData.licenseExpiry,
-        address: formData.address
+        address: `${formData.address.street}, ${formData.address.postalCode} ${formData.address.city}`,
+        licenseNumber: formData.licenseNumber || formData.driverLicenseNumber,
+        ...(formData.licenseExpiry && { licenseExpiry: formData.licenseExpiry }),
+
+        // Company details (optional)
+        isCompany: false,
+
+        // Reservation details
+        carId: selectedCarId,
+        startDate: pickupDateTime.toISOString(),
+        endDate: returnDateTime.toISOString(),
+        // Send location as object with nested address object
+        pickupLocation: {
+          name: formData.pickupLocation.name,
+          address: {
+            street: formData.pickupLocation.address,
+            city: formData.pickupLocation.city,
+            state: formData.pickupLocation.state,
+            postalCode: formData.pickupLocation.postalCode,
+            country: formData.pickupLocation.country
+          }
+        },
+        dropoffLocation: {
+          name: formData.returnLocation.name,
+          address: {
+            street: formData.returnLocation.address,
+            city: formData.returnLocation.city,
+            state: formData.returnLocation.state,
+            postalCode: formData.returnLocation.postalCode,
+            country: formData.returnLocation.country
+          }
+        },
+
+        // Additional services (optional)
+        selectedServices: additionalServices
+          .filter(service => formData[service.name])
+          .map(service => ({
+            serviceId: service._id,
+            name: service.name,
+            nameSk: service.nameSk || service.displayName,
+            description: service.description,
+            descriptionSk: service.descriptionSk,
+            pricing: service.pricing,
+            // Calculate cost based on pricing type
+            cost: (() => {
+              const days = calculateDays();
+              if (service.pricing?.type === 'per_day' && service.pricing?.amount) {
+                return service.pricing.amount * days;
+              } else if (service.pricing?.type === 'fixed' && service.pricing?.amount) {
+                return service.pricing.amount;
+              } else if (service.pricing?.type === 'percentage' && service.pricing?.amount) {
+                const rentalCost = getPricePerDay(days) * days;
+                return (rentalCost * service.pricing.amount) / 100;
+              } else if (service.pricePerDay) {
+                return service.pricePerDay * days;
+              } else if (service.price) {
+                return service.price;
+              } else if (service.dailyRate) {
+                return service.dailyRate * days;
+              }
+              return 0;
+            })()
+          })),
+        servicesTotal: calculateAdditionalServicesCost(),
+
+        // Insurance (optional)
+        selectedAdditionalInsurance: formData.selectedInsurance.map(insurance => ({
+          insuranceId: insurance._id,
+          name: insurance.name,
+          nameSk: insurance.nameSk || insurance.displayName,
+          description: insurance.description,
+          descriptionSk: insurance.descriptionSk,
+          pricing: insurance.pricing,
+          // Calculate cost based on pricing type
+          cost: (() => {
+            const days = calculateDays();
+            if (insurance.pricing?.type === 'per_day' && insurance.pricing?.amount) {
+              return insurance.pricing.amount * days;
+            } else if (insurance.pricing?.type === 'fixed' && insurance.pricing?.amount) {
+              return insurance.pricing.amount;
+            } else if (insurance.pricing?.type === 'percentage' && insurance.pricing?.amount) {
+              const rentalCost = getPricePerDay(days) * days;
+              return (rentalCost * insurance.pricing.amount) / 100;
+            } else if (insurance.pricePerDay) {
+              return insurance.pricePerDay * days;
+            } else if (insurance.price) {
+              return insurance.price;
+            } else if (insurance.dailyRate) {
+              return insurance.dailyRate * days;
+            }
+            return 0;
+          })()
+        })),
+        selectedExtendedInsurance: [],
+        insuranceTotal: calculateInsuranceCost(),
+
+        // Notes
+        specialRequests: formData.specialRequests || '',
+        notes: '',
+
+        // Pricing
+        totalPrice: calculateTotal(),
+
+        // Important: Mark as pending payment until Stripe payment is confirmed
+        status: 'pending_payment'
       };
 
-      // Complete booking
-      const result = await bookingAPI.completeBooking(bookingData, customerData);
-      setBookingResult(result);
-      setCurrentStep(5); // Go to success step
-      
+      console.log('Complete Reservation Data:', JSON.stringify(reservationData, null, 2));
+
+      const reservationResponse = await paymentService.createReservation(reservationData);
+      const reservation = reservationResponse.data;
+      console.log('Reservation created:', reservation.reservationNumber);
+
+      // Step 2: Create Stripe checkout session
+      console.log('Creating Stripe checkout session...');
+      const totalAmount = calculateTotal();
+      const days = calculateDays();
+
+      const checkoutResponse = await paymentService.createCheckoutSession({
+        amount: totalAmount,
+        currency: 'EUR',
+        description: `Prenájom vozidla: ${selectedCar.brand} ${selectedCar.model} (${days} ${days === 1 ? 'deň' : days < 5 ? 'dni' : 'dní'})`,
+        reservationId: reservation._id,
+        customerEmail: formData.email
+      });
+
+      // Step 3: Redirect to Stripe checkout page
+      if (checkoutResponse.success) {
+        console.log('Redirecting to Stripe checkout...');
+
+        // Show test mode warning if applicable
+        if (checkoutResponse.data.test_mode) {
+          console.warn('⚠️ Test mode - use card 4242 4242 4242 4242');
+        }
+
+        // Redirect to Stripe checkout
+        window.location.href = checkoutResponse.data.checkout_url;
+      } else {
+        throw new Error('Nepodarilo sa vytvoriť platobnú session');
+      }
+
     } catch (err) {
       console.error('Booking failed:', err);
       setError(err.message || 'Rezervácia neúspešná. Skúste to prosím znova.');
-    } finally {
       setLoading(false);
     }
   };
@@ -429,11 +607,81 @@ const BookingPage = () => {
     return selectedCar.dailyRate || 50;
   };
 
+  const calculateInsuranceCost = () => {
+    if (!formData.selectedInsurance || formData.selectedInsurance.length === 0) return 0;
+
+    const days = calculateDays();
+    let total = 0;
+
+    formData.selectedInsurance.forEach(insurance => {
+      if (insurance.pricing?.type === 'per_day' && insurance.pricing?.amount) {
+        // Per day pricing: amount × days
+        total += insurance.pricing.amount * days;
+      } else if (insurance.pricing?.type === 'fixed' && insurance.pricing?.amount) {
+        // Fixed pricing: just the amount
+        total += insurance.pricing.amount;
+      } else if (insurance.pricing?.type === 'percentage' && insurance.pricing?.amount) {
+        // Percentage of rental cost
+        const rentalCost = getPricePerDay(days) * days;
+        total += (rentalCost * insurance.pricing.amount) / 100;
+      } else if (insurance.pricePerDay) {
+        // Legacy per day pricing
+        total += insurance.pricePerDay * days;
+      } else if (insurance.price) {
+        // Legacy fixed pricing
+        total += insurance.price;
+      } else if (insurance.dailyRate) {
+        // Legacy daily rate
+        total += insurance.dailyRate * days;
+      }
+    });
+
+    return total;
+  };
+
+  const calculateAdditionalServicesCost = () => {
+    if (!additionalServices || additionalServices.length === 0) return 0;
+
+    const days = calculateDays();
+    let total = 0;
+
+    additionalServices.forEach(service => {
+      // Check if this service is selected in formData
+      if (formData[service.name]) {
+        if (service.pricing?.type === 'per_day' && service.pricing?.amount) {
+          // Per day pricing: amount × days
+          total += service.pricing.amount * days;
+        } else if (service.pricing?.type === 'fixed' && service.pricing?.amount) {
+          // Fixed pricing: just the amount
+          total += service.pricing.amount;
+        } else if (service.pricing?.type === 'percentage' && service.pricing?.amount) {
+          // Percentage of rental cost
+          const rentalCost = getPricePerDay(days) * days;
+          total += (rentalCost * service.pricing.amount) / 100;
+        } else if (service.pricePerDay) {
+          // Legacy per day pricing
+          total += service.pricePerDay * days;
+        } else if (service.price) {
+          // Legacy fixed pricing
+          total += service.price;
+        } else if (service.dailyRate) {
+          // Legacy daily rate
+          total += service.dailyRate * days;
+        }
+      }
+    });
+
+    return total;
+  };
+
   const calculateTotal = () => {
     if (!selectedCar || !formData.pickupDate || !formData.returnDate) return 0;
     const days = Math.ceil((formData.returnDate - formData.pickupDate) / (1000 * 60 * 60 * 24));
     const pricePerDay = getPricePerDay(days);
-    return pricePerDay * days;
+    const rentalCost = pricePerDay * days;
+    const insuranceCost = calculateInsuranceCost();
+    const additionalServicesCost = calculateAdditionalServicesCost();
+    return rentalCost + insuranceCost + additionalServicesCost;
   };
 
   const calculateDays = () => {
@@ -644,90 +892,68 @@ const BookingPage = () => {
                 {currentStep === 1 && (
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-6 text-left">
-                      Vyberte si poistenie
+                      Vyberte si poistenie (voliteľné)
                     </h2>
+                    <p className="text-gray-400 text-sm mb-4">Môžete vybrať jedno alebo viac poistení, alebo pokračovať bez dodatočného poistenia.</p>
 
                     <div className="grid grid-cols-1 gap-4">
                       {/* Render insurance options from API if available, otherwise use hardcoded fallback */}
                       {insuranceOptions && insuranceOptions.length > 0 ? (
-                        insuranceOptions.map((insurance, index) => (
-                          <label key={insurance._id || insurance.name || index} className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                            <div className="flex items-center space-x-3">
-                              <input
-                                type="radio"
-                                name="insuranceType"
-                                value={insurance.name || insurance.type || `insurance-${index}`}
-                                checked={formData.insuranceType === (insurance.name || insurance.type || `insurance-${index}`)}
-                                onChange={handleInputChange}
-                                className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
-                              />
-                              <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-white">{insurance.displayName || insurance.name || insurance.type || 'Poistenie'}</h3>
-                                <p className="text-gray-300 text-sm mt-1">{insurance.description || ''}</p>
-                                <p className="text-[rgb(250,146,8)] font-semibold mt-2">
-                                  {insurance.pricePerDay ? `+${insurance.pricePerDay}€/deň` : insurance.price ? `+${insurance.price}€` : insurance.included ? 'Zahrnuté v cene' : ''}
-                                </p>
+                        insuranceOptions.map((insurance, index) => {
+                          const isSelected = formData.selectedInsurance.some(
+                            ins => ins._id === insurance._id || ins.name === insurance.name
+                          );
+
+                          return (
+                            <div
+                              key={insurance._id || insurance.name || index}
+                              onClick={() => handleInsuranceToggle(insurance)}
+                              className={`rounded-lg p-6 cursor-pointer transition-all duration-200 border ${
+                                isSelected
+                                  ? 'border-[rgb(250,146,8)] bg-gray-700'
+                                  : 'border-gray-800 hover:bg-gray-700'
+                              }`}
+                              style={{backgroundColor: isSelected ? 'rgba(250, 146, 8, 0.1)' : 'rgb(25, 25, 25)'}}
+                            >
+                              <div className="flex items-start space-x-3">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => handleInsuranceToggle(insurance)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="w-5 h-5 mt-1 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)] rounded"
+                                />
+                                <div className="flex-1">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <h3 className="text-lg font-semibold text-white">{insurance.nameSk || insurance.displayName || insurance.name || 'Poistenie'}</h3>
+                                      <p className="text-gray-300 text-sm mt-1">{insurance.descriptionSk || insurance.description || ''}</p>
+                                    </div>
+                                    <div className="text-[rgb(250,146,8)] font-bold text-lg ml-4 whitespace-nowrap">
+                                      {insurance.pricing?.type === 'per_day' && insurance.pricing?.amount
+                                        ? `+${insurance.pricing.amount}€/deň`
+                                        : insurance.pricing?.type === 'fixed' && insurance.pricing?.amount
+                                        ? `+${insurance.pricing.amount}€`
+                                        : insurance.pricing?.type === 'percentage' && insurance.pricing?.amount
+                                        ? `+${insurance.pricing.amount}%`
+                                        : insurance.pricePerDay
+                                        ? `+${insurance.pricePerDay}€/deň`
+                                        : insurance.price
+                                        ? `+${insurance.price}€`
+                                        : insurance.dailyRate
+                                        ? `+${insurance.dailyRate}€/deň`
+                                        : 'Cena na vyžiadanie'}
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                          </label>
-                        ))
+                          );
+                        })
                       ) : (
-                        <>
-                          {/* Hardcoded fallback insurance options */}
-                          <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                            <div className="flex items-center space-x-3">
-                              <input
-                                type="radio"
-                                name="insuranceType"
-                                value="basic"
-                                checked={formData.insuranceType === 'basic'}
-                                onChange={handleInputChange}
-                                className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
-                              />
-                              <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-white">Základné poistenie</h3>
-                                <p className="text-gray-300 text-sm mt-1">Zákonné poistenie zodpovednosti + kasko poistenie s spoluúčasťou 1000€</p>
-                                <p className="text-[rgb(250,146,8)] font-semibold mt-2">Zahrnuté v cene</p>
-                              </div>
-                            </div>
-                          </label>
-
-                          <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                            <div className="flex items-center space-x-3">
-                              <input
-                                type="radio"
-                                name="insuranceType"
-                                value="premium"
-                                checked={formData.insuranceType === 'premium'}
-                                onChange={handleInputChange}
-                                className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
-                              />
-                              <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-white">Prémiové poistenie</h3>
-                                <p className="text-gray-300 text-sm mt-1">Komplexné poistenie s nulovou spoluúčasťou + poistenie skiel a pneumatík</p>
-                                <p className="text-[rgb(250,146,8)] font-semibold mt-2">+15€/deň</p>
-                              </div>
-                            </div>
-                          </label>
-
-                          <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                            <div className="flex items-center space-x-3">
-                              <input
-                                type="radio"
-                                name="insuranceType"
-                                value="full"
-                                checked={formData.insuranceType === 'full'}
-                                onChange={handleInputChange}
-                                className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
-                              />
-                              <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-white">Úplné poistenie</h3>
-                                <p className="text-gray-300 text-sm mt-1">Maximálna ochrana - nulová spoluúčasť + krádež + vandalizmus + poistenie osobných vecí</p>
-                                <p className="text-[rgb(250,146,8)] font-semibold mt-2">+25€/deň</p>
-                              </div>
-                            </div>
-                          </label>
-                        </>
+                        <div className="text-center text-gray-400 py-8">
+                          <p>Žiadne dostupné poistenia</p>
+                        </div>
                       )}
                     </div>
                     
@@ -766,12 +992,24 @@ const BookingPage = () => {
                                 className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
                               />
                               <div>
-                                <h3 className="text-lg font-semibold text-white">{service.displayName || service.name}</h3>
-                                <p className="text-gray-300 text-sm">{service.description || ''}</p>
+                                <h3 className="text-lg font-semibold text-white">{service.nameSk || service.displayName || service.name}</h3>
+                                <p className="text-gray-300 text-sm">{service.descriptionSk || service.description || ''}</p>
                               </div>
                             </div>
-                            <span className="text-[rgb(250,146,8)] font-semibold">
-                              {service.pricePerDay ? `+${service.pricePerDay}€/deň` : service.price ? `+${service.price}€` : ''}
+                            <span className="text-[rgb(250,146,8)] font-bold text-lg ml-4 whitespace-nowrap">
+                              {service.pricing?.type === 'per_day' && service.pricing?.amount
+                                ? `+${service.pricing.amount}€/deň`
+                                : service.pricing?.type === 'fixed' && service.pricing?.amount
+                                ? `+${service.pricing.amount}€`
+                                : service.pricing?.type === 'percentage' && service.pricing?.amount
+                                ? `+${service.pricing.amount}%`
+                                : service.pricePerDay
+                                ? `+${service.pricePerDay}€/deň`
+                                : service.price
+                                ? `+${service.price}€`
+                                : service.dailyRate
+                                ? `+${service.dailyRate}€/deň`
+                                : 'Cena na vyžiadanie'}
                             </span>
                           </label>
                         ))
@@ -855,7 +1093,7 @@ const BookingPage = () => {
                     <h2 className="text-2xl font-bold text-white mb-6 text-left">
                       Osobné údaje
                     </h2>
-                    
+
                     {currentUser && (
                       <div className="border border-green-400 rounded-md p-4 mb-6" style={{backgroundColor: 'rgba(34, 197, 94, 0.1)'}}>
                         <p className="text-green-300">Vitajte späť, {currentUser.firstName}! Vaše údaje sú predvyplnené nižšie.</p>
@@ -913,6 +1151,18 @@ const BookingPage = () => {
                       </div>
                       <div>
                         <input
+                          type="date"
+                          name="dateOfBirth"
+                          value={formData.dateOfBirth}
+                          onChange={handleInputChange}
+                          placeholder="Dátum narodenia*"
+                          className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555', colorScheme: 'dark'}}
+                          required
+                          disabled={!!currentUser}
+                        />
+                      </div>
+                      <div>
+                        <input
                           type="text"
                           name="licenseNumber"
                           value={formData.licenseNumber}
@@ -926,12 +1176,11 @@ const BookingPage = () => {
                       <div>
                         <input
                           type="text"
-                          name="dateOfBirth"
-                          value={formData.dateOfBirth}
+                          name="birthNumber"
+                          value={formData.birthNumber || ''}
                           onChange={handleInputChange}
-                          placeholder="Rodné číslo (bez lomítka)*"
+                          placeholder="Rodné číslo (bez lomítka)"
                           className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
-                          required
                           disabled={!!currentUser}
                         />
                       </div>
@@ -1123,6 +1372,125 @@ const BookingPage = () => {
                   </div>
                 )}
 
+                {/* Step 4: Confirmation */}
+                {currentStep === 4 && (
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-6 text-left">
+                      Potvrdenie rezervácie
+                    </h2>
+
+                    <div className="space-y-6">
+                      {/* Summary Information */}
+                      <div className="rounded-lg p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                        <h3 className="text-lg font-semibold text-white mb-4">Osobné údaje</h3>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-gray-400">Meno a priezvisko:</p>
+                            <p className="text-white font-medium">{formData.firstName} {formData.lastName}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400">Email:</p>
+                            <p className="text-white font-medium">{formData.email}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400">Telefón:</p>
+                            <p className="text-white font-medium">{formData.phone}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400">Adresa:</p>
+                            <p className="text-white font-medium">{formData.address.street}, {formData.address.postalCode} {formData.address.city}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                        <h3 className="text-lg font-semibold text-white mb-4">Detaily rezervácie</h3>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-gray-400">Vozidlo:</p>
+                            <p className="text-white font-medium">{selectedCar?.brand} {selectedCar?.model}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400">Poistenie:</p>
+                            {formData.selectedInsurance && formData.selectedInsurance.length > 0 ? (
+                              <div className="space-y-1">
+                                {formData.selectedInsurance.map((ins, idx) => {
+                                  let priceDisplay = '';
+                                  if (ins.pricing?.type === 'per_day' && ins.pricing?.amount) {
+                                    priceDisplay = ` (+${ins.pricing.amount}€/deň)`;
+                                  } else if (ins.pricing?.type === 'fixed' && ins.pricing?.amount) {
+                                    priceDisplay = ` (+${ins.pricing.amount}€)`;
+                                  } else if (ins.pricing?.type === 'percentage' && ins.pricing?.amount) {
+                                    priceDisplay = ` (+${ins.pricing.amount}%)`;
+                                  } else if (ins.pricePerDay) {
+                                    priceDisplay = ` (+${ins.pricePerDay}€/deň)`;
+                                  } else if (ins.price) {
+                                    priceDisplay = ` (+${ins.price}€)`;
+                                  } else if (ins.dailyRate) {
+                                    priceDisplay = ` (+${ins.dailyRate}€/deň)`;
+                                  }
+
+                                  return (
+                                    <p key={idx} className="text-white font-medium">
+                                      {ins.nameSk || ins.displayName || ins.name}{priceDisplay}
+                                    </p>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-white font-medium">Žiadne dodatočné poistenie</p>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-gray-400">Prevzatie:</p>
+                            <p className="text-white font-medium">
+                              {formData.pickupDate?.toLocaleDateString('sk-SK')} {formData.pickupTime}
+                            </p>
+                            <p className="text-gray-400 text-xs">{formData.pickupLocation.name}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400">Vrátenie:</p>
+                            <p className="text-white font-medium">
+                              {formData.returnDate?.toLocaleDateString('sk-SK')} {formData.returnTime}
+                            </p>
+                            <p className="text-gray-400 text-xs">{formData.returnLocation.name}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {formData.specialRequests && (
+                        <div className="rounded-lg p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                          <h3 className="text-lg font-semibold text-white mb-2">Špeciálne požiadavky</h3>
+                          <p className="text-gray-300 text-sm">{formData.specialRequests}</p>
+                        </div>
+                      )}
+
+                      <div className="rounded-lg p-6 border border-[rgb(250,146,8)]" style={{backgroundColor: 'rgba(250, 146, 8, 0.1)'}}>
+                        <p className="text-white text-sm">
+                          Po kliknutí na tlačidlo "Rezervovať" budete presmerovaní na platobnú bránu Stripe, kde dokončíte platbu.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between mt-8">
+                      <button
+                        type="button"
+                        onClick={prevStep}
+                        className="border border-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 hover:bg-gray-700"
+                      >
+                        Späť
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-200"
+                      >
+                        {loading ? 'Spracováva sa...' : 'Rezervovať'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
               </form>
             </div>
           </div>
@@ -1197,6 +1565,8 @@ const BookingPage = () => {
                     onDateSelect={(date) => handleDateSelect('pickupDate', date)}
                     minDate={new Date()}
                     unavailableDates={unavailableDates}
+                    otherSelectedDate={formData.returnDate}
+                    isReturnPicker={false}
                     carId={selectedCarId}
                     className="w-full"
                   />
@@ -1205,6 +1575,8 @@ const BookingPage = () => {
                     onDateSelect={(date) => handleDateSelect('returnDate', date)}
                     minDate={formData.pickupDate ? new Date(formData.pickupDate.getTime() + 86400000) : new Date()}
                     unavailableDates={unavailableDates}
+                    otherSelectedDate={formData.pickupDate}
+                    isReturnPicker={true}
                     carId={selectedCarId}
                     className="w-full"
                   />
@@ -1252,10 +1624,6 @@ const BookingPage = () => {
                 <div className="px-6 pt-4 pb-6" style={{borderTop: '0.5px solid #d1d5db'}}>
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-300">Denná sadzba:</span>
-                      <span className="font-medium text-white">{selectedCar.dailyRate}€</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
                       <span className="text-gray-300">Počet dní:</span>
                       <span className="font-medium text-white">{calculateDays()}</span>
                     </div>
@@ -1265,33 +1633,105 @@ const BookingPage = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-300">Cena prenájmu:</span>
-                      <span className="font-medium text-white">{calculateTotal()}€</span>
+                      <span className="font-medium text-white">{(getPricePerDay(calculateDays()) * calculateDays()).toFixed(2)}€</span>
                     </div>
+
+                    {/* Insurance breakdown */}
+                    {formData.selectedInsurance && formData.selectedInsurance.length > 0 && (
+                      <div className="space-y-2 pt-2" style={{borderTop: '0.5px solid #444'}}>
+                        <div className="text-sm text-gray-300 font-semibold">Poistenie:</div>
+                        {formData.selectedInsurance.map((insurance, idx) => {
+                          const days = calculateDays();
+                          let cost = 0;
+                          let priceText = '';
+
+                          if (insurance.pricing?.type === 'per_day' && insurance.pricing?.amount) {
+                            cost = insurance.pricing.amount * days;
+                            priceText = `${insurance.pricing.amount}€ × ${days} dní`;
+                          } else if (insurance.pricing?.type === 'fixed' && insurance.pricing?.amount) {
+                            cost = insurance.pricing.amount;
+                            priceText = 'jednorazový poplatok';
+                          } else if (insurance.pricing?.type === 'percentage' && insurance.pricing?.amount) {
+                            const rentalCost = getPricePerDay(days) * days;
+                            cost = (rentalCost * insurance.pricing.amount) / 100;
+                            priceText = `${insurance.pricing.amount}%`;
+                          }
+
+                          return (
+                            <div key={idx} className="flex justify-between text-sm">
+                              <span className="text-gray-300">
+                                {insurance.nameSk || insurance.name}
+                                <span className="text-gray-400 ml-1">({priceText})</span>
+                              </span>
+                              <span className="font-medium text-white">{cost.toFixed(2)}€</span>
+                            </div>
+                          );
+                        })}
+                        <div className="flex justify-between text-sm font-semibold pt-1">
+                          <span className="text-gray-300">Celkom poistenie:</span>
+                          <span className="text-white">{calculateInsuranceCost().toFixed(2)}€</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Additional Services breakdown */}
+                    {additionalServices && additionalServices.length > 0 && additionalServices.some(service => formData[service.name]) && (
+                      <div className="space-y-2 pt-2" style={{borderTop: '0.5px solid #444'}}>
+                        <div className="text-sm text-gray-300 font-semibold">Doplnkové služby:</div>
+                        {additionalServices.filter(service => formData[service.name]).map((service, idx) => {
+                          const days = calculateDays();
+                          let cost = 0;
+                          let priceText = '';
+
+                          if (service.pricing?.type === 'per_day' && service.pricing?.amount) {
+                            cost = service.pricing.amount * days;
+                            priceText = `${service.pricing.amount}€ × ${days} dní`;
+                          } else if (service.pricing?.type === 'fixed' && service.pricing?.amount) {
+                            cost = service.pricing.amount;
+                            priceText = 'jednorazový poplatok';
+                          } else if (service.pricing?.type === 'percentage' && service.pricing?.amount) {
+                            const rentalCost = getPricePerDay(days) * days;
+                            cost = (rentalCost * service.pricing.amount) / 100;
+                            priceText = `${service.pricing.amount}%`;
+                          } else if (service.pricePerDay) {
+                            cost = service.pricePerDay * days;
+                            priceText = `${service.pricePerDay}€ × ${days} dní`;
+                          } else if (service.price) {
+                            cost = service.price;
+                            priceText = 'jednorazový poplatok';
+                          } else if (service.dailyRate) {
+                            cost = service.dailyRate * days;
+                            priceText = `${service.dailyRate}€ × ${days} dní`;
+                          }
+
+                          return (
+                            <div key={idx} className="flex justify-between text-sm">
+                              <span className="text-gray-300">
+                                {service.nameSk || service.displayName || service.name}
+                                <span className="text-gray-400 ml-1">({priceText})</span>
+                              </span>
+                              <span className="font-medium text-white">{cost.toFixed(2)}€</span>
+                            </div>
+                          );
+                        })}
+                        <div className="flex justify-between text-sm font-semibold pt-1">
+                          <span className="text-gray-300">Celkom služby:</span>
+                          <span className="text-white">{calculateAdditionalServicesCost().toFixed(2)}€</span>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-300">Depozit:</span>
-                      <span className="font-medium text-white">{selectedCar.deposit}€</span>
+                      <span className="font-medium text-white">{(selectedCar.deposit || 0).toFixed(2)}€</span>
                     </div>
                     <div className="pt-3" style={{borderTop: '0.5px solid #d1d5db'}}>
                       <div className="flex justify-between text-lg font-bold">
-                        <span className="text-white">Cena:</span>
-                        <span className="text-[rgb(250,146,8)]">{calculateTotal() + selectedCar.deposit}€</span>
+                        <span className="text-white">Celková cena:</span>
+                        <span className="text-[rgb(250,146,8)]">{(calculateTotal() + (selectedCar.deposit || 0)).toFixed(2)}€</span>
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Order Button */}
-                  {currentStep === 3 && (
-                    <div className="px-6 mt-6 pb-6">
-                      <Button 
-                        type="button" 
-                        onClick={handleSubmit}
-                        disabled={!isStep3Valid() || loading}
-                        fullWidth
-                      >
-                        {loading ? 'Spracováva sa...' : 'Objednať'}
-                      </Button>
-                    </div>
-                  )}
                 </div>
               )}
             </div>

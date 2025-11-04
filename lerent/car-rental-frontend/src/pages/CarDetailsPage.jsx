@@ -16,7 +16,7 @@ import DatePicker from '../components/DatePicker';
 import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
 import BookingFormSection from '../components/BookingFormSection';
-import { carsAPI } from '../services/api';
+import { carsAPI, locationsAPI } from '../services/api';
 import HeroImg from '../test.png';
 import AudiA6Img from '../audia6.JPG';
 import BMW540iImg from '../bmw540i.png';
@@ -114,11 +114,8 @@ const CarDetailsPage = () => {
   const [distance, setDistance] = useState(null);
   const [deliveryPrice, setDeliveryPrice] = useState(0);
   const [calculating, setCalculating] = useState(false);
-
-  const locations = [
-    'Pobočka Nitra',
-    'Vybrať miesto'
-  ];
+  const [locations, setLocations] = useState([]);
+  const [locationObjects, setLocationObjects] = useState([]);
 
   const timeSlots = [
     '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -241,6 +238,39 @@ const CarDetailsPage = () => {
         setLoading(true);
         setError(null);
 
+        // Load pickup/dropoff locations from API
+        try {
+          const { locations: locs, defaultLocation } = await locationsAPI.getPickupLocations();
+          if (locs && locs.length > 0) {
+            console.log('📍 Loaded', locs.length, 'pickup locations from API');
+            // Store full location objects
+            setLocationObjects(locs);
+            // Use location names for the dropdown
+            const locationNames = locs.map(loc => loc.name);
+            setLocations(locationNames);
+            console.log('✅ Locations set in state:', locationNames.length);
+
+            // Set default location if available
+            if (defaultLocation && !bookingData.pickupLocation) {
+              setBookingData(prev => ({
+                ...prev,
+                pickupLocation: defaultLocation,
+                returnLocation: defaultLocation
+              }));
+            }
+          } else {
+            console.warn('⚠️ No locations returned from API');
+            // Fallback to default
+            setLocations(['Pobočka Nitra']);
+            setLocationObjects([]);
+          }
+        } catch (err) {
+          console.error('❌ Error loading pickup locations:', err);
+          // Fallback to default
+          setLocations(['Pobočka Nitra']);
+          setLocationObjects([]);
+        }
+
         // Fetch car details from API
         const carData = await carsAPI.getCarDetails(id);
 
@@ -271,9 +301,8 @@ const CarDetailsPage = () => {
 
         try {
           const availability = await carsAPI.getCarAvailability(id, startDate, endDate);
-          console.log('📅 Setting unavailable dates for car:', id);
-          console.log('   Unavailable dates array:', availability.unavailableDates || []);
-          setUnavailableDates(availability.unavailableDates || []);
+          const dates = availability.unavailableDates || [];
+          setUnavailableDates(dates);
         } catch (err) {
           console.warn('Could not load availability:', err);
           setUnavailableDates([]);
@@ -818,6 +847,8 @@ const CarDetailsPage = () => {
                     onDateSelect={(date) => handleInputChange('pickupDate', date)}
                     minDate={new Date()}
                     unavailableDates={unavailableDates}
+                    otherSelectedDate={bookingData.returnDate}
+                    isReturnPicker={false}
                     carId={id}
                     className="w-full"
                   />
@@ -828,10 +859,30 @@ const CarDetailsPage = () => {
                     onDateSelect={(date) => handleInputChange('returnDate', date)}
                     minDate={bookingData.pickupDate ? new Date(bookingData.pickupDate.getTime() + 86400000) : new Date()}
                     unavailableDates={unavailableDates}
+                    otherSelectedDate={bookingData.pickupDate}
+                    isReturnPicker={true}
                     carId={id}
                     className="w-full"
                   />
                 </div>
+              </div>
+
+              {/* Pickup Location Dropdown */}
+              <div>
+                <label className="block text-white text-sm font-medium mb-2">Miesto prevzatia</label>
+                <select
+                  value={bookingData.pickupLocation}
+                  onChange={(e) => handleInputChange('pickupLocation', e.target.value)}
+                  className="w-full text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
+                  style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
+                >
+                  <option value="">Vyberte miesto</option>
+                  {locations.map((location, index) => (
+                    <option key={index} value={location}>
+                      {location}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Pricing Information */}
@@ -1053,6 +1104,8 @@ const CarDetailsPage = () => {
                       onDateSelect={(date) => handleInputChange('pickupDate', date)}
                       minDate={new Date()}
                       unavailableDates={unavailableDates}
+                      otherSelectedDate={bookingData.returnDate}
+                      isReturnPicker={false}
                       carId={id}
                       className="w-full"
                     />
@@ -1063,6 +1116,8 @@ const CarDetailsPage = () => {
                       onDateSelect={(date) => handleInputChange('returnDate', date)}
                       minDate={bookingData.pickupDate ? new Date(bookingData.pickupDate.getTime() + 86400000) : new Date()}
                       unavailableDates={unavailableDates}
+                      otherSelectedDate={bookingData.pickupDate}
+                      isReturnPicker={true}
                       carId={id}
                       className="w-full"
                     />
@@ -1141,25 +1196,29 @@ const CarDetailsPage = () => {
         )}
 
         {/* Location Information */}
-        {car.location && (
+        {locationObjects.length > 0 && (
           <div className="mt-8">
             <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
               <h2 className="text-2xl font-semibold text-white mb-4">Miesto prevzatia</h2>
-              <div className="flex items-start space-x-3">
-                <MapPinIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0 mt-1" />
-                <div className="text-gray-300">
-                  <div className="font-semibold text-white mb-1">{car.location.name}</div>
-                  {car.location.address && (
-                    <div className="text-sm">
-                      {car.location.address.street && <div>{car.location.address.street}</div>}
-                      <div>
-                        {car.location.address.city && car.location.address.city}
-                        {car.location.address.zipCode && `, ${car.location.address.zipCode}`}
-                      </div>
-                      {car.location.address.country && <div>{car.location.address.country}</div>}
+              <div className="space-y-4">
+                {locationObjects.map((location, index) => (
+                  <div key={location.id || index} className="flex items-start space-x-3">
+                    <MapPinIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0 mt-1" />
+                    <div className="text-gray-300">
+                      <div className="font-semibold text-white mb-1">{location.name}</div>
+                      {location.address && (
+                        <div className="text-sm">
+                          <div>{location.address}</div>
+                        </div>
+                      )}
+                      {location.openingHours && (
+                        <div className="text-sm text-gray-400 mt-1">
+                          Otváracie hodiny: {location.openingHours}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

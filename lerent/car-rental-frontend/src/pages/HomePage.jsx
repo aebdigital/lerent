@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronDownIcon, FunnelIcon, ArrowDownIcon, ArrowUpIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import CarCard from '../components/CarCard';
@@ -7,7 +8,8 @@ import ContactMapSection from '../components/ContactMapSection';
 import BookingFormSection from '../components/BookingFormSection';
 import Carousel from '../components/Carousel';
 import CustomDatePicker from '../components/CustomDatePicker';
-import { carsAPI } from '../services/api';
+import DatePicker from '../components/DatePicker';
+import { carsAPI, locationsAPI } from '../services/api';
 import HeroImg from '../main page final1.jpg';
 import VasenImg from '../vasen.webp';
 import CarClassImg from '../testfilter2.png';
@@ -51,6 +53,7 @@ const FadeInUp = ({ children, delay = 0 }) => {
 };
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [cars, setCars] = useState([]);
@@ -288,6 +291,8 @@ const HomePage = () => {
   const [formData, setFormData] = useState({});
   const [pickupDate, setPickupDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
+  const [heroFormUnavailableDates, setHeroFormUnavailableDates] = useState([]);
+  const [heroFormLocations, setHeroFormLocations] = useState([]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -298,7 +303,42 @@ const HomePage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+
+    // Validate that a car is selected
+    if (!formData.selectedCar) {
+      alert('Prosím vyberte auto');
+      return;
+    }
+
+    // Build query parameters for booking page
+    const queryParams = new URLSearchParams({
+      car: formData.selectedCar
+    });
+
+    // Add pickup date if selected (format in local timezone to avoid date shift)
+    if (pickupDate) {
+      const year = pickupDate.getFullYear();
+      const month = String(pickupDate.getMonth() + 1).padStart(2, '0');
+      const day = String(pickupDate.getDate()).padStart(2, '0');
+      queryParams.append('pickupDate', `${year}-${month}-${day}`);
+    }
+
+    // Add return date if selected (format in local timezone to avoid date shift)
+    if (returnDate) {
+      const year = returnDate.getFullYear();
+      const month = String(returnDate.getMonth() + 1).padStart(2, '0');
+      const day = String(returnDate.getDate()).padStart(2, '0');
+      queryParams.append('returnDate', `${year}-${month}-${day}`);
+    }
+
+    // Add location if selected
+    if (formData.location) {
+      queryParams.append('pickupLocation', formData.location);
+      queryParams.append('returnLocation', formData.location);
+    }
+
+    // Navigate to booking page with query parameters
+    navigate(`/booking?${queryParams.toString()}`);
   };
 
   // Load cars from API
@@ -337,6 +377,64 @@ const HomePage = () => {
 
     loadCars();
   }, []);
+
+  // Load pickup locations from API for hero form
+  useEffect(() => {
+    const loadLocations = async () => {
+      try {
+        const { locations: locs } = await locationsAPI.getPickupLocations();
+        if (locs && locs.length > 0) {
+          console.log('📍 Hero form - Loaded locations:', locs.length);
+          setHeroFormLocations(locs);
+        } else {
+          console.warn('⚠️ No locations returned from API');
+          setHeroFormLocations([]);
+        }
+      } catch (err) {
+        console.error('❌ Error loading hero form locations:', err);
+        setHeroFormLocations([]);
+      }
+    };
+
+    loadLocations();
+  }, []);
+
+  // Fetch car availability when a car is selected in hero form
+  useEffect(() => {
+    const fetchHeroFormCarAvailability = async () => {
+      if (!formData.selectedCar) {
+        setHeroFormUnavailableDates([]);
+        return;
+      }
+
+      try {
+        console.log('🚗 Fetching availability for hero form car:', formData.selectedCar);
+
+        // Get 6 months range for availability check
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + 6);
+
+        const availability = await carsAPI.getCarAvailability(
+          formData.selectedCar,
+          startDate,
+          endDate
+        );
+
+        if (availability && availability.unavailableDates) {
+          console.log('📅 Hero form - Loaded unavailable dates:', availability.unavailableDates.length);
+          setHeroFormUnavailableDates(availability.unavailableDates);
+        } else {
+          setHeroFormUnavailableDates([]);
+        }
+      } catch (err) {
+        console.error('❌ Error fetching hero form car availability:', err);
+        setHeroFormUnavailableDates([]);
+      }
+    };
+
+    fetchHeroFormCarAvailability();
+  }, [formData.selectedCar]);
 
   // Apply filters
   useEffect(() => {
@@ -517,50 +615,60 @@ const HomePage = () => {
               </div>
 
               {/* Form inputs in horizontal columns */}
-              <form className="flex items-center gap-4 flex-1">
+              <form onSubmit={handleSubmit} className="flex items-center gap-4 flex-1">
                 {/* Car Selection */}
                 <select
                   name="selectedCar"
+                  value={formData.selectedCar || ''}
+                  onChange={handleInputChange}
                   className="flex-1 text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
                   style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
+                  disabled={loading}
                 >
-                  <option value="">Vyberte auto</option>
-                  <option value="audi-a6">AUDI A6 - od 90€/deň</option>
-                  <option value="bmw-540i-xdrive">BMW 540I XDRIVE - od 90€/deň</option>
-                  <option value="audi-s4">AUDI S4 - od 90€/deň</option>
-                  <option value="audi-s6">AUDI S6 - od 100€/deň</option>
-                  <option value="maserati-levante">MASERATI LEVANTE - od 130€/deň</option>
-                  <option value="bmw-840i-xdrive">BMW 840I XDRIVE - od 140€/deň</option>
-                  <option value="bmw-x7-xdrive-40d">BMW X7 XDRIVE 40D - od 200€/deň</option>
+                  <option value="">{loading ? 'Načítavam autá...' : 'Vyberte auto'}</option>
+                  {cars.map((car) => (
+                    <option key={car._id} value={car._id}>
+                      {car.brand} {car.model} - od {car.pricing?.dailyRate || car.dailyRate || 0}€/deň
+                    </option>
+                  ))}
                 </select>
 
                 {/* Location Selection */}
                 <select
                   name="location"
+                  value={formData.location || ''}
+                  onChange={handleInputChange}
                   className="flex-1 text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
                   style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
                 >
                   <option value="">Miesto vyzdvihnutia</option>
-                  <option value="nitra">Nitra</option>
-                  <option value="bratislava">Bratislava</option>
-                  <option value="kosice">Košice</option>
+                  {heroFormLocations.map((location) => (
+                    <option key={location.id} value={location.name}>
+                      {location.name}
+                    </option>
+                  ))}
                 </select>
 
                 {/* Date From */}
                 <div className="flex-1">
-                  <CustomDatePicker
-                    value={pickupDate}
-                    onChange={setPickupDate}
+                  <DatePicker
+                    selectedDate={pickupDate}
+                    onDateSelect={setPickupDate}
+                    minDate={new Date()}
+                    unavailableDates={heroFormUnavailableDates}
                     placeholder="Dátum prevzatia"
                   />
                 </div>
 
                 {/* Date To */}
                 <div className="flex-1">
-                  <CustomDatePicker
-                    value={returnDate}
-                    onChange={setReturnDate}
+                  <DatePicker
+                    selectedDate={returnDate}
+                    onDateSelect={setReturnDate}
+                    minDate={pickupDate || new Date()}
+                    unavailableDates={heroFormUnavailableDates}
                     placeholder="Dátum vrátenia"
+                    isReturnPicker={true}
                   />
                 </div>
 
@@ -597,50 +705,60 @@ const HomePage = () => {
               </h2>
 
               {/* Form inputs in vertical rows */}
-              <form className="flex flex-col gap-3">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                 {/* Car Selection */}
                 <select
                   name="selectedCar"
+                  value={formData.selectedCar || ''}
+                  onChange={handleInputChange}
                   className="w-full text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
                   style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
+                  disabled={loading}
                 >
-                  <option value="">Vyberte auto</option>
-                  <option value="audi-a6">AUDI A6 - od 90€/deň</option>
-                  <option value="bmw-540i-xdrive">BMW 540I XDRIVE - od 90€/deň</option>
-                  <option value="audi-s4">AUDI S4 - od 90€/deň</option>
-                  <option value="audi-s6">AUDI S6 - od 100€/deň</option>
-                  <option value="maserati-levante">MASERATI LEVANTE - od 130€/deň</option>
-                  <option value="bmw-840i-xdrive">BMW 840I XDRIVE - od 140€/deň</option>
-                  <option value="bmw-x7-xdrive-40d">BMW X7 XDRIVE 40D - od 200€/deň</option>
+                  <option value="">{loading ? 'Načítavam autá...' : 'Vyberte auto'}</option>
+                  {cars.map((car) => (
+                    <option key={car._id} value={car._id}>
+                      {car.brand} {car.model} - od {car.pricing?.dailyRate || car.dailyRate || 0}€/deň
+                    </option>
+                  ))}
                 </select>
 
                 {/* Location Selection */}
                 <select
                   name="location"
+                  value={formData.location || ''}
+                  onChange={handleInputChange}
                   className="w-full text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
                   style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
                 >
                   <option value="">Miesto vyzdvihnutia</option>
-                  <option value="nitra">Nitra</option>
-                  <option value="bratislava">Bratislava</option>
-                  <option value="kosice">Košice</option>
+                  {heroFormLocations.map((location) => (
+                    <option key={location.id} value={location.name}>
+                      {location.name}
+                    </option>
+                  ))}
                 </select>
 
                 {/* Date From */}
                 <div className="w-full">
-                  <CustomDatePicker
-                    value={pickupDate}
-                    onChange={setPickupDate}
+                  <DatePicker
+                    selectedDate={pickupDate}
+                    onDateSelect={setPickupDate}
+                    minDate={new Date()}
+                    unavailableDates={heroFormUnavailableDates}
                     placeholder="Dátum prevzatia"
                   />
                 </div>
 
                 {/* Date To */}
                 <div className="w-full">
-                  <CustomDatePicker
-                    value={returnDate}
-                    onChange={setReturnDate}
+                  <DatePicker
+                    selectedDate={returnDate}
+                    onDateSelect={setReturnDate}
+                    minDate={pickupDate || new Date()}
+                    unavailableDates={heroFormUnavailableDates}
                     placeholder="Dátum vrátenia"
+                    isReturnPicker={true}
                   />
                 </div>
 
@@ -1088,7 +1206,6 @@ const HomePage = () => {
                       backdropFilter: 'blur(20px)',
                       WebkitBackdropFilter: 'blur(20px)',
                       border: '1px solid rgba(255, 255, 255, 0.18)',
-                      boxShadow: '0 8px 32px 0 rgba(250, 146, 8, 0.37)',
                       borderRadius: '8px'
                     }}
                   >
@@ -1160,7 +1277,7 @@ const HomePage = () => {
                               Rezervovať
                             </button>
                             <div className="text-sm font-bold text-white text-center">
-                              od {car.dailyRate}€
+                              od {car.pricing?.dailyRate || car.dailyRate || 0}€
                             </div>
                           </div>
                         </div>

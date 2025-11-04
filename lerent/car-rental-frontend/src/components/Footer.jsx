@@ -5,6 +5,9 @@ const Footer = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Check if user is in booking/reservation process
+  const isInBookingProcess = location.pathname.includes('/booking');
+
   const scrollToHero = (e) => {
     e.preventDefault();
 
@@ -89,20 +92,22 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Right Side - Rezervovať Button */}
-          <div className="flex justify-center max-[390px]:justify-start lg:justify-end">
-            <button
-              onClick={scrollToHero}
-              className="hover:opacity-90 px-5 py-3 text-base transition-colors duration-200 border border-gray-600 rounded-lg"
-              style={{
-                backgroundColor: '#fa9208',
-                color: '#191919',
-                fontWeight: 700
-              }}
-            >
-              Rezervovať
-            </button>
-          </div>
+          {/* Right Side - Rezervovať Button (hidden during booking process) */}
+          {!isInBookingProcess && (
+            <div className="flex justify-center max-[390px]:justify-start lg:justify-end">
+              <button
+                onClick={scrollToHero}
+                className="hover:opacity-90 px-5 py-3 text-base transition-colors duration-200 border border-gray-600 rounded-lg"
+                style={{
+                  backgroundColor: '#fa9208',
+                  color: '#191919',
+                  fontWeight: 700
+                }}
+              >
+                Rezervovať
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Social Media Icons - Above divider, center on mobile, right on desktop */}

@@ -18,6 +18,8 @@ import SprostredkovaniePage from './pages/SprostredkovaniePage';
 import ONasPage from './pages/ONasPage';
 import SluzbyPage from './pages/SluzbyPage';
 import FAQPage from './pages/FAQPage';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentCancelled from './pages/PaymentCancelled';
 import { initGSAPAnimations, initScrollAnimations } from './utils/gsapAnimations';
 import './index.css';
 
@@ -33,6 +35,8 @@ function AnimatedRoutes() {
         <Route path="/faq" element={<PageTransition><FAQPage /></PageTransition>} />
         <Route path="/car/:id" element={<PageTransition><CarDetailsPage /></PageTransition>} />
         <Route path="/booking" element={<PageTransition><BookingPage /></PageTransition>} />
+        <Route path="/payment-success" element={<PageTransition><PaymentSuccess /></PageTransition>} />
+        <Route path="/payment-cancelled" element={<PageTransition><PaymentCancelled /></PageTransition>} />
         <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
         <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
         <Route path="/blog" element={<PageTransition><BlogPage /></PageTransition>} />
