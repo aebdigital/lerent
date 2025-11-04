@@ -462,66 +462,64 @@ const BookingPage = () => {
           }
         },
 
-        // Additional services (optional)
+        // Additional services (optional) - Send ID, name, and calculated price
         selectedServices: additionalServices
           .filter(service => formData[service.name])
-          .map(service => ({
-            serviceId: service._id,
-            name: service.name,
-            nameSk: service.nameSk || service.displayName,
-            description: service.description,
-            descriptionSk: service.descriptionSk,
-            pricing: service.pricing,
+          .map(service => {
+            const days = calculateDays();
+            let cost = 0;
+
             // Calculate cost based on pricing type
-            cost: (() => {
-              const days = calculateDays();
-              if (service.pricing?.type === 'per_day' && service.pricing?.amount) {
-                return service.pricing.amount * days;
-              } else if (service.pricing?.type === 'fixed' && service.pricing?.amount) {
-                return service.pricing.amount;
-              } else if (service.pricing?.type === 'percentage' && service.pricing?.amount) {
-                const rentalCost = getPricePerDay(days) * days;
-                return (rentalCost * service.pricing.amount) / 100;
-              } else if (service.pricePerDay) {
-                return service.pricePerDay * days;
-              } else if (service.price) {
-                return service.price;
-              } else if (service.dailyRate) {
-                return service.dailyRate * days;
-              }
-              return 0;
-            })()
-          })),
+            if (service.pricing?.type === 'per_day' && service.pricing?.amount) {
+              cost = service.pricing.amount * days;
+            } else if (service.pricing?.type === 'fixed' && service.pricing?.amount) {
+              cost = service.pricing.amount;
+            } else if (service.pricing?.type === 'percentage' && service.pricing?.amount) {
+              const rentalCost = getPricePerDay(days) * days;
+              cost = (rentalCost * service.pricing.amount) / 100;
+            }
+
+            return {
+              id: service._id || service.id,
+              name: service.name,
+              totalPrice: Number(cost)
+            };
+          }),
         servicesTotal: calculateAdditionalServicesCost(),
 
-        // Insurance (optional)
-        selectedAdditionalInsurance: formData.selectedInsurance.map(insurance => ({
-          insuranceId: insurance._id,
-          name: insurance.name,
-          nameSk: insurance.nameSk || insurance.displayName,
-          description: insurance.description,
-          descriptionSk: insurance.descriptionSk,
-          pricing: insurance.pricing,
-          // Calculate cost based on pricing type
-          cost: (() => {
-            const days = calculateDays();
-            if (insurance.pricing?.type === 'per_day' && insurance.pricing?.amount) {
-              return insurance.pricing.amount * days;
-            } else if (insurance.pricing?.type === 'fixed' && insurance.pricing?.amount) {
-              return insurance.pricing.amount;
-            } else if (insurance.pricing?.type === 'percentage' && insurance.pricing?.amount) {
-              const rentalCost = getPricePerDay(days) * days;
-              return (rentalCost * insurance.pricing.amount) / 100;
-            } else if (insurance.pricePerDay) {
-              return insurance.pricePerDay * days;
-            } else if (insurance.price) {
-              return insurance.price;
-            } else if (insurance.dailyRate) {
-              return insurance.dailyRate * days;
-            }
-            return 0;
-          })()
-        })),
+        // Insurance (optional) - Send ID, name, and calculated price
+        selectedAdditionalInsurance: Array.isArray(formData.selectedInsurance)
+          ? formData.selectedInsurance.map(insurance => {
+              const days = calculateDays();
+              let cost = 0;
+
+              console.log('🔍 Processing insurance:', insurance.name);
+              console.log('🔍 Insurance pricing:', insurance.pricing);
+              console.log('🔍 Number of days:', days);
+
+              // Calculate cost based on pricing type
+              if (insurance.pricing?.type === 'per_day' && insurance.pricing?.amount) {
+                cost = insurance.pricing.amount * days;
+                console.log('🔍 Per-day calculation:', insurance.pricing.amount, 'x', days, '=', cost);
+              } else if (insurance.pricing?.type === 'fixed' && insurance.pricing?.amount) {
+                cost = insurance.pricing.amount;
+                console.log('🔍 Fixed calculation:', cost);
+              } else if (insurance.pricing?.type === 'percentage' && insurance.pricing?.amount) {
+                const rentalCost = getPricePerDay(days) * days;
+                cost = (rentalCost * insurance.pricing.amount) / 100;
+                console.log('🔍 Percentage calculation:', rentalCost, 'x', insurance.pricing.amount, '% =', cost);
+              }
+
+              const insuranceObj = {
+                id: insurance._id || insurance.id,
+                name: insurance.name,
+                totalPrice: Number(cost)
+              };
+              console.log('🔍 Final insurance object:', insuranceObj);
+
+              return insuranceObj;
+            })
+          : [],
         selectedExtendedInsurance: [],
         insuranceTotal: calculateInsuranceCost(),
 
@@ -530,13 +528,19 @@ const BookingPage = () => {
         notes: '',
 
         // Pricing
-        totalPrice: calculateTotal(),
+        totalPrice: Number(calculateTotal()) || 0,
 
         // Important: Mark as pending payment until Stripe payment is confirmed
         status: 'pending_payment'
       };
 
-      console.log('Complete Reservation Data:', JSON.stringify(reservationData, null, 2));
+      // Step 1: Create reservation with pending_payment status
+      console.log('Creating reservation...');
+
+      // Debug: Check data before sending
+      console.log('🔍 DEBUG - totalPrice:', reservationData.totalPrice);
+      console.log('🔍 DEBUG - selectedServices:', reservationData.selectedServices);
+      console.log('🔍 DEBUG - selectedAdditionalInsurance:', reservationData.selectedAdditionalInsurance);
 
       const reservationResponse = await paymentService.createReservation(reservationData);
       const reservation = reservationResponse.data;
