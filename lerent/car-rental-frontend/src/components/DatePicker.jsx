@@ -15,7 +15,6 @@ const DatePicker = ({
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const containerRef = useRef(null);
 
-
   // Slovak month names
   const monthNames = [
     'Január', 'Február', 'Marec', 'Apríl', 'Máj', 'Jún',
@@ -41,23 +40,31 @@ const DatePicker = ({
     return date.toLocaleDateString('sk-SK');
   };
 
+  // Format date to YYYY-MM-DD in local timezone (avoids timezone shift issues)
+  const formatDateLocal = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const isDateDisabled = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
-    
+    const dateStr = formatDateLocal(date);
+
     // Check if date is before minimum date
     if (minDate && date < minDate) return true;
-    
+
     // Check if date is after maximum date
     if (maxDate && date > maxDate) return true;
-    
+
     // Check if date is in unavailable dates
     if (unavailableDates.includes(dateStr)) return true;
-    
+
     return false;
   };
 
   const isDateUnavailable = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatDateLocal(date);
     return unavailableDates.includes(dateStr);
   };
 
@@ -74,7 +81,7 @@ const DatePicker = ({
     // Check each date in the range
     const currentDate = new Date(start);
     while (currentDate <= end) {
-      const dateStr = currentDate.toISOString().split('T')[0];
+      const dateStr = formatDateLocal(currentDate);
       if (unavailableDates.includes(dateStr)) {
         return true;
       }
