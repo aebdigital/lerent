@@ -101,7 +101,10 @@ const BookingPage = () => {
     idCardFront: null,
     idCardBack: null,
     driverLicenseFront: null,
-    driverLicenseBack: null
+    driverLicenseBack: null,
+
+    // Payment method
+    paymentMethod: 'stripe' // 'stripe' or 'bank_transfer'
   });
 
   const steps = [
@@ -546,32 +549,45 @@ const BookingPage = () => {
       const reservation = reservationResponse.data;
       console.log('Reservation created:', reservation.reservationNumber);
 
-      // Step 2: Create Stripe checkout session
-      console.log('Creating Stripe checkout session...');
-      const totalAmount = calculateTotal();
-      const days = calculateDays();
+      // Step 2: Handle payment based on selected method
+      if (formData.paymentMethod === 'stripe') {
+        // Stripe payment flow
+        console.log('Creating Stripe checkout session...');
+        const totalAmount = calculateTotal();
+        const days = calculateDays();
 
-      const checkoutResponse = await paymentService.createCheckoutSession({
-        amount: totalAmount,
-        currency: 'EUR',
-        description: `Prenájom vozidla: ${selectedCar.brand} ${selectedCar.model} (${days} ${days === 1 ? 'deň' : days < 5 ? 'dni' : 'dní'})`,
-        reservationId: reservation._id,
-        customerEmail: formData.email
-      });
+        const checkoutResponse = await paymentService.createCheckoutSession({
+          amount: totalAmount,
+          currency: 'EUR',
+          description: `Prenájom vozidla: ${selectedCar.brand} ${selectedCar.model} (${days} ${days === 1 ? 'deň' : days < 5 ? 'dni' : 'dní'})`,
+          reservationId: reservation._id,
+          customerEmail: formData.email
+        });
 
-      // Step 3: Redirect to Stripe checkout page
-      if (checkoutResponse.success) {
-        console.log('Redirecting to Stripe checkout...');
+        // Step 3: Redirect to Stripe checkout page
+        if (checkoutResponse.success) {
+          console.log('Redirecting to Stripe checkout...');
 
-        // Show test mode warning if applicable
-        if (checkoutResponse.data.test_mode) {
-          console.warn('⚠️ Test mode - use card 4242 4242 4242 4242');
+          // Show test mode warning if applicable
+          if (checkoutResponse.data.test_mode) {
+            console.warn('⚠️ Test mode - use card 4242 4242 4242 4242');
+          }
+
+          // Redirect to Stripe checkout
+          window.location.href = checkoutResponse.data.checkout_url;
+        } else {
+          throw new Error('Nepodarilo sa vytvoriť platobnú session');
         }
-
-        // Redirect to Stripe checkout
-        window.location.href = checkoutResponse.data.checkout_url;
-      } else {
-        throw new Error('Nepodarilo sa vytvoriť platobnú session');
+      } else if (formData.paymentMethod === 'bank_transfer') {
+        // Bank transfer flow - navigate to bank transfer page with reservation details
+        console.log('Bank transfer selected, showing payment details...');
+        navigate('/bank-transfer-info', {
+          state: {
+            reservationId: reservation._id,
+            reservationNumber: reservation.reservationNumber,
+            totalAmount: calculateTotal()
+          }
+        });
       }
 
     } catch (err) {
@@ -1254,6 +1270,42 @@ const BookingPage = () => {
                             disabled={!!currentUser}
                           />
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Payment Method Section */}
+                    <div className="mt-8">
+                      <h3 className="text-lg font-semibold text-white mb-4 text-left">Spôsob platby *</h3>
+                      <div className="space-y-3">
+                        <label className="border border-gray-700 rounded-lg p-4 flex items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors" style={{backgroundColor: formData.paymentMethod === 'stripe' ? 'rgba(250,146,8,0.1)' : 'transparent', borderColor: formData.paymentMethod === 'stripe' ? 'rgb(250,146,8)' : '#555'}}>
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="stripe"
+                            checked={formData.paymentMethod === 'stripe'}
+                            onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
+                            className="w-4 h-4 text-[rgb(250,146,8)] focus:ring-[rgb(250,146,8)] border-gray-600"
+                          />
+                          <div className="ml-3 text-left">
+                            <p className="text-white font-medium">Stripe</p>
+                            <p className="text-gray-400 text-sm">Platba kartou online</p>
+                          </div>
+                        </label>
+
+                        <label className="border border-gray-700 rounded-lg p-4 flex items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors" style={{backgroundColor: formData.paymentMethod === 'bank_transfer' ? 'rgba(250,146,8,0.1)' : 'transparent', borderColor: formData.paymentMethod === 'bank_transfer' ? 'rgb(250,146,8)' : '#555'}}>
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="bank_transfer"
+                            checked={formData.paymentMethod === 'bank_transfer'}
+                            onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
+                            className="w-4 h-4 text-[rgb(250,146,8)] focus:ring-[rgb(250,146,8)] border-gray-600"
+                          />
+                          <div className="ml-3 text-left">
+                            <p className="text-white font-medium">Bankový prevod</p>
+                            <p className="text-gray-400 text-sm">Platba bankovým prevodom</p>
+                          </div>
+                        </label>
                       </div>
                     </div>
 

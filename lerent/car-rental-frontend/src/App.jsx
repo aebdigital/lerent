@@ -20,6 +20,7 @@ import SluzbyPage from './pages/SluzbyPage';
 import FAQPage from './pages/FAQPage';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancelled from './pages/PaymentCancelled';
+import BankTransferInfoPage from './pages/BankTransferInfoPage';
 import { initGSAPAnimations, initScrollAnimations } from './utils/gsapAnimations';
 import './index.css';
 
@@ -37,6 +38,7 @@ function AnimatedRoutes() {
         <Route path="/booking" element={<PageTransition><BookingPage /></PageTransition>} />
         <Route path="/payment-success" element={<PageTransition><PaymentSuccess /></PageTransition>} />
         <Route path="/payment-cancelled" element={<PageTransition><PaymentCancelled /></PageTransition>} />
+        <Route path="/bank-transfer-info" element={<PageTransition><BankTransferInfoPage /></PageTransition>} />
         <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
         <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
         <Route path="/blog" element={<PageTransition><BlogPage /></PageTransition>} />
