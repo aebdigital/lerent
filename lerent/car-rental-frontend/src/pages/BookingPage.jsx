@@ -533,6 +533,9 @@ const BookingPage = () => {
         // Pricing
         totalPrice: Number(calculateTotal()) || 0,
 
+        // Payment type - send 'stripe' or 'prevod' based on selection
+        paymentType: formData.paymentMethod === 'stripe' ? 'stripe' : 'prevod',
+
         // Important: Mark as pending payment until Stripe payment is confirmed
         status: 'pending_payment'
       };
@@ -541,13 +544,16 @@ const BookingPage = () => {
       console.log('Creating reservation...');
 
       // Debug: Check data before sending
+      console.log('🔍 DEBUG - paymentType:', reservationData.paymentType);
       console.log('🔍 DEBUG - totalPrice:', reservationData.totalPrice);
       console.log('🔍 DEBUG - selectedServices:', reservationData.selectedServices);
       console.log('🔍 DEBUG - selectedAdditionalInsurance:', reservationData.selectedAdditionalInsurance);
 
       const reservationResponse = await paymentService.createReservation(reservationData);
-      const reservation = reservationResponse.data;
+      // Backend returns nested structure: {data: {reservation: {...}, customer: {...}}}
+      const reservation = reservationResponse.data.reservation || reservationResponse.data;
       console.log('Reservation created:', reservation.reservationNumber);
+      console.log('Full reservation object:', reservation);
 
       // Step 2: Handle payment based on selected method
       if (formData.paymentMethod === 'stripe') {
@@ -581,6 +587,12 @@ const BookingPage = () => {
       } else if (formData.paymentMethod === 'bank_transfer') {
         // Bank transfer flow - navigate to bank transfer page with reservation details
         console.log('Bank transfer selected, showing payment details...');
+        console.log('Reservation data:', reservation);
+        console.log('Navigating with state:', {
+          reservationId: reservation._id,
+          reservationNumber: reservation.reservationNumber,
+          totalAmount: calculateTotal()
+        });
         navigate('/bank-transfer-info', {
           state: {
             reservationId: reservation._id,
@@ -1511,6 +1523,12 @@ const BookingPage = () => {
                             </p>
                             <p className="text-gray-400 text-xs">{formData.returnLocation.name}</p>
                           </div>
+                          <div>
+                            <p className="text-gray-400">Spôsob platby:</p>
+                            <p className="text-white font-medium">
+                              {formData.paymentMethod === 'stripe' ? 'Stripe (Karta online)' : 'Bankový prevod'}
+                            </p>
+                          </div>
                         </div>
                       </div>
 
@@ -1523,7 +1541,9 @@ const BookingPage = () => {
 
                       <div className="rounded-lg p-6 border border-[rgb(250,146,8)]" style={{backgroundColor: 'rgba(250, 146, 8, 0.1)'}}>
                         <p className="text-white text-sm">
-                          Po kliknutí na tlačidlo "Rezervovať" budete presmerovaní na platobnú bránu Stripe, kde dokončíte platbu.
+                          {formData.paymentMethod === 'stripe'
+                            ? 'Po kliknutí na tlačidlo "Rezervovať" budete presmerovaní na platobnú bránu Stripe, kde dokončíte platbu.'
+                            : 'Po kliknutí na tlačidlo "Rezervovať" Vám zobraziť údaje na bankový prevod.'}
                         </p>
                       </div>
                     </div>
@@ -1779,12 +1799,12 @@ const BookingPage = () => {
 
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-300">Depozit:</span>
-                      <span className="font-medium text-white">{(selectedCar.deposit || 0).toFixed(2)}€</span>
+                      <span className="font-medium text-white">{(selectedCar.pricing?.deposit || selectedCar.deposit || 0).toFixed(2)}€</span>
                     </div>
                     <div className="pt-3" style={{borderTop: '0.5px solid #d1d5db'}}>
                       <div className="flex justify-between text-lg font-bold">
                         <span className="text-white">Celková cena:</span>
-                        <span className="text-[rgb(250,146,8)]">{(calculateTotal() + (selectedCar.deposit || 0)).toFixed(2)}€</span>
+                        <span className="text-[rgb(250,146,8)]">{(calculateTotal() + (selectedCar.pricing?.deposit || selectedCar.deposit || 0)).toFixed(2)}€</span>
                       </div>
                     </div>
                   </div>

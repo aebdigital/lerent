@@ -52,6 +52,10 @@ const mockCarsData = [
     power: '110kW',
     status: 'available',
     deposit: 700,
+    pricing: {
+      deposit: 700,
+      dailyRate: 37
+    },
     description: 'Elegantný crossover coupe s automatickou prevodovkou.',
     features: ['air-conditioning', 'gps', 'bluetooth', 'rear-camera'],
     images: [
@@ -89,6 +93,10 @@ const mockCarsData = [
     power: '110kW',
     status: 'available',
     deposit: 800,
+    pricing: {
+      deposit: 800,
+      dailyRate: 37
+    },
     description: 'Najnovšie kombi Škoda s veľkým batožinovým priestorom a modernou technikou.',
     features: ['air-conditioning', 'gps', 'bluetooth', 'cruise-control', 'extra-luggage'],
     images: [
@@ -126,6 +134,10 @@ const mockCarsData = [
     power: '85kW',
     status: 'available',
     deposit: 600,
+    pricing: {
+      deposit: 600,
+      dailyRate: 37
+    },
     description: 'Moderný kompaktný liftback s automatickou prevodovkou a bohatým vybavením.',
     features: ['air-conditioning', 'bluetooth', 'usb-ports', 'cruise-control'],
     images: [
@@ -163,6 +175,10 @@ const mockCarsData = [
     power: '110kW',
     status: 'available',
     deposit: 700,
+    pricing: {
+      deposit: 700,
+      dailyRate: 37
+    },
     description: 'Športová verzia Scala s dizajnom MonteCarlo a výkonným motorom.',
     features: ['air-conditioning', 'gps', 'bluetooth', 'heated-seats', 'sport-package'],
     images: [
@@ -200,6 +216,10 @@ const mockCarsData = [
     power: '90kW',
     status: 'available',
     deposit: 600,
+    pricing: {
+      deposit: 600,
+      dailyRate: 37
+    },
     description: 'Spoľahlivý hybridný sedan s nízkou spotrebou paliva.',
     features: ['air-conditioning', 'bluetooth', 'rear-camera', 'hybrid'],
     images: [
@@ -237,6 +257,10 @@ const mockCarsData = [
     power: '150kW',
     status: 'available',
     deposit: 1000,
+    pricing: {
+      deposit: 1000,
+      dailyRate: 37
+    },
     description: 'Výkonné 7-miestne SUV s pohonom všetkých kolies a športovým paketom FR.',
     features: ['air-conditioning', 'gps', 'bluetooth', 'heated-seats', '4x4', 'leather-seats'],
     images: [
@@ -274,6 +298,10 @@ const mockCarsData = [
     power: '110kW',
     status: 'available',
     deposit: 900,
+    pricing: {
+      deposit: 900,
+      dailyRate: 37
+    },
     description: 'Priestranný 7-miestny rodinný van s prémiovým vybavením Highline.',
     features: ['air-conditioning', 'gps', 'bluetooth', 'heated-seats', 'extra-luggage', 'cruise-control'],
     images: [
@@ -1027,6 +1055,63 @@ export const locationsAPI = {
   }
 };
 
+// Banners API
+export const bannersAPI = {
+  // Get all active banners
+  getAll: async () => {
+    try {
+      console.log('🎨 Fetching banners from API...');
+
+      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/banners`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        console.warn('⚠️ Failed to fetch banners from API');
+        return { success: false, data: [] };
+      }
+
+      const data = await response.json();
+      console.log('✅ Banners loaded:', data.data?.length || 0, 'banners');
+      return data;
+
+    } catch (error) {
+      console.error('❌ Error fetching banners:', error);
+      return { success: false, data: [] };
+    }
+  },
+
+  // Get banners by position
+  getByPosition: async (position) => {
+    try {
+      console.log(`🎨 Fetching banners for position "${position}" from API...`);
+
+      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/banners?position=${position}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        console.warn(`⚠️ Failed to fetch banners for position "${position}"`);
+        return [];
+      }
+
+      const data = await response.json();
+      console.log(`✅ Banners loaded for position "${position}":`, data.data?.length || 0, 'banners');
+      return data.data || [];
+
+    } catch (error) {
+      console.error(`❌ Error filtering banners for position "${position}":`, error);
+      return [];
+    }
+  }
+};
+
 export default {
   auth: authAPI,
   cars: carsAPI,
@@ -1034,5 +1119,6 @@ export default {
   booking: bookingAPI,
   services: servicesAPI,
   insurance: insuranceAPI,
-  locations: locationsAPI
+  locations: locationsAPI,
+  banners: bannersAPI
 }; 

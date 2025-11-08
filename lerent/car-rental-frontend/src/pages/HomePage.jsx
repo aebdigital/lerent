@@ -9,7 +9,7 @@ import BookingFormSection from '../components/BookingFormSection';
 import Carousel from '../components/Carousel';
 import CustomDatePicker from '../components/CustomDatePicker';
 import DatePicker from '../components/DatePicker';
-import { carsAPI, locationsAPI } from '../services/api';
+import { carsAPI, locationsAPI, bannersAPI } from '../services/api';
 import HeroImg from '../main page final1.jpg';
 import VasenImg from '../vasen.webp';
 import CarClassImg from '../testfilter2.png';
@@ -64,8 +64,10 @@ const HomePage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
+  const [banners, setBanners] = useState([]);
+  const [loadingBanners, setLoadingBanners] = useState(true);
 
-  // Slider images - using car images from the grid
+  // Slider images - fallback to static images if API fails
   const sliderImages = [AudiS6Img, MaseratiImg, BMW840iImg];
   
   // Car classes for filtering
@@ -110,13 +112,56 @@ const HomePage = () => {
     setIsDropdownOpen(false);
   };
 
+  // Create slides from all banner images
+  const allSlides = banners.length > 0
+    ? banners.flatMap(banner =>
+        banner.images && banner.images.length > 0
+          ? banner.images.map(image => ({
+              imageUrl: image.url,
+              title: banner.title,
+              subtitle: banner.subtitle,
+              alt: image.alt || banner.title
+            }))
+          : [{
+              imageUrl: sliderImages[0], // fallback image
+              title: banner.title,
+              subtitle: banner.subtitle,
+              alt: banner.title
+            }]
+      )
+    : sliderImages.map((img, idx) => ({
+        imageUrl: img,
+        title: idx === 0 ? 'Prémiová flotila\nvozidiel' : 'Prémiová flotila\nvozidiel',
+        subtitle: 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.',
+        alt: 'Premium car'
+      }));
+
   // Auto-slide effect
   useEffect(() => {
+    const slideCount = allSlides.length;
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
+      setCurrentSlide((prev) => (prev + 1) % slideCount);
     }, 4000); // Change slide every 4 seconds
 
     return () => clearInterval(interval);
+  }, [allSlides]);
+
+  // Fetch banners from API
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        setLoadingBanners(true);
+        const carouselBanners = await bannersAPI.getByPosition('hero-section');
+        console.log('🎨 Homepage banners loaded:', carouselBanners);
+        setBanners(carouselBanners);
+      } catch (error) {
+        console.error('Error loading banners:', error);
+      } finally {
+        setLoadingBanners(false);
+      }
+    };
+
+    fetchBanners();
   }, []);
 
   // Close dropdown when clicking outside
@@ -807,11 +852,21 @@ const HomePage = () => {
                       backgroundClip: 'text'
                     }}
                   >
-                    <div>Prémiová flotila</div>
-                    <div>vozidiel</div>
+                    {/* Use current slide title */}
+                    {allSlides[currentSlide]?.title ? (
+                      allSlides[currentSlide].title.split('\n').map((line, idx) => (
+                        <div key={idx}>{line}</div>
+                      ))
+                    ) : (
+                      <>
+                        <div>Prémiová flotila</div>
+                        <div>vozidiel</div>
+                      </>
+                    )}
                   </h2>
                   <p className="text-gray-300 text-base sm:text-lg lg:text-xl max-w-md max-[480px]:text-left max-[480px]:mb-0">
-                    Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.
+                    {/* Use current slide subtitle */}
+                    {allSlides[currentSlide]?.subtitle || 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.'}
                   </p>
                 </div>
               </FadeInUp>
@@ -827,13 +882,14 @@ const HomePage = () => {
                     boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(250, 146, 8, 0.1)'
                   }}
                 >
-                  {sliderImages.map((image, index) => (
+                  {/* Display all available images from banners */}
+                  {allSlides.map((slide, index) => (
                     <div
                       key={index}
                       className="absolute inset-0 w-full h-full transition-opacity duration-1000"
                       style={{
                         opacity: currentSlide === index ? 1 : 0,
-                        backgroundImage: `url(${image})`,
+                        backgroundImage: `url(${slide.imageUrl})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center'
                       }}
@@ -862,7 +918,7 @@ const HomePage = () => {
 
                   {/* Slider indicators */}
                   <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
-                    {sliderImages.map((_, index) => (
+                    {allSlides.map((_, index) => (
                       <button
                         key={index}
                         onClick={() => setCurrentSlide(index)}

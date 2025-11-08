@@ -11,7 +11,7 @@ const FAQPage = () => {
     },
     {
       question: "Aká je výška zábezpeky a kedy sa vráti?",
-      answer: "Výška zábezpeky závisí od kategórie vozidla: 500€ pre ekonomickú triedu, 1000€ pre strednú triedu a 2000€ pre prémiovú triedu. Zábezpeka sa vráti do 7 pracovných dní po vrátení vozidla v pôvodnom stave."
+      answer: "Výška zábezpeky závisí od kategórie vozidla a je uvedená pri každom aute individuálne. Zábezpeka sa vráti do 7 pracovných dní po vrátení vozidla v pôvodnom stave."
     },
     {
       question: "Je možné predĺžiť prenájom počas trvania?",

@@ -27,18 +27,18 @@ import BMW840iImg from '../bmw840i.png';
 import BMWX7Img from '../bmwx7.JPG';
 import VideoIcon from '../video_orange.png';
 
-// Function to get car images based on car ID or brand/model
-const getCarImage = (car) => {
-  if (!car) return HeroImg;
-  
-  // Check if car already has an image property
-  if (car.image) return car.image;
-  
-  // Check if car has images array (from API)
+// Function to get all car images from API or fallbacks
+const getCarImages = (car) => {
+  if (!car) return [HeroImg];
+
+  // If car has images array (from API), return all image URLs
   if (car.images && car.images.length > 0) {
-    return car.images[0].url;
+    return car.images.map(img => img.url);
   }
-  
+
+  // Check if car already has a single image property
+  if (car.image) return [car.image];
+
   // Map car IDs to specific images (matching HomePage data)
   const carImageMap = {
     'audi-a6': AudiA6Img,
@@ -49,26 +49,95 @@ const getCarImage = (car) => {
     'bmw-840i-xdrive': BMW840iImg,
     'bmw-x7-xdrive-40d': BMWX7Img
   };
-  
+
   // Try to match by car ID
   if (car._id && carImageMap[car._id]) {
-    return carImageMap[car._id];
+    return [carImageMap[car._id]];
   }
-  
+
   // Try to match by brand and model
   const brand = car.brand ? car.brand.toUpperCase() : '';
   const model = car.model ? car.model.toUpperCase() : '';
-  
-  if (brand.includes('AUDI') && model.includes('A6')) return '/src/audia6.JPG';
-  if (brand.includes('BMW') && model.includes('540')) return '/src/bmw540i.png';
-  if (brand.includes('AUDI') && model.includes('S4')) return '/src/audis4.webp';
-  if (brand.includes('AUDI') && model.includes('S6')) return '/src/audis6.JPG';
-  if (brand.includes('MASERATI')) return '/src/maseratilevante.JPG';
-  if (brand.includes('BMW') && model.includes('840')) return '/src/bmw840i.png';
-  if (brand.includes('BMW') && model.includes('X7')) return '/src/bmwx7.JPG';
-  
+
+  if (brand.includes('AUDI') && model.includes('A6')) return ['/src/audia6.JPG'];
+  if (brand.includes('BMW') && model.includes('540')) return ['/src/bmw540i.png'];
+  if (brand.includes('AUDI') && model.includes('S4')) return ['/src/audis4.webp'];
+  if (brand.includes('AUDI') && model.includes('S6')) return ['/src/audis6.JPG'];
+  if (brand.includes('MASERATI')) return ['/src/maseratilevante.JPG'];
+  if (brand.includes('BMW') && model.includes('840')) return ['/src/bmw840i.png'];
+  if (brand.includes('BMW') && model.includes('X7')) return ['/src/bmwx7.JPG'];
+
   // Default fallback
-  return HeroImg;
+  return [HeroImg];
+};
+
+// Function to get primary car image (first image for hero/main display)
+const getCarImage = (car) => {
+  const images = getCarImages(car);
+  return images[0];
+};
+
+// Function to format duration text with proper Slovak plurals
+const formatDurationText = (duration) => {
+  // Handle specific API duration formats
+  if (duration.includes('1day')) return '1 deň';
+  if (duration.includes('2-3days')) return '2-3 dni';
+  if (duration.includes('4-10days')) return '4-10 dni';
+  if (duration.includes('11-17days')) return '11-17 dni';
+  if (duration.includes('18-24days')) return '18-24 dni';
+  if (duration.includes('25-29days')) return '25-29 dni';
+  if (duration.includes('30plus')) return '30+ dni';
+
+  // Generic replacements
+  return duration
+    .replace('day', ' deň')
+    .replace('days', ' dni')
+    .replace('plus', '+')
+    .replace(/(\d+)\s*dens/g, (match, number) => {
+      const num = parseInt(number);
+      return num === 1 ? `${num} deň` : `${num} dni`;
+    });
+};
+
+// Function to filter and format pricing data
+const getValidPricingEntries = (car) => {
+  const entries = [];
+
+  if (car.pricing?.rates && Object.keys(car.pricing.rates).length > 0) {
+    Object.entries(car.pricing.rates).forEach(([duration, price]) => {
+      // Only include entries where price is valid (number > 0 or truthy string)
+      if ((typeof price === 'number' && price > 0) || (typeof price === 'string' && price.trim())) {
+        entries.push({
+          label: formatDurationText(duration),
+          price: typeof price === 'number' ? `${price}€` : price
+        });
+      }
+    });
+  } else if (car.priceList && car.priceList.length > 0) {
+    car.priceList.forEach((priceItem) => {
+      // Only include entries where price is valid
+      const price = priceItem.price || priceItem.rate;
+      if ((typeof price === 'number' && price > 0) || (typeof price === 'string' && price.trim())) {
+        entries.push({
+          label: priceItem.duration || priceItem.label || 'Prenájom',
+          price: `${price}€`
+        });
+      }
+    });
+  } else {
+    // Fallback to individual rate fields - only show if value exists and > 0
+    if (car.dailyRate && car.dailyRate > 0) {
+      entries.push({ label: 'Deň', price: `${car.dailyRate}€` });
+    }
+    if (car.weeklyRate && car.weeklyRate > 0) {
+      entries.push({ label: 'Týždeň', price: `${car.weeklyRate}€` });
+    }
+    if (car.monthlyRate && car.monthlyRate > 0) {
+      entries.push({ label: 'Mesiac', price: `${car.monthlyRate}€` });
+    }
+  }
+
+  return entries;
 };
 
 // Function to get car descriptions
@@ -231,6 +300,14 @@ const CarDetailsPage = () => {
       features: ['air-conditioning', 'gps', 'bluetooth', 'leather-seats', '7-seats', 'premium-sound']
     }
   ];
+
+  // Ensure currentImageIndex stays within bounds
+  useEffect(() => {
+    const carImages = getCarImages(car);
+    if (currentImageIndex >= carImages.length) {
+      setCurrentImageIndex(0);
+    }
+  }, [car, currentImageIndex]);
 
   useEffect(() => {
     const loadCarDetails = async () => {
@@ -471,7 +548,18 @@ const CarDetailsPage = () => {
 
   const getDeposit = () => {
     if (!car) return 0;
-    return car.deposit || 1000;
+
+    // Check multiple possible deposit sources from database
+    if (car.pricing?.deposit && car.pricing.deposit > 0) {
+      return car.pricing.deposit;
+    }
+
+    if (car.deposit && car.deposit > 0) {
+      return car.deposit;
+    }
+
+    // If no deposit is set in database, return 0 (don't use hardcoded fallback)
+    return 0;
   };
 
   const scrollToBooking = () => {
@@ -620,7 +708,7 @@ const CarDetailsPage = () => {
               }}
             >
               <img
-                src={getCarImage(car)}
+                src={getCarImages(car)[0] || getCarImage(car)}
                 alt={`${car.brand} ${car.model}`}
                 className="w-full h-full object-cover"
               />
@@ -661,25 +749,25 @@ const CarDetailsPage = () => {
         {/* Desktop Gallery - Full Width Thumbnails in a Row */}
         <div className="hidden lg:block w-full py-6">
           <div className="grid grid-cols-6 gap-4 px-4">
-            {/* Generate gallery photos */}
-            {[1, 2, 3, 4, 5].map((index) => (
+            {/* Display actual car images from API */}
+            {getCarImages(car).slice(0, 5).map((imageUrl, index) => (
               <div
                 key={index}
                 className="aspect-[4/3] overflow-hidden rounded-lg cursor-pointer hover:opacity-75 transition-opacity duration-200"
                 onClick={() => {
-                  setCurrentImageIndex(index - 1);
+                  setCurrentImageIndex(index);
                   setShowImageModal(true);
                 }}
               >
                 <img
-                  src={getCarImage(car)}
-                  alt={`${car.brand} ${car.model} - Photo ${index}`}
+                  src={imageUrl}
+                  alt={`${car.brand} ${car.model} - Photo ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
               </div>
             ))}
 
-            {/* Show All Button - Last thumbnail with overlay */}
+            {/* Show All Button - Show remaining count or "View All" */}
             <div
               className="aspect-[4/3] overflow-hidden rounded-lg cursor-pointer relative hover:opacity-75 transition-opacity duration-200"
               onClick={() => {
@@ -688,14 +776,16 @@ const CarDetailsPage = () => {
               }}
             >
               <img
-                src={getCarImage(car)}
+                src={getCarImages(car)[getCarImages(car).length > 5 ? 5 : 0]}
                 alt={`${car.brand} ${car.model} - More photos`}
                 className="w-full h-full object-cover"
               />
               {/* Transparent overlay */}
               <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
                 <div className="text-white text-center">
-                  <div className="text-2xl font-semibold">+6</div>
+                  <div className="text-2xl font-semibold">
+                    {getCarImages(car).length > 6 ? `+${getCarImages(car).length - 5}` : 'Všetky'}
+                  </div>
                   <div className="text-sm">Zobraziť všetky</div>
                 </div>
               </div>
@@ -899,10 +989,12 @@ const CarDetailsPage = () => {
                     </div>
                   </>
                 )}
-                <div className="flex justify-between">
-                  <span className="text-gray-300">Depozit:</span>
-                  <span className="font-semibold text-white">{getDeposit().toFixed(2)}€</span>
-                </div>
+                {getDeposit() > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Depozit:</span>
+                    <span className="font-semibold text-white">{getDeposit().toFixed(2)}€</span>
+                  </div>
+                )}
                 <div className="flex justify-between pt-4 mt-4" style={{borderTop: '1px solid rgba(107, 114, 128, 0.3)'}}>
                   <span className="text-white font-semibold text-2xl">Cena:</span>
                   <span className="font-semibold text-[rgb(250,146,8)] text-2xl">{(calculatePrice() + getKmPackagePrice()).toFixed(2)}€</span>
@@ -929,63 +1021,15 @@ const CarDetailsPage = () => {
             <h3 className="text-xl font-semibold text-white mb-4">Cenník prenájmu</h3>
 
             <div className="divide-y divide-gray-800">
-              {/* If pricing.rates exists, show all pricing tiers */}
-              {car.pricing?.rates && Object.keys(car.pricing.rates).length > 0 ? (
-                <>
-                  {Object.entries(car.pricing.rates).map(([duration, price], index) => (
-                    <div key={index} className="py-3">
-                      <div className="grid grid-cols-2 gap-4">
-                        <span className="text-white capitalize">{duration.replace('day', ' deň').replace('days', ' dní').replace('plus', '+')}</span>
-                        <span className="text-[rgb(250,146,8)] font-semibold text-right">
-                          {typeof price === 'number' ? `${price}€` : price}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              ) : car.priceList && car.priceList.length > 0 ? (
-                <>
-                  {/* Alternative: priceList array format */}
-                  {car.priceList.map((priceItem, index) => (
-                    <div key={index} className="py-3">
-                      <div className="grid grid-cols-2 gap-4">
-                        <span className="text-white">{priceItem.duration || priceItem.label || `Položka ${index + 1}`}</span>
-                        <span className="text-[rgb(250,146,8)] font-semibold text-right">{priceItem.price || priceItem.rate}€</span>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              ) : (
-                <>
-                  {/* Fallback to individual rate fields */}
-                  {car.dailyRate && (
-                    <div className="py-3">
-                      <div className="grid grid-cols-2 gap-4">
-                        <span className="text-white">Deň</span>
-                        <span className="text-[rgb(250,146,8)] font-semibold text-right">{car.dailyRate}€</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {car.weeklyRate && (
-                    <div className="py-3">
-                      <div className="grid grid-cols-2 gap-4">
-                        <span className="text-white">Týždeň</span>
-                        <span className="text-[rgb(250,146,8)] font-semibold text-right">{car.weeklyRate}€</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {car.monthlyRate && (
-                    <div className="py-3">
-                      <div className="grid grid-cols-2 gap-4">
-                        <span className="text-white">Mesiac</span>
-                        <span className="text-[rgb(250,146,8)] font-semibold text-right">{car.monthlyRate}€</span>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
+              {/* Display all valid pricing entries */}
+              {getValidPricingEntries(car).map((entry, index) => (
+                <div key={index} className="py-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <span className="text-white">{entry.label}</span>
+                    <span className="text-[rgb(250,146,8)] font-semibold text-right">{entry.price}</span>
+                  </div>
+                </div>
+              ))}
 
               {/* Show deposit if available - check both car.deposit and car.pricing.deposit */}
               {(car.deposit || car.pricing?.deposit) && (
@@ -1017,63 +1061,15 @@ const CarDetailsPage = () => {
               <h3 className="text-xl font-semibold text-white mb-4">Cenník prenájmu</h3>
 
               <div className="divide-y divide-gray-800">
-                {/* If pricing.rates exists, show all pricing tiers */}
-                {car.pricing?.rates && Object.keys(car.pricing.rates).length > 0 ? (
-                  <>
-                    {Object.entries(car.pricing.rates).map(([duration, price], index) => (
-                      <div key={index} className="py-3">
-                        <div className="grid grid-cols-2 gap-4">
-                          <span className="text-white capitalize">{duration.replace('day', ' deň').replace('days', ' dní').replace('plus', '+')}</span>
-                          <span className="text-[rgb(250,146,8)] font-semibold text-right">
-                            {typeof price === 'number' ? `${price}€` : price}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                ) : car.priceList && car.priceList.length > 0 ? (
-                  <>
-                    {/* Alternative: priceList array format */}
-                    {car.priceList.map((priceItem, index) => (
-                      <div key={index} className="py-3">
-                        <div className="grid grid-cols-2 gap-4">
-                          <span className="text-white">{priceItem.duration || priceItem.label || `Položka ${index + 1}`}</span>
-                          <span className="text-[rgb(250,146,8)] font-semibold text-right">{priceItem.price || priceItem.rate}€</span>
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    {/* Fallback to individual rate fields */}
-                    {car.dailyRate && (
-                      <div className="py-3">
-                        <div className="grid grid-cols-2 gap-4">
-                          <span className="text-white">Deň</span>
-                          <span className="text-[rgb(250,146,8)] font-semibold text-right">{car.dailyRate}€</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {car.weeklyRate && (
-                      <div className="py-3">
-                        <div className="grid grid-cols-2 gap-4">
-                          <span className="text-white">Týždeň</span>
-                          <span className="text-[rgb(250,146,8)] font-semibold text-right">{car.weeklyRate}€</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {car.monthlyRate && (
-                      <div className="py-3">
-                        <div className="grid grid-cols-2 gap-4">
-                          <span className="text-white">Mesiac</span>
-                          <span className="text-[rgb(250,146,8)] font-semibold text-right">{car.monthlyRate}€</span>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
+                {/* Display all valid pricing entries */}
+                {getValidPricingEntries(car).map((entry, index) => (
+                  <div key={index} className="py-3">
+                    <div className="grid grid-cols-2 gap-4">
+                      <span className="text-white">{entry.label}</span>
+                      <span className="text-[rgb(250,146,8)] font-semibold text-right">{entry.price}</span>
+                    </div>
+                  </div>
+                ))}
 
                 {/* Show deposit if available - check both car.deposit and car.pricing.deposit */}
                 {(car.deposit || car.pricing?.deposit) && (
@@ -1138,10 +1134,12 @@ const CarDetailsPage = () => {
                       </div>
                     </>
                   )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-300">Depozit:</span>
-                    <span className="font-semibold text-white">{getDeposit().toFixed(2)}€</span>
-                  </div>
+                  {getDeposit() > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Depozit:</span>
+                      <span className="font-semibold text-white">{getDeposit().toFixed(2)}€</span>
+                    </div>
+                  )}
                   <div className="flex justify-between pt-4 mt-4" style={{borderTop: '1px solid rgba(107, 114, 128, 0.3)'}}>
                     <span className="text-white font-semibold text-2xl">Cena:</span>
                     <span className="font-semibold text-[rgb(250,146,8)] text-2xl">{(calculatePrice() + getKmPackagePrice()).toFixed(2)}€</span>
@@ -1247,7 +1245,7 @@ const CarDetailsPage = () => {
 
             {/* Previous Button */}
             <button
-              onClick={() => setCurrentImageIndex(prev => prev > 0 ? prev - 1 : 5)}
+              onClick={() => setCurrentImageIndex(prev => prev > 0 ? prev - 1 : getCarImages(car).length - 1)}
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10"
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1258,7 +1256,7 @@ const CarDetailsPage = () => {
             {/* Main Image */}
             <div className="max-w-full max-h-full">
               <img
-                src={getCarImage(car)}
+                src={getCarImages(car)[currentImageIndex] || getCarImage(car)}
                 alt={`${car.brand} ${car.model} - Photo ${currentImageIndex + 1}`}
                 className="max-w-full max-h-full object-contain"
               />
@@ -1266,7 +1264,7 @@ const CarDetailsPage = () => {
 
             {/* Next Button */}
             <button
-              onClick={() => setCurrentImageIndex(prev => prev < 5 ? prev + 1 : 0)}
+              onClick={() => setCurrentImageIndex(prev => prev < getCarImages(car).length - 1 ? prev + 1 : 0)}
               className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10"
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1276,12 +1274,12 @@ const CarDetailsPage = () => {
 
             {/* Image Counter */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-full">
-              {currentImageIndex + 1} / 6
+              {currentImageIndex + 1} / {getCarImages(car).length}
             </div>
 
             {/* Thumbnail Strip */}
             <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex gap-2">
-              {[0, 1, 2, 3, 4, 5].map((index) => (
+              {getCarImages(car).map((imageUrl, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
@@ -1290,7 +1288,7 @@ const CarDetailsPage = () => {
                   }`}
                 >
                   <img
-                    src={getCarImage(car)}
+                    src={imageUrl}
                     alt={`Thumbnail ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
