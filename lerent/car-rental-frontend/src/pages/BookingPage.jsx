@@ -34,7 +34,7 @@ const BookingPage = () => {
   // Generate time slots in 30-minute intervals
   const generateTimeSlots = () => {
     const slots = [];
-    for (let hour = 8; hour < 20; hour++) {
+    for (let hour = 8; hour <= 22; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         slots.push(time);
@@ -394,6 +394,15 @@ const BookingPage = () => {
       return;
     }
 
+    // Validate minimum 2-day reservation
+    if (formData.pickupDate && formData.returnDate) {
+      const daysDifference = calculateDays();
+      if (daysDifference < 2) {
+        setError('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátumy s minimálnym rozdielom 2 dní.');
+        return;
+      }
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -706,19 +715,55 @@ const BookingPage = () => {
     return total;
   };
 
+  const calculateLatePickupFee = () => {
+    if (!formData.pickupTime) return 0;
+    const [hours] = formData.pickupTime.split(':');
+    const pickupHour = parseInt(hours);
+
+    // Fee applies for pickup after 17:00 (5 PM)
+    return pickupHour > 17 ? 30 : 0;
+  };
+
+  const calculateLateDropoffFee = () => {
+    if (!formData.returnTime) return 0;
+    const [hours] = formData.returnTime.split(':');
+    const returnHour = parseInt(hours);
+
+    // Fee applies for dropoff after 17:00 (5 PM)
+    return returnHour > 17 ? 30 : 0;
+  };
+
   const calculateTotal = () => {
     if (!selectedCar || !formData.pickupDate || !formData.returnDate) return 0;
-    const days = Math.ceil((formData.returnDate - formData.pickupDate) / (1000 * 60 * 60 * 24));
+    const days = calculateDays();
     const pricePerDay = getPricePerDay(days);
     const rentalCost = pricePerDay * days;
     const insuranceCost = calculateInsuranceCost();
     const additionalServicesCost = calculateAdditionalServicesCost();
-    return rentalCost + insuranceCost + additionalServicesCost;
+    const latePickupFee = calculateLatePickupFee();
+    const lateDropoffFee = calculateLateDropoffFee();
+    return rentalCost + insuranceCost + additionalServicesCost + latePickupFee + lateDropoffFee;
   };
 
   const calculateDays = () => {
     if (!formData.pickupDate || !formData.returnDate) return 0;
-    return Math.ceil((formData.returnDate - formData.pickupDate) / (1000 * 60 * 60 * 24));
+
+    // Create full datetime objects with time
+    const pickupDateTime = new Date(formData.pickupDate);
+    const [pickupHours, pickupMinutes] = formData.pickupTime.split(':');
+    pickupDateTime.setHours(parseInt(pickupHours), parseInt(pickupMinutes), 0, 0);
+
+    const returnDateTime = new Date(formData.returnDate);
+    const [returnHours, returnMinutes] = formData.returnTime.split(':');
+    returnDateTime.setHours(parseInt(returnHours), parseInt(returnMinutes), 0, 0);
+
+    // Calculate the difference in milliseconds and convert to days
+    const timeDifference = returnDateTime - pickupDateTime;
+    const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+
+    // Always round up to ensure minimum billing period
+    // If return time is later than pickup time, it counts as +1 day
+    return Math.ceil(daysDifference);
   };
 
   if (loading) {
@@ -923,7 +968,7 @@ const BookingPage = () => {
                 {/* Step 1: Insurance */}
                 {currentStep === 1 && (
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-6 text-left">
+                    <h2 className="text-2xl font-goldman font-bold text-white mb-6 text-left">
                       Vyberte si poistenie (voliteľné)
                     </h2>
                     <p className="text-gray-400 text-sm mb-4">Môžete vybrať jedno alebo viac poistení, alebo pokračovať bez dodatočného poistenia.</p>
@@ -995,7 +1040,7 @@ const BookingPage = () => {
                         type="button"
                         onClick={nextStep}
                         disabled={!isStep1Valid()}
-                        className="bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200"
+                        className="bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-goldman font-semibold transition-colors duration-200"
                       >
                         Pokračovať
                       </button>
@@ -1006,7 +1051,7 @@ const BookingPage = () => {
                 {/* Step 2: Additional Services */}
                 {currentStep === 2 && (
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-6 text-left">
+                    <h2 className="text-2xl font-goldman font-bold text-white mb-6 text-left">
                       Doplnkové služby
                     </h2>
                     
@@ -1104,7 +1149,7 @@ const BookingPage = () => {
                       <button
                         type="button"
                         onClick={prevStep}
-                        className="border border-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 hover:bg-gray-700"
+                        className="border border-gray-700 text-white px-6 py-3 rounded-lg font-goldman font-semibold transition-colors duration-200 hover:bg-gray-700"
                       >
                         Späť
                       </button>
@@ -1122,7 +1167,7 @@ const BookingPage = () => {
                 {/* Step 3: Customer Information */}
                 {currentStep === 3 && (
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-6 text-left">
+                    <h2 className="text-2xl font-goldman font-bold text-white mb-6 text-left">
                       Osobné údaje
                     </h2>
 
@@ -1182,19 +1227,26 @@ const BookingPage = () => {
                         />
                       </div>
                       <div>
+                        <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-300 mb-2">
+                          Dátum narodenia*
+                        </label>
                         <input
+                          id="dateOfBirth"
                           type="date"
                           name="dateOfBirth"
                           value={formData.dateOfBirth}
                           onChange={handleInputChange}
-                          placeholder="Dátum narodenia*"
                           className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555', colorScheme: 'dark'}}
                           required
                           disabled={!!currentUser}
                         />
                       </div>
                       <div>
+                        <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-300 mb-2">
+                          &nbsp;
+                        </label>
                         <input
+                          id="licenseNumber"
                           type="text"
                           name="licenseNumber"
                           value={formData.licenseNumber}
@@ -1299,7 +1351,7 @@ const BookingPage = () => {
                             className="w-4 h-4 text-[rgb(250,146,8)] focus:ring-[rgb(250,146,8)] border-gray-600"
                           />
                           <div className="ml-3 text-left">
-                            <p className="text-white font-medium">Stripe</p>
+                            <p className="text-white font-goldman font-medium">Stripe</p>
                             <p className="text-gray-400 text-sm">Platba kartou online</p>
                           </div>
                         </label>
@@ -1314,7 +1366,7 @@ const BookingPage = () => {
                             className="w-4 h-4 text-[rgb(250,146,8)] focus:ring-[rgb(250,146,8)] border-gray-600"
                           />
                           <div className="ml-3 text-left">
-                            <p className="text-white font-medium">Bankový prevod</p>
+                            <p className="text-white font-goldman font-medium">Bankový prevod</p>
                             <p className="text-gray-400 text-sm">Platba bankovým prevodom</p>
                           </div>
                         </label>
@@ -1432,7 +1484,7 @@ const BookingPage = () => {
                         type="button"
                         onClick={nextStep}
                         disabled={!isStep3Valid()}
-                        className="bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200"
+                        className="bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-goldman font-semibold transition-colors duration-200"
                       >
                         Pokračovať
                       </button>
@@ -1443,7 +1495,7 @@ const BookingPage = () => {
                 {/* Step 4: Confirmation */}
                 {currentStep === 4 && (
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-6 text-left">
+                    <h2 className="text-2xl font-goldman font-bold text-white mb-6 text-left">
                       Potvrdenie rezervácie
                     </h2>
 
@@ -1454,19 +1506,19 @@ const BookingPage = () => {
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <p className="text-gray-400">Meno a priezvisko:</p>
-                            <p className="text-white font-medium">{formData.firstName} {formData.lastName}</p>
+                            <p className="text-white font-goldman font-medium">{formData.firstName} {formData.lastName}</p>
                           </div>
                           <div>
                             <p className="text-gray-400">Email:</p>
-                            <p className="text-white font-medium">{formData.email}</p>
+                            <p className="text-white font-goldman font-medium">{formData.email}</p>
                           </div>
                           <div>
                             <p className="text-gray-400">Telefón:</p>
-                            <p className="text-white font-medium">{formData.phone}</p>
+                            <p className="text-white font-goldman font-medium">{formData.phone}</p>
                           </div>
                           <div>
                             <p className="text-gray-400">Adresa:</p>
-                            <p className="text-white font-medium">{formData.address.street}, {formData.address.postalCode} {formData.address.city}</p>
+                            <p className="text-white font-goldman font-medium">{formData.address.street}, {formData.address.postalCode} {formData.address.city}</p>
                           </div>
                         </div>
                       </div>
@@ -1476,7 +1528,7 @@ const BookingPage = () => {
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <p className="text-gray-400">Vozidlo:</p>
-                            <p className="text-white font-medium">{selectedCar?.brand} {selectedCar?.model}</p>
+                            <p className="text-white font-goldman font-medium">{selectedCar?.brand} {selectedCar?.model}</p>
                           </div>
                           <div>
                             <p className="text-gray-400">Poistenie:</p>
@@ -1506,26 +1558,26 @@ const BookingPage = () => {
                                 })}
                               </div>
                             ) : (
-                              <p className="text-white font-medium">Žiadne dodatočné poistenie</p>
+                              <p className="text-white font-goldman font-medium">Žiadne dodatočné poistenie</p>
                             )}
                           </div>
                           <div>
                             <p className="text-gray-400">Prevzatie:</p>
-                            <p className="text-white font-medium">
+                            <p className="text-white font-goldman font-medium">
                               {formData.pickupDate?.toLocaleDateString('sk-SK')} {formData.pickupTime}
                             </p>
                             <p className="text-gray-400 text-xs">{formData.pickupLocation.name}</p>
                           </div>
                           <div>
                             <p className="text-gray-400">Vrátenie:</p>
-                            <p className="text-white font-medium">
+                            <p className="text-white font-goldman font-medium">
                               {formData.returnDate?.toLocaleDateString('sk-SK')} {formData.returnTime}
                             </p>
                             <p className="text-gray-400 text-xs">{formData.returnLocation.name}</p>
                           </div>
                           <div>
                             <p className="text-gray-400">Spôsob platby:</p>
-                            <p className="text-white font-medium">
+                            <p className="text-white font-goldman font-medium">
                               {formData.paymentMethod === 'stripe' ? 'Stripe (Karta online)' : 'Bankový prevod'}
                             </p>
                           </div>
@@ -1643,13 +1695,14 @@ const BookingPage = () => {
                     unavailableDates={unavailableDates}
                     otherSelectedDate={formData.returnDate}
                     isReturnPicker={false}
+                    onOtherDateReset={() => handleDateSelect('returnDate', null)}
                     carId={selectedCarId}
                     className="w-full"
                   />
                   <DatePicker
                     selectedDate={formData.returnDate}
                     onDateSelect={(date) => handleDateSelect('returnDate', date)}
-                    minDate={formData.pickupDate ? new Date(formData.pickupDate.getTime() + 86400000) : new Date()}
+                    minDate={formData.pickupDate ? new Date(formData.pickupDate.getTime() + 86400000 * 2) : new Date()}
                     unavailableDates={unavailableDates}
                     otherSelectedDate={formData.pickupDate}
                     isReturnPicker={true}
@@ -1797,15 +1850,47 @@ const BookingPage = () => {
                       </div>
                     )}
 
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-300">Depozit:</span>
-                      <span className="font-medium text-white">{(selectedCar.pricing?.deposit || selectedCar.deposit || 0).toFixed(2)}€</span>
-                    </div>
+                    {/* Late Fees breakdown */}
+                    {(calculateLatePickupFee() > 0 || calculateLateDropoffFee() > 0) && (
+                      <div className="space-y-2 pt-2" style={{borderTop: '0.5px solid #444'}}>
+                        <div className="text-sm text-gray-300 font-semibold">Poplatky za čas mimo hodín:</div>
+
+                        {calculateLatePickupFee() > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-300">
+                              Prevzatie po 17:00
+                              <span className="text-gray-400 ml-1">({formData.pickupTime})</span>
+                            </span>
+                            <span className="font-medium text-white">{calculateLatePickupFee().toFixed(2)}€</span>
+                          </div>
+                        )}
+
+                        {calculateLateDropoffFee() > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-300">
+                              Vrátenie po 17:00
+                              <span className="text-gray-400 ml-1">({formData.returnTime})</span>
+                            </span>
+                            <span className="font-medium text-white">{calculateLateDropoffFee().toFixed(2)}€</span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between text-sm font-semibold pt-1">
+                          <span className="text-gray-300">Celkom poplatky:</span>
+                          <span className="text-white">{(calculateLatePickupFee() + calculateLateDropoffFee()).toFixed(2)}€</span>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="pt-3" style={{borderTop: '0.5px solid #d1d5db'}}>
                       <div className="flex justify-between text-lg font-bold">
                         <span className="text-white">Celková cena:</span>
-                        <span className="text-[rgb(250,146,8)]">{(calculateTotal() + (selectedCar.pricing?.deposit || selectedCar.deposit || 0)).toFixed(2)}€</span>
+                        <span className="text-[rgb(250,146,8)]">{calculateTotal().toFixed(2)}€</span>
                       </div>
+                    </div>
+                    <div className="flex justify-between text-sm mt-2">
+                      <span className="text-gray-300">Depozit:</span>
+                      <span className="font-medium text-white">{(selectedCar.pricing?.deposit || selectedCar.deposit || 0).toFixed(2)}€</span>
                     </div>
                   </div>
                 </div>

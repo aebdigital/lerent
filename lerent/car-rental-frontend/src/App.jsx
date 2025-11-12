@@ -9,6 +9,7 @@ import HomePage from './pages/HomePage';
 import BookingPage from './pages/BookingPage';
 import CarDetailsPage from './pages/CarDetailsPage';
 import TermsPage from './pages/TermsPage';
+import CennikPoplatkovPage from './pages/CennikPoplatkovPage';
 import PrivacyPage from './pages/PrivacyPage';
 import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
@@ -40,6 +41,7 @@ function AnimatedRoutes() {
         <Route path="/payment-cancelled" element={<PageTransition><PaymentCancelled /></PageTransition>} />
         <Route path="/bank-transfer-info" element={<PageTransition><BankTransferInfoPage /></PageTransition>} />
         <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
+        <Route path="/cennik-poplatkov" element={<PageTransition><CennikPoplatkovPage /></PageTransition>} />
         <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
         <Route path="/blog" element={<PageTransition><BlogPage /></PageTransition>} />
         <Route path="/blog/:id" element={<PageTransition><BlogPostPage /></PageTransition>} />

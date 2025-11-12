@@ -9,7 +9,8 @@ const DatePicker = ({
   unavailableDates = [],
   placeholder = "Vyberte dátum",
   otherSelectedDate = null, // The other date in the range (pickup or return)
-  isReturnPicker = false // Flag to indicate if this is the return date picker
+  isReturnPicker = false, // Flag to indicate if this is the return date picker
+  onOtherDateReset = null // Callback to reset the other date picker
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -59,6 +60,20 @@ const DatePicker = ({
 
     // Check if date is in unavailable dates
     if (unavailableDates.includes(dateStr)) return true;
+
+    // For return picker: Check if selecting this date would create less than 2-day reservation
+    if (isReturnPicker && otherSelectedDate) {
+      const pickupDate = otherSelectedDate;
+      const daysDifference = Math.ceil((date - pickupDate) / (1000 * 60 * 60 * 24));
+      if (daysDifference < 2) return true;
+    }
+
+    // For pickup picker: Check if selecting this date would create less than 2-day reservation with current return date
+    if (!isReturnPicker && otherSelectedDate) {
+      const returnDate = otherSelectedDate;
+      const daysDifference = Math.ceil((returnDate - date) / (1000 * 60 * 60 * 24));
+      if (daysDifference < 2) return true;
+    }
 
     return false;
   };
@@ -134,20 +149,41 @@ const DatePicker = ({
       const pickupDate = otherSelectedDate;
       const returnDate = date;
 
+      // Check for minimum 2-day reservation
+      const daysDifference = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
+      if (daysDifference < 2) {
+        alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátum vrátenia minimálne 2 dni po dátume prevzatia.');
+        return;
+      }
+
       if (hasUnavailableDatesBetween(pickupDate, returnDate)) {
         alert('Nemôžete vybrať tento dátum, pretože v rozsahu sú nedostupné dni. Prosím vyberte iný dátum.');
         return;
       }
     }
 
-    // If this is the pickup picker and we have a return date, validate the range
+    // If this is the pickup picker and we have a return date, check if we need to reset return date
     if (!isReturnPicker && otherSelectedDate) {
       const pickupDate = date;
       const returnDate = otherSelectedDate;
 
-      if (hasUnavailableDatesBetween(pickupDate, returnDate)) {
-        alert('Nemôžete vybrať tento dátum, pretože v rozsahu sú nedostupné dni. Prosím vyberte iný dátum.');
-        return;
+      // If pickup date is on or after return date, reset the return date
+      if (pickupDate >= returnDate) {
+        if (onOtherDateReset) {
+          onOtherDateReset(); // Reset the return date
+        }
+      } else {
+        // Check for minimum 2-day reservation
+        const daysDifference = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
+        if (daysDifference < 2) {
+          alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátum prevzatia minimálne 2 dni pred dátumom vrátenia.');
+          return;
+        }
+
+        if (hasUnavailableDatesBetween(pickupDate, returnDate)) {
+          alert('Nemôžete vybrať tento dátum, pretože v rozsahu sú nedostupné dni. Prosím vyberte iný dátum.');
+          return;
+        }
       }
     }
 
@@ -191,7 +227,7 @@ const DatePicker = ({
               <ChevronLeftIcon className="h-5 w-5 text-gray-300" />
             </button>
             
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-goldman font-semibold text-white">
               {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
             </h3>
             

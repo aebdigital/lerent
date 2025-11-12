@@ -86,7 +86,8 @@ const formatDurationText = (duration) => {
   if (duration.includes('11-17days')) return '11-17 dni';
   if (duration.includes('18-24days')) return '18-24 dni';
   if (duration.includes('25-29days')) return '25-29 dni';
-  if (duration.includes('30plus')) return '30+ dni';
+  if (duration.includes('30-60days')) return '30-60 dni';
+  if (duration.includes('60plus')) return '60+ dni';
 
   // Generic replacements
   return duration
@@ -105,6 +106,9 @@ const getValidPricingEntries = (car) => {
 
   if (car.pricing?.rates && Object.keys(car.pricing.rates).length > 0) {
     Object.entries(car.pricing.rates).forEach(([duration, price]) => {
+      // Filter out 30plus since we want only 30-60days and 60plus
+      if (duration === '30plus') return;
+
       // Only include entries where price is valid (number > 0 or truthy string)
       if ((typeof price === 'number' && price > 0) || (typeof price === 'string' && price.trim())) {
         entries.push({
@@ -112,6 +116,12 @@ const getValidPricingEntries = (car) => {
           price: typeof price === 'number' ? `${price}€` : price
         });
       }
+    });
+
+    // Always add the hardcoded 60+ dni entry
+    entries.push({
+      label: '60+ dni',
+      price: 'dohoda - volať/písať mail'
     });
   } else if (car.priceList && car.priceList.length > 0) {
     car.priceList.forEach((priceItem) => {
@@ -186,11 +196,18 @@ const CarDetailsPage = () => {
   const [locations, setLocations] = useState([]);
   const [locationObjects, setLocationObjects] = useState([]);
 
-  const timeSlots = [
-    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30'
-  ];
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 8; hour <= 22; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        slots.push(time);
+      }
+    }
+    return slots;
+  };
+
+  const timeSlots = generateTimeSlots();
 
   // Static car data matching HomePage
   const staticCarsData = [
@@ -308,6 +325,30 @@ const CarDetailsPage = () => {
       setCurrentImageIndex(0);
     }
   }, [car, currentImageIndex]);
+
+  // Keyboard support for lightbox
+  useEffect(() => {
+    if (!showImageModal) return;
+
+    const handleKeyDown = (e) => {
+      switch(e.key) {
+        case 'Escape':
+          setShowImageModal(false);
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          setCurrentImageIndex(prev => prev > 0 ? prev - 1 : getCarImages(car).length - 1);
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          setCurrentImageIndex(prev => prev < getCarImages(car).length - 1 ? prev + 1 : 0);
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showImageModal, car]);
 
   useEffect(() => {
     const loadCarDetails = async () => {
@@ -513,10 +554,8 @@ const CarDetailsPage = () => {
       if (days >= 11 && days <= 17 && rates['11-17days']) return rates['11-17days'];
       if (days >= 18 && days <= 24 && rates['18-24days']) return rates['18-24days'];
       if (days >= 25 && days <= 29 && rates['25-29days']) return rates['25-29days'];
-      if (days >= 30 && rates['30plus']) {
-        // For 30+ days, return a special indicator or the base daily rate
-        return car.pricing?.dailyRate || car.dailyRate || rates['25-29days'] || 50;
-      }
+      if (days >= 30 && days <= 60 && rates['30-60days']) return rates['30-60days'];
+      if (days > 60 && rates['60plus']) return rates['60plus'];
 
       // Fallback to pricing.dailyRate or car.dailyRate
       return car.pricing?.dailyRate || car.dailyRate || 50;
@@ -528,12 +567,53 @@ const CarDetailsPage = () => {
     return car.dailyRate || 50;
   };
 
+  const calculateDaysWithTime = () => {
+    if (!bookingData.pickupDate || !bookingData.returnDate) return 0;
+
+    // Create full datetime objects with time
+    const pickupDateTime = new Date(bookingData.pickupDate);
+    const [pickupHours, pickupMinutes] = bookingData.pickupTime.split(':');
+    pickupDateTime.setHours(parseInt(pickupHours), parseInt(pickupMinutes), 0, 0);
+
+    const returnDateTime = new Date(bookingData.returnDate);
+    const [returnHours, returnMinutes] = bookingData.returnTime.split(':');
+    returnDateTime.setHours(parseInt(returnHours), parseInt(returnMinutes), 0, 0);
+
+    // Calculate the difference in milliseconds and convert to days
+    const timeDifference = returnDateTime - pickupDateTime;
+    const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+
+    // Always round up to ensure minimum billing period
+    // If return time is later than pickup time, it counts as +1 day
+    return Math.ceil(daysDifference);
+  };
+
   const calculatePrice = () => {
     if (!car || !bookingData.pickupDate || !bookingData.returnDate) return 0;
-    const days = Math.ceil((bookingData.returnDate - bookingData.pickupDate) / (1000 * 60 * 60 * 24));
+    const days = calculateDaysWithTime();
     const pricePerDay = getPricePerDay(days);
     const basePrice = pricePerDay * days;
-    return basePrice + deliveryPrice;
+    const latePickupFee = calculateLatePickupFee();
+    const lateDropoffFee = calculateLateDropoffFee();
+    return basePrice + deliveryPrice + latePickupFee + lateDropoffFee;
+  };
+
+  const calculateLatePickupFee = () => {
+    if (!bookingData.pickupTime) return 0;
+    const [hours] = bookingData.pickupTime.split(':');
+    const pickupHour = parseInt(hours);
+
+    // Fee applies for pickup after 17:00 (5 PM)
+    return pickupHour > 17 ? 30 : 0;
+  };
+
+  const calculateLateDropoffFee = () => {
+    if (!bookingData.returnTime) return 0;
+    const [hours] = bookingData.returnTime.split(':');
+    const returnHour = parseInt(hours);
+
+    // Fee applies for dropoff after 17:00 (5 PM)
+    return returnHour > 17 ? 30 : 0;
   };
 
   const getKmPackagePrice = () => {
@@ -563,7 +643,12 @@ const CarDetailsPage = () => {
   };
 
   const scrollToBooking = () => {
-    const bookingElement = document.getElementById('booking-section');
+    // Check if we're on desktop or mobile and scroll to appropriate booking section
+    const isDesktop = window.innerWidth >= 1024; // lg breakpoint
+    const bookingElement = isDesktop
+      ? document.getElementById('booking-section-desktop')
+      : document.getElementById('booking-section');
+
     if (bookingElement) {
       const offsetTop = bookingElement.getBoundingClientRect().top + window.pageYOffset - 100;
       window.scrollTo({
@@ -578,36 +663,31 @@ const CarDetailsPage = () => {
       alert('Prosím vyberte dátum prevzatia a vrátenia vozidla');
       return;
     }
-    
+
+    // Validate minimum 2-day reservation
+    const daysDifference = calculateDaysWithTime();
+    if (daysDifference < 2) {
+      alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátumy s minimálnym rozdielom 2 dní.');
+      return;
+    }
+
     const queryParams = new URLSearchParams({
       car: id,
       pickupDate: bookingData.pickupDate.toISOString().split('T')[0],
-      returnDate: bookingData.returnDate.toISOString().split('T')[0]
+      returnDate: bookingData.returnDate.toISOString().split('T')[0],
+      pickupTime: bookingData.pickupTime,
+      returnTime: bookingData.returnTime
     });
-    
+
     navigate(`/booking?${queryParams.toString()}`);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen text-white" style={{backgroundColor: '#000000'}}>
-        {/* Mini Hero Section */}
-        <div 
-          className="relative h-[30vh] bg-cover bg-center flex items-center"
-          style={{
-            backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${HeroImg})`
-          }}
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            
-          </div>
-        </div>
-
-        <div className="flex items-center justify-center py-24">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-cyan-400 mx-auto"></div>
-            <p className="mt-4 text-gray-300">Načítavajú sa detaily vozidla...</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#000000'}}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[rgb(250,146,8)] mx-auto"></div>
+          <p className="mt-4 text-white font-goldman">Načítavajú sa detaily vozidla...</p>
         </div>
       </div>
     );
@@ -615,32 +695,18 @@ const CarDetailsPage = () => {
 
   if (error || !car) {
     return (
-      <div className="min-h-screen text-white" style={{backgroundColor: '#000000'}}>
-        {/* Mini Hero Section */}
-        <div 
-          className="relative h-[30vh] bg-cover bg-center flex items-center"
-          style={{
-            backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${HeroImg})`
-          }}
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            
+      <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#000000'}}>
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="text-red-400 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
           </div>
-        </div>
-
-        <div className="flex items-center justify-center py-24">
-          <div className="text-center max-w-md mx-auto px-4">
-            <div className="text-red-400 mb-4">
-              <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-semibold text-white mb-2">Vozidlo sa nenašlo</h2>
-            <p className="text-gray-300 mb-4">{error}</p>
-            <Button onClick={() => navigate('/fleet')}>
-              Späť na flotilu
-            </Button>
-          </div>
+          <h2 className="text-xl font-goldman font-semibold text-white mb-2">Vozidlo sa nenašlo</h2>
+          <p className="text-gray-300 font-goldman mb-4">{error}</p>
+          <Button onClick={() => navigate('/fleet')}>
+            Späť na flotilu
+          </Button>
         </div>
       </div>
     );
@@ -680,7 +746,7 @@ const CarDetailsPage = () => {
           <div className="absolute bottom-[10%] right-16 z-10">
             <button
               onClick={scrollToBooking}
-              className="hover:opacity-90 px-8 py-3 font-bold text-lg transition-colors"
+              className="hover:opacity-90 px-8 py-3 font-goldman font-bold text-lg transition-colors"
               style={{
                 clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
                 borderRadius: '0px',
@@ -732,7 +798,7 @@ const CarDetailsPage = () => {
               {/* Rezervovat Button */}
               <button
                 onClick={scrollToBooking}
-                className="hover:opacity-90 px-6 py-3 font-bold text-base transition-colors"
+                className="hover:opacity-90 px-6 py-3 font-goldman font-bold text-base transition-colors"
                 style={{
                   clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
                   borderRadius: '0px',
@@ -782,7 +848,7 @@ const CarDetailsPage = () => {
               />
               {/* Transparent overlay */}
               <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                <div className="text-white text-center">
+                <div className="text-white font-goldman text-center">
                   <div className="text-2xl font-semibold">
                     {getCarImages(car).length > 6 ? `+${getCarImages(car).length - 5}` : 'Všetky'}
                   </div>
@@ -802,15 +868,15 @@ const CarDetailsPage = () => {
             <div className="flex flex-col items-center text-center">
               <BoltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs text-gray-300">Výkon</div>
-                <div className="font-semibold text-xs text-white">{car.power || `${car.year}`}</div>
+                <div className="text-xs font-goldman text-gray-300">Výkon</div>
+                <div className="font-goldman font-semibold text-xs text-white">{car.engine?.power || car.power || '140'} kW</div>
               </div>
             </div>
             <div className="flex flex-col items-center text-center">
               <GlobeAltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs text-gray-300">Palivo</div>
-                <div className="font-semibold text-xs text-white capitalize">
+                <div className="text-xs font-goldman text-gray-300">Palivo</div>
+                <div className="font-goldman font-semibold text-xs text-white capitalize">
                   {car.fuelType === 'gasoline' ? 'Benzín' :
                    car.fuelType === 'diesel' ? 'Nafta' :
                    car.fuelType === 'electric' ? 'Elektro' :
@@ -822,14 +888,14 @@ const CarDetailsPage = () => {
             <div className="flex flex-col items-center text-center">
               <UsersIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs text-gray-300">Počet miest</div>
-                <div className="font-semibold text-xs text-white">{car.seats || 5}</div>
+                <div className="text-xs font-goldman text-gray-300">Počet miest</div>
+                <div className="font-goldman font-semibold text-xs text-white">{car.seats || 5}</div>
               </div>
             </div>
             <div className="flex flex-col items-center text-center">
               <CogIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs text-gray-300">Prevodovka</div>
+                <div className="text-xs font-goldman text-gray-300">Prevodovka</div>
                 <div className="font-semibold text-xs text-white capitalize">
                   {car.transmission === 'automatic' ? 'Automat' :
                    car.transmission === 'manual' ? 'Manuál' :
@@ -838,17 +904,17 @@ const CarDetailsPage = () => {
               </div>
             </div>
             <div className="flex flex-col items-center text-center">
-              <CalendarIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
+              <BoltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
               <div>
-                <div className="text-xs text-gray-300">Rok</div>
-                <div className="font-semibold text-xs text-white">{car.year}</div>
+                <div className="text-xs font-goldman text-gray-300">Výkon</div>
+                <div className="font-goldman font-semibold text-xs text-white">{car.engine?.power || car.power || '140'} kW</div>
               </div>
             </div>
             {car.color && (
               <div className="flex flex-col items-center text-center">
                 <div className="h-4 w-4 flex-shrink-0 mb-1 rounded-full border-2 border-[rgb(250,146,8)]" style={{backgroundColor: car.color.toLowerCase()}}></div>
                 <div>
-                  <div className="text-xs text-gray-300">Farba</div>
+                  <div className="text-xs font-goldman text-gray-300">Farba</div>
                   <div className="font-semibold text-xs text-white capitalize">{car.color}</div>
                 </div>
               </div>
@@ -858,10 +924,10 @@ const CarDetailsPage = () => {
           {/* Desktop Specs - Horizontal Row */}
           <div className="hidden lg:grid lg:grid-cols-6 lg:gap-4">
             <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-              <CalendarIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
+              <BoltIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
               <div>
-                <div className="text-sm text-gray-300">Rok</div>
-                <div className="font-semibold text-base text-white">{car.year}</div>
+                <div className="text-sm text-gray-300">Výkon</div>
+                <div className="font-semibold text-base text-white">{car.engine?.power || car.power || '140'} kW</div>
               </div>
             </div>
             <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
@@ -939,6 +1005,7 @@ const CarDetailsPage = () => {
                     unavailableDates={unavailableDates}
                     otherSelectedDate={bookingData.returnDate}
                     isReturnPicker={false}
+                    onOtherDateReset={() => handleInputChange('returnDate', null)}
                     carId={id}
                     className="w-full"
                   />
@@ -947,7 +1014,7 @@ const CarDetailsPage = () => {
                   <DatePicker
                     selectedDate={bookingData.returnDate}
                     onDateSelect={(date) => handleInputChange('returnDate', date)}
-                    minDate={bookingData.pickupDate ? new Date(bookingData.pickupDate.getTime() + 86400000) : new Date()}
+                    minDate={bookingData.pickupDate ? new Date(bookingData.pickupDate.getTime() + 86400000 * 2) : new Date()}
                     unavailableDates={unavailableDates}
                     otherSelectedDate={bookingData.pickupDate}
                     isReturnPicker={true}
@@ -981,11 +1048,11 @@ const CarDetailsPage = () => {
                   <>
                     <div className="flex justify-between">
                       <span className="text-gray-300">Počet dní:</span>
-                      <span className="font-semibold text-white">{Math.ceil((bookingData.returnDate - bookingData.pickupDate) / (1000 * 60 * 60 * 24))}</span>
+                      <span className="font-goldman font-semibold text-white">{calculateDaysWithTime()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-300">Cena za deň:</span>
-                      <span className="font-semibold text-white">{getPricePerDay(Math.ceil((bookingData.returnDate - bookingData.pickupDate) / (1000 * 60 * 60 * 24))).toFixed(2)}€</span>
+                      <span className="font-goldman font-semibold text-white">{getPricePerDay(Math.ceil((bookingData.returnDate - bookingData.pickupDate) / (1000 * 60 * 60 * 24))).toFixed(2)}€</span>
                     </div>
                   </>
                 )}
@@ -995,6 +1062,25 @@ const CarDetailsPage = () => {
                     <span className="font-semibold text-white">{getDeposit().toFixed(2)}€</span>
                   </div>
                 )}
+
+                {/* Late Fees breakdown */}
+                {(calculateLatePickupFee() > 0 || calculateLateDropoffFee() > 0) && (
+                  <>
+                    {calculateLatePickupFee() > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Prevzatie po 17:00 ({bookingData.pickupTime}):</span>
+                        <span className="font-semibold text-white">{calculateLatePickupFee().toFixed(2)}€</span>
+                      </div>
+                    )}
+                    {calculateLateDropoffFee() > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Vrátenie po 17:00 ({bookingData.returnTime}):</span>
+                        <span className="font-semibold text-white">{calculateLateDropoffFee().toFixed(2)}€</span>
+                      </div>
+                    )}
+                  </>
+                )}
+
                 <div className="flex justify-between pt-4 mt-4" style={{borderTop: '1px solid rgba(107, 114, 128, 0.3)'}}>
                   <span className="text-white font-semibold text-2xl">Cena:</span>
                   <span className="font-semibold text-[rgb(250,146,8)] text-2xl">{(calculatePrice() + getKmPackagePrice()).toFixed(2)}€</span>
@@ -1088,8 +1174,8 @@ const CarDetailsPage = () => {
           {/* Right Column - Rezervovat and Popis */}
           <div className="lg:col-span-1 space-y-6">
             {/* Desktop Booking Form */}
-            <div className="rounded-lg p-6 shadow-lg border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-              <h2 className="text-2xl font-semibold text-white mb-6">Rezervovať</h2>
+            <div id="booking-section-desktop" className="rounded-lg p-6 shadow-lg border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+              <h2 className="text-2xl font-goldman font-semibold text-white mb-6">Rezervovať</h2>
 
               <div className="space-y-4">
                 {/* Dates */}
@@ -1102,6 +1188,7 @@ const CarDetailsPage = () => {
                       unavailableDates={unavailableDates}
                       otherSelectedDate={bookingData.returnDate}
                       isReturnPicker={false}
+                      onOtherDateReset={() => handleInputChange('returnDate', null)}
                       carId={id}
                       className="w-full"
                     />
@@ -1110,7 +1197,7 @@ const CarDetailsPage = () => {
                     <DatePicker
                       selectedDate={bookingData.returnDate}
                       onDateSelect={(date) => handleInputChange('returnDate', date)}
-                      minDate={bookingData.pickupDate ? new Date(bookingData.pickupDate.getTime() + 86400000) : new Date()}
+                      minDate={bookingData.pickupDate ? new Date(bookingData.pickupDate.getTime() + 86400000 * 2) : new Date()}
                       unavailableDates={unavailableDates}
                       otherSelectedDate={bookingData.pickupDate}
                       isReturnPicker={true}
@@ -1126,20 +1213,39 @@ const CarDetailsPage = () => {
                     <>
                       <div className="flex justify-between">
                         <span className="text-gray-300">Počet dní:</span>
-                        <span className="font-semibold text-white">{Math.ceil((bookingData.returnDate - bookingData.pickupDate) / (1000 * 60 * 60 * 24))}</span>
+                        <span className="font-goldman font-semibold text-white">{calculateDaysWithTime()}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-300">Cena za deň:</span>
-                        <span className="font-semibold text-white">{getPricePerDay(Math.ceil((bookingData.returnDate - bookingData.pickupDate) / (1000 * 60 * 60 * 24))).toFixed(2)}€</span>
+                        <span className="font-goldman font-semibold text-white">{getPricePerDay(calculateDaysWithTime()).toFixed(2)}€</span>
                       </div>
                     </>
                   )}
                   {getDeposit() > 0 && (
                     <div className="flex justify-between">
                       <span className="text-gray-300">Depozit:</span>
-                      <span className="font-semibold text-white">{getDeposit().toFixed(2)}€</span>
+                      <span className="font-goldman font-semibold text-white">{getDeposit().toFixed(2)}€</span>
                     </div>
                   )}
+
+                  {/* Late Fees breakdown */}
+                  {(calculateLatePickupFee() > 0 || calculateLateDropoffFee() > 0) && (
+                    <>
+                      {calculateLatePickupFee() > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-300">Prevzatie po 17:00 ({bookingData.pickupTime}):</span>
+                          <span className="font-goldman font-semibold text-white">{calculateLatePickupFee().toFixed(2)}€</span>
+                        </div>
+                      )}
+                      {calculateLateDropoffFee() > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-300">Vrátenie po 17:00 ({bookingData.returnTime}):</span>
+                          <span className="font-goldman font-semibold text-white">{calculateLateDropoffFee().toFixed(2)}€</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
                   <div className="flex justify-between pt-4 mt-4" style={{borderTop: '1px solid rgba(107, 114, 128, 0.3)'}}>
                     <span className="text-white font-semibold text-2xl">Cena:</span>
                     <span className="font-semibold text-[rgb(250,146,8)] text-2xl">{(calculatePrice() + getKmPackagePrice()).toFixed(2)}€</span>
@@ -1231,14 +1337,25 @@ const CarDetailsPage = () => {
 
       {/* Image Modal */}
       {showImageModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
-          <div className="relative max-w-4xl max-h-full w-full h-full flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.95)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)'
+          }}
+          onClick={() => setShowImageModal(false)}
+        >
+          <div
+            className="relative max-w-6xl max-h-full w-full h-full flex items-center justify-center p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Close Button */}
             <button
               onClick={() => setShowImageModal(false)}
-              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+              className="absolute top-6 right-6 text-white hover:text-red-400 z-10 transition-all duration-200 hover:scale-110 bg-black bg-opacity-50 rounded-full p-3"
             >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -1246,28 +1363,29 @@ const CarDetailsPage = () => {
             {/* Previous Button */}
             <button
               onClick={() => setCurrentImageIndex(prev => prev > 0 ? prev - 1 : getCarImages(car).length - 1)}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10"
+              className="absolute left-8 top-1/2 transform -translate-y-1/2 text-white hover:text-orange-500 z-10 transition-all duration-200 hover:scale-110 bg-black bg-opacity-50 rounded-full p-3"
             >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
 
             {/* Main Image */}
-            <div className="max-w-full max-h-full">
+            <div className="max-w-full max-h-full transition-all duration-300 ease-in-out">
               <img
+                key={currentImageIndex}
                 src={getCarImages(car)[currentImageIndex] || getCarImage(car)}
                 alt={`${car.brand} ${car.model} - Photo ${currentImageIndex + 1}`}
-                className="max-w-full max-h-full object-contain"
+                className="max-w-full max-h-full object-contain transition-opacity duration-300 ease-in-out animate-slideIn"
               />
             </div>
 
             {/* Next Button */}
             <button
               onClick={() => setCurrentImageIndex(prev => prev < getCarImages(car).length - 1 ? prev + 1 : 0)}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10"
+              className="absolute right-8 top-1/2 transform -translate-y-1/2 text-white hover:text-orange-500 z-10 transition-all duration-200 hover:scale-110 bg-black bg-opacity-50 rounded-full p-3"
             >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>

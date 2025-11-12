@@ -7,11 +7,11 @@ const FAQPage = () => {
   const faqs = [
     {
       question: "Aké sú základné požiadavky na prenájom vozidla?",
-      answer: "Pre prenájom vozidla potrebujete mať minimálne 21 rokov, platný vodičský preukaz (minimálne 1 rok), občiansky preukaz alebo pas a kreditnú kartu pre zábezpeku. Pre vozidlá luxusnej kategórie môže byť požadovaný vyšší vek."
+      answer: "Pre prenájom vozidla potrebujete mať minimálne 21 rokov, platný vodičský preukaz (minimálne 1 rok), občiansky preukaz alebo pas. Pre vozidlá luxusnej kategórie môže byť požadovaný vyšší vek a dlhšia doba platnosti vodičského preukazu."
     },
     {
       question: "Aká je výška zábezpeky a kedy sa vráti?",
-      answer: "Výška zábezpeky závisí od kategórie vozidla a je uvedená pri každom aute individuálne. Zábezpeka sa vráti do 7 pracovných dní po vrátení vozidla v pôvodnom stave."
+      answer: "Výška zábezpeky závisí od kategórie vozidla a je uvedená pri každom aute individuálne. Zábezpeka sa vráti okamžite po vrátení a skontrolovaní vozidla, najneskôr však do 7 pracovných dní od vrátenia vozidla."
     },
     {
       question: "Je možné predĺžiť prenájom počas trvania?",
@@ -19,23 +19,23 @@ const FAQPage = () => {
     },
     {
       question: "Čo je zahrnuté v cene prenájmu?",
-      answer: "V cene prenájmu je zahrnuté poistenie zodpovednosti, technická podpora 24/7, plná nádrž paliva a základné vybavenie vozidla. Dodatočné služby ako GPS navigácia alebo detské sedačky sú za príplatok."
+      answer: "V cene prenájmu je zahrnuté poistenie zodpovednosti a havarijné poistenie, slovenská diaľničná známka, technická podpora 24/7 a základné vybavenie vozidla. Dodatočné služby ako napríklad poskytnutie autosedačky alebo poistenie sú spoplatnené podľa konkrétnej služby, ktorú si môžete vybrať pri rezervácii vozidla."
     },
     {
       question: "Môžem zrušiť rezerváciu a dostať späť platbu?",
-      answer: "Rezervácie zrušené viac ako 24 hodín pred začiatkom prenájmu sú bezplatné. Pri zrušení menej ako 24 hodín pred začiatkom sa účtuje poplatok 50% z celkovej sumy."
+      answer: "Rezervácie zrušené viac ako 24 hodín pred začiatkom prenájmu sú bezplatné. Pri zrušení rezervácie menej ako 24 hodín pred začiatkom prenájmu sa účtuje poplatok 25% z celkovej sumy prenájmu."
     },
     {
       question: "Aké sú podmienky vrátenia vozidla?",
-      answer: "Vozidlo je potrebné vrátiť s plnou nádržou paliva, v čistom stave a bez poškodení. Vrátenie je možné 24/7 na našich pobočkách alebo na dohodnutom mieste."
+      answer: "Vozidlo je potrebné vrátiť s plnou nádržou paliva, v čistom stave a bez poškodení (okrem poškodení, ktoré už boli na aute v čase prevzatia vozidla do nájmu). Vrátenie je možné v čase podľa našich otváracích hodín na dohodnutom mieste odovzdania alebo v čase mimo otváracích hodín podľa predošlej dohody."
     },
     {
       question: "Je možné prenajať si vozidlo pre niekoho iného?",
-      answer: "Vozidlo môže riadiť len osoba, ktorá je uvedená v zmluve o prenájme. Dodatočných vodičov je možné pridať za poplatok 10€/deň po predložení platných dokladov."
+      answer: "Vozidlo môže riadiť len osoba, ktorá je uvedená v zmluve o prenájme. Dodatočných vodičov je možné pridať za poplatok podľa aktuálneho cenníka po predložení platných dokladov."
     },
     {
       question: "Čo sa stane v prípade nehody alebo poruchy?",
-      answer: "V prípade nehody ihneď kontaktujte políciu a následne nás. Poskytujeme 24/7 asistenčnú službu. V prípade poruchy zabezpečíme náhradné vozidlo alebo opravu podľa situácie."
+      answer: "V prípade nehody nás ihneď kontaktujte. Poskytujeme 24/7 asistenčnú službu, ktorá je zahrnutá v cene prenájmu. V prípade poruchy zabezpečíme náhradné vozidlo alebo opravu podľa situácie."
     },
     {
       question: "Môžem cestovať s prenajatým vozidlom do zahraničia?",
@@ -43,7 +43,7 @@ const FAQPage = () => {
     },
     {
       question: "Aké formy platby prijímate?",
-      answer: "Prijímame platby kreditnými kartami (Visa, MasterCard), bankovým prevodom a v hotovosti. Pre zábezpeku je vždy potrebná kreditná karta."
+      answer: "Prijímame platby platobnými kartami, bankovým prevodom a v hotovosti."
     }
   ];
 
@@ -110,16 +110,30 @@ const FAQPage = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 font-goldman">
             PODMIENKY PRENÁJMU
           </h2>
-          <a
-            href="/terms"
-            className="inline-block hover:opacity-90 px-8 py-3 text-base font-bold transition-colors duration-200 border border-gray-600 rounded-lg"
-            style={{
-              backgroundColor: '#fa9208',
-              color: '#191919'
-            }}
-          >
-            Všeobecné obchodné podmienky
-          </a>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a
+              href="/terms"
+              className="inline-block hover:opacity-90 px-8 py-3 text-base font-bold transition-colors duration-200 border border-gray-600 rounded-lg"
+              style={{
+                backgroundColor: '#fa9208',
+                color: '#191919'
+              }}
+            >
+              Všeobecné obchodné podmienky
+            </a>
+            <a
+              href="/cennik-poplatkov"
+              className="hover:opacity-90 px-5 py-3 text-base transition-colors duration-200 border-2 rounded-lg"
+              style={{
+                backgroundColor: '#000000',
+                borderColor: '#fa9208',
+                color: '#fa9208',
+                fontWeight: 700
+              }}
+            >
+              Cenník poplatkov
+            </a>
+          </div>
         </div>
       </section>
 

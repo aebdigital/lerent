@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-const CustomDatePicker = ({ value, onChange, placeholder }) => {
+const CustomDatePicker = ({ value, onChange, placeholder, minDate, otherSelectedDate, isReturnPicker, onOtherDateReset }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const containerRef = useRef(null);
@@ -50,6 +50,42 @@ const CustomDatePicker = ({ value, onChange, placeholder }) => {
   };
 
   const handleDateSelect = (day) => {
+    const selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+
+    // Check for minimum 2-day reservation if this is return picker or if we have another selected date
+    if (otherSelectedDate) {
+      let pickupDate, returnDate;
+
+      if (isReturnPicker) {
+        pickupDate = new Date(otherSelectedDate);
+        returnDate = selectedDate;
+
+        // Check for minimum 2-day reservation
+        const daysDifference = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
+        if (daysDifference < 2) {
+          alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátum vrátenia minimálne 2 dni po dátume prevzatia.');
+          return;
+        }
+      } else {
+        pickupDate = selectedDate;
+        returnDate = new Date(otherSelectedDate);
+
+        // If pickup date is on or after return date, reset the return date
+        if (pickupDate >= returnDate) {
+          if (onOtherDateReset) {
+            onOtherDateReset(); // Reset the return date
+          }
+        } else {
+          // Check for minimum 2-day reservation
+          const daysDifference = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
+          if (daysDifference < 2) {
+            alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátum prevzatia minimálne 2 dni pred dátumom vrátenia.');
+            return;
+          }
+        }
+      }
+    }
+
     const year = currentMonth.getFullYear();
     const month = String(currentMonth.getMonth() + 1).padStart(2, '0');
     const dayStr = String(day).padStart(2, '0');
@@ -60,9 +96,30 @@ const CustomDatePicker = ({ value, onChange, placeholder }) => {
 
   const isDateDisabled = (day) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+
+    // Check if date is before today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return date < today;
+    if (date < today) return true;
+
+    // Check if date is before minDate
+    if (minDate && date < minDate) return true;
+
+    // For return picker: Check if selecting this date would create less than 2-day reservation
+    if (isReturnPicker && otherSelectedDate) {
+      const pickupDate = new Date(otherSelectedDate);
+      const daysDifference = Math.ceil((date - pickupDate) / (1000 * 60 * 60 * 24));
+      if (daysDifference < 2) return true;
+    }
+
+    // For pickup picker: Check if selecting this date would create less than 2-day reservation with current return date
+    if (!isReturnPicker && otherSelectedDate) {
+      const returnDate = new Date(otherSelectedDate);
+      const daysDifference = Math.ceil((returnDate - date) / (1000 * 60 * 60 * 24));
+      if (daysDifference < 2) return true;
+    }
+
+    return false;
   };
 
   const formatDisplayDate = (dateString) => {

@@ -74,12 +74,12 @@ const HomePage = () => {
   const carClasses = [
     { name: 'Sedan', value: 'sedan', icon: SedanIconImg },
     { name: 'Kombi', value: 'kombi', icon: KombiIconImg },
-    { name: 'Šport', value: 'sport', icon: SportIconImg },
+    { name: 'Sport', value: 'sport', icon: SportIconImg },
     { name: 'SUV', value: 'suv', icon: SUVIconImg },
-    { name: 'Prémium', value: 'premium', icon: CoupeIconImg },
-    { name: 'Viacmiestne', value: 'multiSeat', icon: ViacmiestneIconImg },
-    { name: 'Elektro', value: 'electric', icon: ElektroIconImg },
-    { name: 'Úžitkové', value: 'utility', icon: UzitkovePng }
+    { name: 'Premium', value: 'premium', icon: CoupeIconImg },
+    { name: 'Viacmiestne', value: 'viacmiestne', icon: ViacmiestneIconImg },
+    { name: 'Elektro', value: 'elektro', icon: ElektroIconImg },
+    { name: 'Úžitkové', value: 'uzitkove', icon: UzitkovePng }
   ];
 
   // Brand filters
@@ -90,20 +90,20 @@ const HomePage = () => {
   ];
 
   // Filters
-  const [sortBy, setSortBy] = useState('price-asc');
+  const [sortBy, setSortBy] = useState('availability');
 
   const [filters, setFilters] = useState({
     priceRange: 'all',
     transmission: 'all',
     fuelType: 'all',
     brand: 'all',
-    sortBy: 'price-asc'
+    sortBy: 'availability'
   });
 
   // Sort options for dropdown
   const sortOptions = [
-    { value: 'price-asc', label: 'Zobraziť od najlacnejšieho' },
-    { value: 'price-desc', label: 'Zobraziť od najdrahšieho' },
+    { value: 'price-asc', label: 'Od najlacnejšieho' },
+    { value: 'price-desc', label: 'Od najdrahšieho' },
     { value: 'availability', label: 'Podľa dostupnosti' }
   ];
 
@@ -355,6 +355,15 @@ const HomePage = () => {
       return;
     }
 
+    // Validate minimum 2-day reservation if both dates are selected
+    if (pickupDate && returnDate) {
+      const daysDifference = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
+      if (daysDifference < 2) {
+        alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátumy s minimálnym rozdielom 2 dní.');
+        return;
+      }
+    }
+
     // Build query parameters for booking page
     const queryParams = new URLSearchParams({
       car: formData.selectedCar
@@ -402,19 +411,56 @@ const HomePage = () => {
 
         // If API returns no cars, fall back to static data
         if (carsData && carsData.length > 0) {
-          setCars(carsData);
-          setFilteredCars(carsData);
+          // Fetch availability data for all cars for the next 2 weeks
+          const startDate = new Date();
+          const endDate = new Date();
+          endDate.setDate(startDate.getDate() + 14); // Next 2 weeks
+
+          const carsWithAvailability = await Promise.all(
+            carsData.map(async (car) => {
+              try {
+                const availability = await carsAPI.getCarAvailability(
+                  car._id,
+                  startDate,
+                  endDate
+                );
+
+                return {
+                  ...car,
+                  unavailableDates: availability?.unavailableDates || []
+                };
+              } catch (err) {
+                console.warn(`Failed to load availability for car ${car._id}:`, err);
+                return {
+                  ...car,
+                  unavailableDates: [] // Default to empty if API fails
+                };
+              }
+            })
+          );
+
+          setCars(carsWithAvailability);
+          setFilteredCars(carsWithAvailability);
         } else {
           console.log('No cars returned from API, using static data');
-          setCars(allCars);
-          setFilteredCars(allCars);
+          // Static data doesn't have unavailableDates, so add empty array
+          const staticCarsWithAvailability = allCars.map(car => ({
+            ...car,
+            unavailableDates: []
+          }));
+          setCars(staticCarsWithAvailability);
+          setFilteredCars(staticCarsWithAvailability);
         }
       } catch (err) {
         console.error('Failed to load cars from API:', err);
         setError('Nepodarilo sa načítať autá. Používame statické dáta.');
         // Fallback to static data
-        setCars(allCars);
-        setFilteredCars(allCars);
+        const staticCarsWithAvailability = allCars.map(car => ({
+          ...car,
+          unavailableDates: []
+        }));
+        setCars(staticCarsWithAvailability);
+        setFilteredCars(staticCarsWithAvailability);
       } finally {
         setLoading(false);
       }
@@ -488,21 +534,21 @@ const HomePage = () => {
     // Car class filter (activeTab)
     if (activeTab !== 'all') {
       if (activeTab === 'sedan') {
-        filtered = filtered.filter(car => car.bodyType === 'Sedan' || car.category === 'sedan');
+        filtered = filtered.filter(car => car.category === 'sedan');
       } else if (activeTab === 'kombi') {
-        filtered = filtered.filter(car => car.bodyType === 'Kombi' || car.category === 'kombi');
+        filtered = filtered.filter(car => car.category === 'kombi');
       } else if (activeTab === 'sport') {
-        filtered = filtered.filter(car => car.bodyType === 'Coupe' || car.brand === 'MASERATI' || car.category === 'sport');
+        filtered = filtered.filter(car => car.category === 'sport');
       } else if (activeTab === 'suv') {
-        filtered = filtered.filter(car => car.bodyType === 'SUV' || car.category === 'suv');
+        filtered = filtered.filter(car => car.category === 'suv');
       } else if (activeTab === 'premium') {
-        filtered = filtered.filter(car => car.dailyRate >= 130 || car.category === 'premium' || car.category === 'vyssia');
-      } else if (activeTab === 'multiSeat') {
-        filtered = filtered.filter(car => car.seats >= 7 || car.category === 'viacmiestne');
-      } else if (activeTab === 'electric') {
-        filtered = filtered.filter(car => car.fuelType === 'Elektro' || car.fuelType === 'electric' || car.fuelType === 'hybrid');
-      } else if (activeTab === 'utility') {
-        filtered = filtered.filter(car => car.bodyType === 'Úžitkové' || car.category === 'uzitkove');
+        filtered = filtered.filter(car => car.category === 'premium');
+      } else if (activeTab === 'viacmiestne') {
+        filtered = filtered.filter(car => car.category === 'viacmiestne');
+      } else if (activeTab === 'elektro') {
+        filtered = filtered.filter(car => car.category === 'elektro');
+      } else if (activeTab === 'uzitkove') {
+        filtered = filtered.filter(car => car.category === 'uzitkove');
       }
     }
 
@@ -516,14 +562,63 @@ const HomePage = () => {
     // Sort based on sortBy state
     filtered.sort((a, b) => {
       if (sortBy === 'price-desc') {
-        return b.dailyRate - a.dailyRate; // Descending
+        // Sort from highest to lowest price
+        const priceA = a.pricing?.dailyRate || a.dailyRate || 0;
+        const priceB = b.pricing?.dailyRate || b.dailyRate || 0;
+        return priceB - priceA;
+      } else if (sortBy === 'price-asc') {
+        // Sort from lowest to highest price
+        const priceA = a.pricing?.dailyRate || a.dailyRate || 0;
+        const priceB = b.pricing?.dailyRate || b.dailyRate || 0;
+        return priceA - priceB;
       } else if (sortBy === 'availability') {
-        // Sort by availability (available cars first, then by price)
-        if (a.status === 'available' && b.status !== 'available') return -1;
-        if (a.status !== 'available' && b.status === 'available') return 1;
-        return a.dailyRate - b.dailyRate; // Then by price ascending
+        // Calculate availability score for next 2 weeks
+        const getAvailabilityScore = (car) => {
+          const today = new Date();
+          const twoWeeksLater = new Date();
+          twoWeeksLater.setDate(today.getDate() + 14);
+
+          // Create array of dates for next 2 weeks
+          const next2Weeks = [];
+          const currentDate = new Date(today);
+          while (currentDate <= twoWeeksLater) {
+            next2Weeks.push(currentDate.toISOString().split('T')[0]);
+            currentDate.setDate(currentDate.getDate() + 1);
+          }
+
+          // Check how many days are available in next 2 weeks
+          const unavailableDates = car.unavailableDates || [];
+          const availableDaysCount = next2Weeks.filter(date =>
+            !unavailableDates.includes(date)
+          ).length;
+
+          // Return availability score (higher = more available)
+          // Available cars get score based on available days (0-14)
+          // Unavailable cars get negative score
+          if (car.status === 'available') {
+            return availableDaysCount;
+          } else {
+            return -1; // Unavailable cars go to bottom
+          }
+        };
+
+        const scoreA = getAvailabilityScore(a);
+        const scoreB = getAvailabilityScore(b);
+
+        // Sort by availability score (higher score first)
+        if (scoreB !== scoreA) {
+          return scoreB - scoreA;
+        }
+
+        // If same availability, sort by price (ascending)
+        const priceA = a.pricing?.dailyRate || a.dailyRate || 0;
+        const priceB = b.pricing?.dailyRate || b.dailyRate || 0;
+        return priceA - priceB;
       } else {
-        return a.dailyRate - b.dailyRate; // Ascending (default)
+        // Default: sort from lowest to highest price
+        const priceA = a.pricing?.dailyRate || a.dailyRate || 0;
+        const priceB = b.pricing?.dailyRate || b.dailyRate || 0;
+        return priceA - priceB;
       }
     });
 
@@ -631,9 +726,9 @@ const HomePage = () => {
 
         <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex flex-col justify-end pb-8 gap-8 max-[480px]:gap-6">
           {/* Top - Heading */}
-          <div className="text-white ml-2 sm:ml-8 max-[480px]:ml-2 max-[480px]:mr-2 max-[480px]:relative max-[480px]:w-auto" style={{width: '40%', maxWidth: '40%'}}>
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-medium leading-tight max-[480px]:text-3xl max-[480px]:leading-tight">
-              <span className="hidden max-[480px]:inline">Autopožičovňa s<br />individuálnym prístupom</span>
+          <div className="text-white ml-2 sm:ml-8 max-[480px]:ml-2 max-[480px]:mr-2 max-[480px]:relative max-[480px]:w-[90%]" style={{width: '40%', maxWidth: '40%'}}>
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-goldman font-medium leading-tight max-[480px]:text-3xl max-[480px]:leading-tight">
+              <span className="hidden max-[480px]:inline">Autopožičovňa&nbsp;s<br />individuálnym prístupom</span>
               <span className="max-[480px]:hidden">Autopožičovňa s individuálnym prístupom</span>
             </h1>
           </div>
@@ -654,7 +749,7 @@ const HomePage = () => {
             >
               {/* Title on Left */}
               <div className="flex-shrink-0">
-                <h2 className="text-2xl font-bold text-white whitespace-nowrap">
+                <h2 className="text-2xl font-goldman font-bold text-white whitespace-nowrap">
                   Rýchla<br />rezervácia
                 </h2>
               </div>
@@ -702,6 +797,9 @@ const HomePage = () => {
                     minDate={new Date()}
                     unavailableDates={heroFormUnavailableDates}
                     placeholder="Dátum prevzatia"
+                    otherSelectedDate={returnDate}
+                    isReturnPicker={false}
+                    onOtherDateReset={() => setReturnDate(null)}
                   />
                 </div>
 
@@ -713,6 +811,7 @@ const HomePage = () => {
                     minDate={pickupDate || new Date()}
                     unavailableDates={heroFormUnavailableDates}
                     placeholder="Dátum vrátenia"
+                    otherSelectedDate={pickupDate}
                     isReturnPicker={true}
                   />
                 </div>
@@ -745,7 +844,7 @@ const HomePage = () => {
               }}
             >
               {/* Title */}
-              <h2 className="text-xl font-bold text-white text-center">
+              <h2 className="text-xl font-goldman font-bold text-white text-center">
                 Rýchla rezervácia
               </h2>
 
@@ -792,6 +891,9 @@ const HomePage = () => {
                     minDate={new Date()}
                     unavailableDates={heroFormUnavailableDates}
                     placeholder="Dátum prevzatia"
+                    otherSelectedDate={returnDate}
+                    isReturnPicker={false}
+                    onOtherDateReset={() => setReturnDate(null)}
                   />
                 </div>
 
@@ -803,6 +905,7 @@ const HomePage = () => {
                     minDate={pickupDate || new Date()}
                     unavailableDates={heroFormUnavailableDates}
                     placeholder="Dátum vrátenia"
+                    otherSelectedDate={pickupDate}
                     isReturnPicker={true}
                   />
                 </div>
@@ -966,7 +1069,7 @@ const HomePage = () => {
                     alt={carClass.name}
                     className="w-12 h-8 sm:w-16 sm:h-10 lg:w-20 lg:h-12 mb-1 sm:mb-2 lg:mb-3 object-contain"
                   />
-                  <span className={`font-semibold text-xs sm:text-sm lg:text-base ${
+                  <span className={`font-goldman font-semibold text-xs sm:text-sm lg:text-base ${
                     activeTab === carClass.value ? 'text-[rgb(250,146,8)]' : 'text-gray-300'
                   }`}>
                     {carClass.name}
@@ -984,7 +1087,7 @@ const HomePage = () => {
                   className="w-full flex items-center justify-between p-4 rounded-lg text-white border border-gray-600"
                   style={{backgroundColor: 'rgb(25, 25, 25)'}}
                 >
-                  <span className="font-medium">
+                  <span className="font-goldman font-medium">
                     Kategória: {carClasses.find(c => c.value === activeTab)?.name || 'Všetky'}
                   </span>
                   <ChevronDownIcon className={`w-5 h-5 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
@@ -1008,7 +1111,7 @@ const HomePage = () => {
                           alt={carClass.name}
                           className="w-12 h-8 object-contain"
                         />
-                        <span className={`font-medium ${
+                        <span className={`font-goldman font-medium ${
                           activeTab === carClass.value ? 'text-[rgb(250,146,8)]' : 'text-gray-300'
                         }`}>
                           {carClass.name}
@@ -1054,7 +1157,7 @@ const HomePage = () => {
                       e.target.style.display = 'none';
                     }}
                   />
-                  <span className={`text-sm font-medium ${
+                  <span className={`text-sm font-goldman font-medium ${
                     selectedBrand === brand.value ? 'text-[rgb(250,146,8)]' : 'text-gray-300'
                   }`}>
                     {brand.name}
@@ -1072,7 +1175,7 @@ const HomePage = () => {
                   className="w-full flex items-center justify-between p-4 rounded-lg text-white border border-gray-600"
                   style={{backgroundColor: 'rgb(35, 35, 35)'}}
                 >
-                  <span className="font-medium">
+                  <span className="font-goldman font-medium">
                     Značka: {brandFilters.find(b => b.value === selectedBrand)?.name || 'Všetky'}
                   </span>
                   <ChevronDownIcon className={`w-5 h-5 transition-transform ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
@@ -1101,7 +1204,7 @@ const HomePage = () => {
                           alt={brand.name}
                           className="w-10 h-10 object-contain"
                         />
-                        <span className={`font-medium ${
+                        <span className={`font-goldman font-medium ${
                           selectedBrand === brand.value ? 'text-[rgb(250,146,8)]' : 'text-gray-300'
                         }`}>
                           {brand.name}
@@ -1267,41 +1370,40 @@ const HomePage = () => {
                   >
                     <div
                       onClick={() => window.location.href = `/car/${car._id}`}
-                      className="relative overflow-hidden aspect-[4/3] block w-full h-full cursor-pointer"
-                      style={{
-                        backgroundImage: `url(${car.image || (car.images && car.images[0] && car.images[0].url) || ''})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        borderRadius: '6px'
-                      }}
+                      className="flex flex-col w-full h-full cursor-pointer rounded-lg overflow-hidden"
                     >
-                    {/* Dark overlay for images */}
-                    <div className="absolute inset-0 bg-black opacity-20 z-5"></div>
+                      {/* Top - Car Image */}
+                      <div className="flex-1 relative overflow-hidden">
+                        {car.image || (car.images && car.images[0] && car.images[0].url) ? (
+                          <img
+                            src={car.image || (car.images && car.images[0] && car.images[0].url)}
+                            alt={`${car.brand} ${car.model}`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <span className="text-gray-400">No image</span>
+                          </div>
+                        )}
+                      </div>
 
-                    <div className="relative z-10 h-full flex flex-col">
-                      {/* Spacer for layout */}
-                      <div className="flex-1"></div>
-
-                      {/* Bottom section with glassmorphism background */}
-                      <div className="absolute bottom-0 left-0 right-0 p-4" style={{
-                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%)',
+                      {/* Bottom - Glass Box with Content */}
+                      <div className="p-4" style={{
+                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
                         backdropFilter: 'blur(20px)',
                         WebkitBackdropFilter: 'blur(20px)',
-                        border: '1px solid rgba(255, 255, 255, 0.18)'
+                        border: '1px solid rgba(255, 255, 255, 0.18)',
+                        boxShadow: '0 8px 32px 0 rgba(250, 146, 8, 0.37)'
                       }}>
                         <div className="flex items-center justify-between">
                           {/* Car name and specs together in left container */}
                           <div className="flex flex-col gap-1">
-                            <h3 className="text-lg font-bold text-white uppercase">{car.brand} {car.model}</h3>
-                            <div className="flex items-center gap-x-3 text-xs text-white">
-                              {/* Show Year if available */}
-                              {car.year && <span className="font-medium">{car.year}</span>}
+                            <h3 className="text-lg font-goldman font-bold text-white uppercase">{car.brand} {car.model}</h3>
+                            <div className="flex items-center gap-x-3 text-xs font-goldman text-white">
+                              {/* Show Power (kW) - from MongoDB engine.power field or power field */}
+                              {(car.engine?.power || car.power) && <span className="font-medium">{car.engine?.power || car.power} kW</span>}
 
-                              {/* Show Transmission (API field) or power (static field) */}
-                              {car.transmission && <span className="font-medium capitalize">{car.transmission}</span>}
-                              {!car.transmission && car.power && <span className="font-medium">{car.power}</span>}
-
-                              {/* Show Fuel Type */}
+                              {/* Show Fuel Type (moved to second position) */}
                               {(car.fuelType || car.fuel) && (
                                 <span className="font-medium capitalize">
                                   {car.fuelType === 'gasoline' ? 'Benzín' :
@@ -1311,6 +1413,9 @@ const HomePage = () => {
                                    car.fuelType || car.fuel}
                                 </span>
                               )}
+
+                              {/* Show Transmission (moved to third position) */}
+                              {car.transmission && <span className="font-medium capitalize">{car.transmission}</span>}
 
                               {/* Show Seats if available */}
                               {car.seats && <span className="font-medium">{car.seats} miest</span>}
@@ -1324,7 +1429,7 @@ const HomePage = () => {
                                 e.stopPropagation();
                                 window.location.href = `/booking?car=${car._id}`;
                               }}
-                              className="hover:opacity-90 text-xs font-bold transition-colors px-3 py-1 rounded-lg whitespace-nowrap"
+                              className="hover:opacity-90 text-xs font-goldman font-bold transition-colors px-3 py-1 rounded-lg whitespace-nowrap"
                               style={{
                                 backgroundColor: '#fa9208',
                                 color: '#191919'
@@ -1332,14 +1437,13 @@ const HomePage = () => {
                             >
                               Rezervovať
                             </button>
-                            <div className="text-sm font-bold text-white text-center">
+                            <div className="text-sm font-goldman font-bold text-white text-center">
                               od {car.pricing?.dailyRate || car.dailyRate || 0}€
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -1394,16 +1498,16 @@ const HomePage = () => {
             {/* Mobile Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 px-4">
               <div className="text-center max-[480px]:text-left">
-                <div className="text-4xl sm:text-5xl font-bold text-[rgb(250,146,8)] mb-2">10</div>
-                <div className="text-white font-bold text-sm sm:text-base">Prémiových áut v našej flotile</div>
+                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">10</div>
+                <div className="text-white font-goldman font-bold text-sm sm:text-base">Prémiových áut v našej flotile</div>
               </div>
               <div className="text-center max-[480px]:text-left">
-                <div className="text-4xl sm:text-5xl font-bold text-[rgb(250,146,8)] mb-2">2.0M+</div>
-                <div className="text-white font-bold text-sm sm:text-base">Kilometrov najazdených šťastnými klientmi</div>
+                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">2.0M+</div>
+                <div className="text-white font-goldman font-bold text-sm sm:text-base">Kilometrov najazdených šťastnými klientmi</div>
               </div>
               <div className="text-center max-[480px]:text-left">
-                <div className="text-4xl sm:text-5xl font-bold text-[rgb(250,146,8)] mb-2">580</div>
-                <div className="text-white font-bold text-sm sm:text-base">Spokojných klientov</div>
+                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">580</div>
+                <div className="text-white font-goldman font-bold text-sm sm:text-base">Spokojných klientov</div>
               </div>
             </div>
           </div>
@@ -1418,7 +1522,7 @@ const HomePage = () => {
               </FadeInUp>
 
               <FadeInUp delay={0.2}>
-                <p className="text-gray-300 mb-12 max-w-2xl">
+                <p className="text-gray-300 font-goldman mb-12 max-w-2xl">
                   Individuálny, férový a ústretový prístup k našim zákazníkom. Dôraz na starostlivosť o náš vozový park. Čísla, ktoré hovoria za nás:
                 </p>
               </FadeInUp>
@@ -1426,16 +1530,16 @@ const HomePage = () => {
               <FadeInUp delay={0.4}>
                 <div className="grid grid-cols-3 gap-8">
                 <div className="text-left">
-                  <div className="text-5xl font-bold text-[rgb(250,146,8)] mb-2">10</div>
-                  <div className="text-white font-bold">Prémiových áut v našej flotile</div>
+                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">10</div>
+                  <div className="text-white font-goldman font-bold">Prémiových áut v našej flotile</div>
                 </div>
                 <div className="text-left">
-                  <div className="text-5xl font-bold text-[rgb(250,146,8)] mb-2">2.0M+</div>
-                  <div className="text-white font-bold">Kilometrov najazdených šťastnými klientmi</div>
+                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">2.0M+</div>
+                  <div className="text-white font-goldman font-bold">Kilometrov najazdených šťastnými klientmi</div>
                 </div>
                 <div className="text-left">
-                  <div className="text-5xl font-bold text-[rgb(250,146,8)] mb-2">580</div>
-                  <div className="text-white font-bold">Spokojných klientov</div>
+                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">580</div>
+                  <div className="text-white font-goldman font-bold">Spokojných klientov</div>
                 </div>
                 </div>
               </FadeInUp>

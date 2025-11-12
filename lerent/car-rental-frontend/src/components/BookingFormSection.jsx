@@ -285,6 +285,9 @@ const BookingFormSection = () => {
                 minDate={new Date()}
                 unavailableDates={unavailableDates}
                 placeholder="Vyberte dátum"
+                otherSelectedDate={formData.returnDate}
+                isReturnPicker={false}
+                onOtherDateReset={() => handleDateSelect('returnDate', null)}
               />
             </div>
             <div>
@@ -292,9 +295,11 @@ const BookingFormSection = () => {
               <CustomDatePicker
                 selectedDate={formData.returnDate}
                 onDateSelect={(date) => handleDateSelect('returnDate', date)}
-                minDate={formData.pickupDate ? new Date(formData.pickupDate.getTime() + 86400000) : new Date()}
+                minDate={formData.pickupDate ? new Date(formData.pickupDate.getTime() + 86400000 * 2) : new Date()}
                 unavailableDates={unavailableDates}
                 placeholder="Vyberte dátum"
+                otherSelectedDate={formData.pickupDate}
+                isReturnPicker={true}
               />
             </div>
           </div>

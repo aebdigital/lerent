@@ -1,22 +1,13 @@
-import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import Logo from '../logoRENT.svg';
 
 const Sidebar = ({ isOpen, onClose }) => {
-  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   const navigation = [
-    { name: 'Recenzie', href: '#reviews' },
-    { name: 'Kontakt', href: '#booking' },
-  ];
-
-  const servicesDropdown = [
-    { name: 'Poistenie', href: '/poistenie' },
-    { name: 'Autoúvery', href: '/autouvery' },
-    { name: 'Sprostredkovanie prenájmu aut', href: '/sprostredkovanie' },
+    { name: 'Kontakt', href: '#contact' },
   ];
 
   const handleNavClick = (href) => {
@@ -97,49 +88,37 @@ const Sidebar = ({ isOpen, onClose }) => {
             Domov
           </button>
 
-          {/* Služby Dropdown */}
-          <div className="border-b border-gray-800">
-            <button
-              onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}
-              className="w-full px-6 py-4 text-left text-lg font-medium text-white hover:text-gray-300 hover:bg-gray-900 flex items-center justify-between transition-colors"
-            >
-              Služby
-              <ChevronDownIcon className={`h-5 w-5 transform transition-transform duration-200 ${
-                servicesDropdownOpen ? 'rotate-180' : ''
-              }`} />
-            </button>
-            
-            {/* Dropdown Menu */}
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              servicesDropdownOpen ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
-            }`}>
-              <div className="bg-gray-900">
-                {servicesDropdown.map((item) => (
-                  <button
-                    key={item.name}
-                    onClick={() => handleNavClick(item.href)}
-                    className={`block w-full text-left px-8 py-3 text-base transition-colors ${
-                      isActive(item.href) ? 'text-[rgb(250,146,8)] bg-gray-800' : 'text-gray-300 hover:text-white hover:bg-gray-800'
-                    }`}
-                  >
-                    {item.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Blog */}
+          {/* O nás */}
           <button
-            onClick={() => handleNavClick('/blog')}
+            onClick={() => handleNavClick('/o-nas')}
             className={`px-6 py-4 text-left text-lg font-medium transition-colors border-b border-gray-800 ${
-              isActive('/blog') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
+              isActive('/o-nas') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
             }`}
           >
-            Blog
+            O nás
           </button>
 
-          {/* Recenzie & Kontakt */}
+          {/* Služby */}
+          <button
+            onClick={() => handleNavClick('/sluzby')}
+            className={`px-6 py-4 text-left text-lg font-medium transition-colors border-b border-gray-800 ${
+              isActive('/sluzby') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
+            }`}
+          >
+            Služby
+          </button>
+
+          {/* FAQ */}
+          <button
+            onClick={() => handleNavClick('/faq')}
+            className={`px-6 py-4 text-left text-lg font-medium transition-colors border-b border-gray-800 ${
+              isActive('/faq') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
+            }`}
+          >
+            FAQ
+          </button>
+
+          {/* Kontakt */}
           {navigation.map((item) => (
             <button
               key={item.name}
@@ -155,12 +134,12 @@ const Sidebar = ({ isOpen, onClose }) => {
           {/* Rezervovať Button */}
           <div className="px-6 py-6">
             <button
-              onClick={() => handleNavClick('#booking')}
-              className="w-full text-black hover:opacity-90 px-6 py-4 font-bold text-lg transition-colors"
+              onClick={() => handleNavClick('/')}
+              className="w-full hover:opacity-90 px-5 py-3 text-base transition-colors duration-200 border border-gray-600 rounded-lg"
               style={{
-                clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
-                borderRadius: '0px',
-                backgroundColor: '#fa9208'
+                backgroundColor: '#fa9208',
+                color: '#191919',
+                fontWeight: 700
               }}
             >
               Rezervovať
