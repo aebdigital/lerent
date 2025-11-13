@@ -862,8 +862,7 @@ const HomePage = () => {
                 background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.18)',
-                boxShadow: '0 8px 32px 0 rgba(250, 146, 8, 0.37)'
+                border: '1px solid rgba(255, 255, 255, 0.18)'
               }}
             >
               {/* Title */}
