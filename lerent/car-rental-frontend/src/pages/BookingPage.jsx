@@ -13,7 +13,8 @@ import CarImage from '../components/CarImage';
 import DatePicker from '../components/DatePicker';
 import { carsAPI, bookingAPI, authAPI, servicesAPI, insuranceAPI, locationsAPI } from '../services/api';
 import paymentService from '../services/paymentService';
-import HeroImg from '../test.png';
+import { generatePaymentInfo } from '../utils/payBySquare';
+import config from '../config/config';
 
 const BookingPage = () => {
   const [searchParams] = useSearchParams();
@@ -30,6 +31,9 @@ const BookingPage = () => {
   const [additionalServices, setAdditionalServices] = useState([]);
   const [insuranceOptions, setInsuranceOptions] = useState([]);
   const [locations, setLocations] = useState([]);
+  const [qrCodeData, setQrCodeData] = useState(null);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [backendPaymentDetails, setBackendPaymentDetails] = useState(null);
   
   // Generate time slots in 30-minute intervals
   const generateTimeSlots = () => {
@@ -274,6 +278,102 @@ const BookingPage = () => {
 
     loadData();
   }, [selectedCarId, searchParams]);
+
+  // Fetch QR code when booking result is available for bank transfer
+  useEffect(() => {
+    const fetchQRCode = async () => {
+      if (!bookingResult || !bookingResult.reservationId || formData.paymentMethod !== 'bank_transfer') {
+        return;
+      }
+
+      const maxRetries = 5;
+      const retryDelay = 5000; // 5 seconds
+      const initialDelay = 2000; // 2 seconds initial wait
+
+      // Wait 2 seconds before first attempt to allow backend to generate QR
+      console.log('Waiting 2 seconds before fetching QR code...');
+      await new Promise(resolve => setTimeout(resolve, initialDelay));
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          setQrLoading(true);
+          console.log(`Fetching QR code for reservation (attempt ${attempt}/${maxRetries}):`, bookingResult.reservationId);
+
+          const response = await fetch(
+            `${config.API_BASE_URL}/api/public/users/${config.ADMIN_EMAIL}/reservations/${bookingResult.reservationId}/qr`
+          );
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch QR code');
+          }
+
+          const result = await response.json();
+          console.log('QR code response:', result);
+
+          if (result.success && result.data?.qrCodes?.payBySquareRental) {
+            let qrData = result.data.qrCodes.payBySquareRental;
+            console.log('QR code data type:', typeof qrData);
+            console.log('QR code data:', qrData);
+
+            // Store payment details from backend
+            if (result.data.paymentDetails) {
+              console.log('Payment details from backend:', result.data.paymentDetails);
+              setBackendPaymentDetails(result.data.paymentDetails);
+            }
+
+            // Handle if qrData is an object (extract the imageUrl property)
+            if (typeof qrData === 'object' && qrData !== null) {
+              console.log('QR data is an object, checking for imageUrl property...');
+              // Extract the base64 image from imageUrl (not code!)
+              qrData = qrData.imageUrl || qrData.base64 || qrData.data || qrData.image || qrData.qrCode || qrData.code;
+              console.log('Extracted QR data:', typeof qrData, qrData?.substring?.(0, 100));
+            }
+
+            if (typeof qrData === 'string') {
+              console.log('QR code data preview (first 100 chars):', qrData.substring(0, 100));
+              setQrCodeData(qrData);
+              console.log('QR code loaded successfully on attempt', attempt);
+              setQrLoading(false);
+              return; // Success - exit the loop
+            } else {
+              console.error('QR code data is not a string after extraction:', typeof qrData);
+              throw new Error('Invalid QR code format');
+            }
+          } else {
+            console.warn(`Attempt ${attempt}: No QR code available in response:`, result.message || 'Unknown reason');
+
+            // If this was the last attempt, set qrCodeData to null and stop
+            if (attempt === maxRetries) {
+              console.error('Failed to fetch QR code after', maxRetries, 'attempts');
+              setQrCodeData(null);
+              setQrLoading(false);
+              return;
+            }
+
+            // Wait before next retry
+            console.log(`Waiting ${retryDelay / 1000} seconds before retry...`);
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+          }
+        } catch (err) {
+          console.error(`Error fetching QR code (attempt ${attempt}/${maxRetries}):`, err);
+
+          // If this was the last attempt, stop
+          if (attempt === maxRetries) {
+            console.error('Failed to fetch QR code after', maxRetries, 'attempts');
+            setQrCodeData(null);
+            setQrLoading(false);
+            return;
+          }
+
+          // Wait before next retry
+          console.log(`Waiting ${retryDelay / 1000} seconds before retry...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+        }
+      }
+    };
+
+    fetchQRCode();
+  }, [bookingResult, formData.paymentMethod]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -594,21 +694,17 @@ const BookingPage = () => {
           throw new Error('Nepodarilo sa vytvoriť platobnú session');
         }
       } else if (formData.paymentMethod === 'bank_transfer') {
-        // Bank transfer flow - navigate to bank transfer page with reservation details
+        // Bank transfer flow - show confirmation with payment details
         console.log('Bank transfer selected, showing payment details...');
         console.log('Reservation data:', reservation);
-        console.log('Navigating with state:', {
+
+        setBookingResult({
           reservationId: reservation._id,
           reservationNumber: reservation.reservationNumber,
           totalAmount: calculateTotal()
         });
-        navigate('/bank-transfer-info', {
-          state: {
-            reservationId: reservation._id,
-            reservationNumber: reservation.reservationNumber,
-            totalAmount: calculateTotal()
-          }
-        });
+        setCurrentStep(5);
+        setLoading(false);
       }
 
     } catch (err) {
@@ -717,20 +813,24 @@ const BookingPage = () => {
 
   const calculateLatePickupFee = () => {
     if (!formData.pickupTime) return 0;
-    const [hours] = formData.pickupTime.split(':');
+    const [hours, minutes] = formData.pickupTime.split(':');
     const pickupHour = parseInt(hours);
+    const pickupMinute = parseInt(minutes);
+    const timeInMinutes = pickupHour * 60 + pickupMinute;
 
-    // Fee applies for pickup after 17:00 (5 PM)
-    return pickupHour > 17 ? 30 : 0;
+    // Fee applies for pickup from 17:30 (5:30 PM) onwards
+    return timeInMinutes >= 17 * 60 + 30 ? 30 : 0;
   };
 
   const calculateLateDropoffFee = () => {
     if (!formData.returnTime) return 0;
-    const [hours] = formData.returnTime.split(':');
+    const [hours, minutes] = formData.returnTime.split(':');
     const returnHour = parseInt(hours);
+    const returnMinute = parseInt(minutes);
+    const timeInMinutes = returnHour * 60 + returnMinute;
 
-    // Fee applies for dropoff after 17:00 (5 PM)
-    return returnHour > 17 ? 30 : 0;
+    // Fee applies for dropoff from 17:30 (5:30 PM) onwards
+    return timeInMinutes >= 17 * 60 + 30 ? 30 : 0;
   };
 
   const calculateTotal = () => {
@@ -798,13 +898,29 @@ const BookingPage = () => {
 
   // Confirmation step
   if (currentStep === 5 && bookingResult) {
+    // Generate PayBySquare data if payment method is bank transfer
+    let paymentInfo = null;
+    if (formData.paymentMethod === 'bank_transfer' && selectedCar) {
+      console.log('Generating PayBySquare for bank transfer');
+      console.log('Payment method:', formData.paymentMethod);
+      console.log('Selected car:', selectedCar);
+      paymentInfo = generatePaymentInfo({
+        carBrand: selectedCar.brand,
+        carModel: selectedCar.model,
+        pickupDate: formData.pickupDate,
+        dropoffDate: formData.returnDate,
+        totalAmount: parseFloat(calculateTotal())
+      });
+      console.log('Payment info generated:', paymentInfo);
+    }
+
     return (
       <div className="min-h-screen text-white" style={{backgroundColor: '#000000', fontFamily: 'AvantGarde, sans-serif'}}>
         {/* Mini Hero Section */}
-        <div 
+        <div
           className="relative h-[30vh] bg-cover bg-center"
           style={{
-            backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${HeroImg})`
+            backgroundColor: '#000000'
           }}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
@@ -823,7 +939,7 @@ const BookingPage = () => {
               <h1 className="text-5xl font-bold text-white mb-4">
                 Ďakujeme!
               </h1>
-              
+
               {/* Contact Notification */}
               <div className="mt-6 p-4 border border-gray-600 rounded-lg" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
                 <p className="text-gray-300 text-sm">
@@ -831,6 +947,93 @@ const BookingPage = () => {
                   <span className="font-semibold text-[rgb(250,146,8)]">{formData.email}</span>
                 </p>
               </div>
+            </div>
+
+            {/* Bank Transfer Payment Details */}
+            {paymentInfo && (
+              <div className="mt-8 p-6 border border-gray-600 rounded-lg" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
+                <h2 className="text-2xl font-bold text-white mb-6 text-center">Platobné údaje</h2>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Left Column - Payment Details */}
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">IBAN:</p>
+                      <p className="text-white font-mono text-lg">{paymentInfo.displayDetails.iban}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">Suma:</p>
+                      <p className="text-white font-bold text-2xl text-[rgb(250,146,8)]">{paymentInfo.displayDetails.formattedAmount}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">Variabilný symbol:</p>
+                      <p className="text-white font-mono text-lg">
+                        {backendPaymentDetails?.variableSymbol || paymentInfo.displayDetails.variableSymbol}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">Príjemca:</p>
+                      <p className="text-white">{paymentInfo.displayDetails.beneficiaryName}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">SWIFT:</p>
+                      <p className="text-white font-mono">{paymentInfo.displayDetails.swift}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">Splatnosť:</p>
+                      <p className="text-white">{paymentInfo.displayDetails.formattedDueDate}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">Správa pre príjemcu:</p>
+                      <p className="text-white text-sm">{paymentInfo.displayDetails.paymentNote}</p>
+                    </div>
+                  </div>
+
+                  {/* Right Column - QR Code */}
+                  <div className="flex items-center justify-center">
+                    {qrLoading ? (
+                      <div className="text-center text-gray-400">
+                        <p>Načítavam QR kód...</p>
+                      </div>
+                    ) : qrCodeData ? (
+                      <div className="bg-white p-4 rounded-lg">
+                        <img
+                          src={qrCodeData.startsWith('data:') ? qrCodeData : `data:image/png;base64,${qrCodeData}`}
+                          alt="PayBySquare QR Code"
+                          className="w-full max-w-xs mx-auto"
+                        />
+                        <p className="text-center text-black text-xs mt-2">Naskenujte QR kód vo vašej bankovej aplikácii</p>
+                      </div>
+                    ) : (
+                      <div className="text-center text-gray-400">
+                        <p className="text-sm">QR kód nie je dostupný</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-6 p-4 bg-[rgba(250,146,8,0.1)] border border-[rgb(250,146,8)] rounded-lg">
+                  <p className="text-gray-300 text-sm text-center">
+                    <strong className="text-[rgb(250,146,8)]">Dôležité:</strong> Platbu prosím realizujte do {paymentInfo.displayDetails.formattedDueDate}.
+                    Po prijatí platby Vás budeme kontaktovať na poskytnutej mailovej adrese.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Back to Homepage Button */}
+            <div className="mt-8 text-center">
+              <Link to="/">
+                <Button variant="primary" size="lg">
+                  Späť na hlavnú stránku
+                </Button>
+              </Link>
             </div>
 
           </div>
@@ -842,10 +1045,10 @@ const BookingPage = () => {
   return (
     <div className="min-h-screen text-white" style={{backgroundColor: '#000000', fontFamily: 'AvantGarde, sans-serif'}}>
       {/* Mini Hero Section */}
-      <div 
+      <div
         className="relative h-[30vh] bg-cover bg-center"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${HeroImg})`
+          backgroundColor: '#000000'
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
@@ -1348,8 +1551,17 @@ const BookingPage = () => {
                             value="stripe"
                             checked={formData.paymentMethod === 'stripe'}
                             onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
-                            className="w-4 h-4 text-[rgb(250,146,8)] focus:ring-[rgb(250,146,8)] border-gray-600"
+                            className="sr-only"
                           />
+                          <div className="relative flex items-center justify-center w-5 h-5 rounded-full border-2 transition-colors"
+                               style={{
+                                 borderColor: formData.paymentMethod === 'stripe' ? 'rgb(250,146,8)' : '#6b7280',
+                                 backgroundColor: 'transparent'
+                               }}>
+                            {formData.paymentMethod === 'stripe' && (
+                              <div className="w-3 h-3 rounded-full" style={{backgroundColor: 'rgb(250,146,8)'}}></div>
+                            )}
+                          </div>
                           <div className="ml-3 text-left">
                             <p className="text-white font-goldman font-medium">Stripe</p>
                             <p className="text-gray-400 text-sm">Platba kartou online</p>
@@ -1363,8 +1575,17 @@ const BookingPage = () => {
                             value="bank_transfer"
                             checked={formData.paymentMethod === 'bank_transfer'}
                             onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
-                            className="w-4 h-4 text-[rgb(250,146,8)] focus:ring-[rgb(250,146,8)] border-gray-600"
+                            className="sr-only"
                           />
+                          <div className="relative flex items-center justify-center w-5 h-5 rounded-full border-2 transition-colors"
+                               style={{
+                                 borderColor: formData.paymentMethod === 'bank_transfer' ? 'rgb(250,146,8)' : '#6b7280',
+                                 backgroundColor: 'transparent'
+                               }}>
+                            {formData.paymentMethod === 'bank_transfer' && (
+                              <div className="w-3 h-3 rounded-full" style={{backgroundColor: 'rgb(250,146,8)'}}></div>
+                            )}
+                          </div>
                           <div className="ml-3 text-left">
                             <p className="text-white font-goldman font-medium">Bankový prevod</p>
                             <p className="text-gray-400 text-sm">Platba bankovým prevodom</p>
@@ -1858,7 +2079,7 @@ const BookingPage = () => {
                         {calculateLatePickupFee() > 0 && (
                           <div className="flex justify-between text-sm">
                             <span className="text-gray-300">
-                              Prevzatie po 17:00
+                              Prevzatie od 17:30
                               <span className="text-gray-400 ml-1">({formData.pickupTime})</span>
                             </span>
                             <span className="font-medium text-white">{calculateLatePickupFee().toFixed(2)}€</span>
@@ -1868,7 +2089,7 @@ const BookingPage = () => {
                         {calculateLateDropoffFee() > 0 && (
                           <div className="flex justify-between text-sm">
                             <span className="text-gray-300">
-                              Vrátenie po 17:00
+                              Vrátenie od 17:30
                               <span className="text-gray-400 ml-1">({formData.returnTime})</span>
                             </span>
                             <span className="font-medium text-white">{calculateLateDropoffFee().toFixed(2)}€</span>

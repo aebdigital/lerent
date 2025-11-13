@@ -37,9 +37,7 @@ const Header = () => {
     };
   }, []);
 
-  const navigation = [
-    { name: 'Kontakt', href: '#contact' },
-  ];
+  const navigation = [];
 
 
   const handleNavClick = (href) => {
@@ -154,23 +152,23 @@ const Header = () => {
 
           {/* Desktop Navigation - Center */}
           <div className="hidden lg:flex items-center justify-center space-x-10">
-            
-            {/* O nás Link */}
+
+            {/* Ponuka Link */}
             <button
-              onClick={() => handleNavClick('/o-nas')}
+              onClick={() => handleNavClick('#cars')}
               className={`font-medium transition-colors duration-200 relative pb-1 ${
-                isActive('/o-nas')
+                isActive('#cars')
                   ? 'text-white'
                   : 'text-white hover:text-gray-300'
               }`}
               style={{
                 fontSize: '19px',
-                borderBottom: isActive('/o-nas') ? '2px solid #02cdff' : '2px solid transparent'
+                borderBottom: isActive('#cars') ? '2px solid #02cdff' : '2px solid transparent'
               }}
             >
-              O nás
+              Ponuka
             </button>
-            
+
             {/* Služby Link */}
             <button
               onClick={() => handleNavClick('/sluzby')}
@@ -212,42 +210,41 @@ const Header = () => {
             >
               FAQ
             </button>
-            
-            {/* Rest of navigation */}
-            {navigation.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => handleNavClick(item.href)}
-                className={`font-medium transition-colors duration-200 relative pb-1 ${
-                  isActive(item.href)
-                    ? 'text-white'
-                    : 'text-white hover:text-gray-300'
-                }`}
-                style={{
-                  fontSize: '19px',
-                  borderBottom: isActive(item.href) ? '2px solid #02cdff' : '2px solid transparent'
-                }}
-              >
-                {item.name}
-              </button>
-            ))}
+
+            {/* O nás Link */}
+            <button
+              onClick={() => handleNavClick('/o-nas')}
+              className={`font-medium transition-colors duration-200 relative pb-1 ${
+                isActive('/o-nas')
+                  ? 'text-white'
+                  : 'text-white hover:text-gray-300'
+              }`}
+              style={{
+                fontSize: '19px',
+                borderBottom: isActive('/o-nas') ? '2px solid #02cdff' : '2px solid transparent'
+              }}
+            >
+              O nás
+            </button>
           </div>
 
-          {/* Right section - Email + Phone */}
+          {/* Right section - Kontakt + Phone */}
           <div className="hidden lg:flex items-center justify-end space-x-4">
-            {/* Napíšte nám Email Link */}
-            <div className="flex items-center space-x-2 text-white font-goldman">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-              </svg>
-              <a
-                href="mailto:info@lerent.sk"
-                className="flex flex-col hover:text-gray-300 transition-colors"
-              >
-                <span className="font-medium" style={{fontSize: '19px'}}>Napíšte nám</span>
-                <span className="text-sm font-goldman text-gray-300">info@lerent.sk</span>
-              </a>
-            </div>
+            {/* Kontakt Link */}
+            <button
+              onClick={() => handleNavClick('#contact')}
+              className={`font-medium transition-colors duration-200 relative pb-1 ${
+                isActive('#contact')
+                  ? 'text-white'
+                  : 'text-white hover:text-gray-300'
+              }`}
+              style={{
+                fontSize: '19px',
+                borderBottom: isActive('#contact') ? '2px solid #02cdff' : '2px solid transparent'
+              }}
+            >
+              Kontakt
+            </button>
 
             {/* Phone Button */}
             <a

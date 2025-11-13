@@ -10,6 +10,7 @@ import Carousel from '../components/Carousel';
 import CustomDatePicker from '../components/CustomDatePicker';
 import DatePicker from '../components/DatePicker';
 import { carsAPI, locationsAPI, bannersAPI } from '../services/api';
+import config from '../config/config';
 import HeroImg from '../main page final1.jpg';
 import VasenImg from '../vasen.webp';
 import CarClassImg from '../testfilter2.png';
@@ -29,8 +30,6 @@ import KombiIconImg from '../catg img/combi.png';
 import ElektroIconImg from '../catg img/elektricke.png';
 import UzitkovePng from '../catg img/uzitkove.png';
 import ViacmiestneIconImg from '../catg img/viacmiestne.png';
-import AudiLogo from '../audi-logo.png';
-import MaseratiLogo from '../maserati-black-vector-logo.png';
 import SliderImg1 from '../vasen.webp';
 import SliderImg2 from '../hero_car_orange.jpg';
 import SliderImg3 from '../autouver.jpg';
@@ -66,10 +65,12 @@ const HomePage = () => {
   const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
   const [banners, setBanners] = useState([]);
   const [loadingBanners, setLoadingBanners] = useState(true);
+  const [brands, setBrands] = useState([]);
+  const [loadingBrands, setLoadingBrands] = useState(true);
 
   // Slider images - fallback to static images if API fails
   const sliderImages = [AudiS6Img, MaseratiImg, BMW840iImg];
-  
+
   // Car classes for filtering
   const carClasses = [
     { name: 'Sedan', value: 'sedan', icon: SedanIconImg },
@@ -80,13 +81,6 @@ const HomePage = () => {
     { name: 'Viacmiestne', value: 'viacmiestne', icon: ViacmiestneIconImg },
     { name: 'Elektro', value: 'elektro', icon: ElektroIconImg },
     { name: 'Úžitkové', value: 'uzitkove', icon: UzitkovePng }
-  ];
-
-  // Brand filters
-  const brandFilters = [
-    { name: 'BMW', value: 'bmw' },
-    { name: 'Audi', value: 'audi' },
-    { name: 'Maserati', value: 'maserati' }
   ];
 
   // Filters
@@ -162,6 +156,35 @@ const HomePage = () => {
     };
 
     fetchBanners();
+  }, []);
+
+  // Fetch brands from API
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        setLoadingBrands(true);
+        const response = await fetch(`${config.API_BASE_URL}/api/public/users/${config.ADMIN_EMAIL}/brands`);
+        const data = await response.json();
+        if (data.success && data.data) {
+          // Transform API data to match the format needed by the component
+          const transformedBrands = data.data.map(brand => ({
+            name: brand.name,
+            value: brand.name.toLowerCase().replace(/\s+/g, '-'),
+            logo: brand.logo
+          }));
+          setBrands(transformedBrands);
+          console.log('🚗 Brands loaded:', transformedBrands);
+        }
+      } catch (error) {
+        console.error('Error loading brands:', error);
+        // Fallback to empty array if fetch fails
+        setBrands([]);
+      } finally {
+        setLoadingBrands(false);
+      }
+    };
+
+    fetchBrands();
   }, []);
 
   // Close dropdown when clicking outside
@@ -627,7 +650,7 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen text-white" style={{backgroundColor: '#000000'}}>
-      <style jsx>{`
+      <style>{`
         @keyframes slideDown {
           from {
             opacity: 0;
@@ -1040,7 +1063,7 @@ const HomePage = () => {
       </section>
 
       {/* Car Categories Section */}
-      <section className="py-8 max-[480px]:pt-[15px]" style={{backgroundColor: '#000000', paddingTop: '50px', paddingBottom: '100px'}}>
+      <section id="cars" className="py-8 max-[480px]:pt-[15px]" style={{backgroundColor: '#000000', paddingTop: '50px', paddingBottom: '100px'}}>
         <div className="max-w-7xl mx-auto px-4">
 
           {/* Car Class Icons - 8 categories in 2 rows */}
@@ -1128,42 +1151,49 @@ const HomePage = () => {
           <FadeInUp delay={0.2}>
             <div className="flex flex-col lg:flex-row items-center justify-between mb-8 gap-4">
             {/* Brand Filter - Desktop View */}
-            <div className="hidden sm:flex flex-wrap justify-center lg:justify-start gap-3 sm:gap-4 lg:gap-6 p-4 rounded-lg" style={{backgroundColor: 'rgb(35, 35, 35)'}}>
-              {brandFilters.map((brand) => (
-                <button
-                  key={brand.value}
-                  onClick={() => {
-                    // Single selection - clicking same brand deselects it
-                    setSelectedBrand(selectedBrand === brand.value ? null : brand.value);
-                  }}
-                  className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 transform hover:scale-105 ${
-                    selectedBrand === brand.value
-                      ? 'border-2 border-[rgb(250,146,8)] scale-105'
-                      : 'border-2 border-transparent hover:border-[rgb(250,146,8)]'
-                  }`}
-                  style={{backgroundColor: selectedBrand === brand.value ? 'rgba(250,146,8,0.1)' : 'transparent'}}
-                >
-                  <img
-                    src={brand.value === 'bmw'
-                      ? 'https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg'
-                      : brand.value === 'audi'
-                      ? AudiLogo
-                      : MaseratiLogo
-                    }
-                    alt={brand.name}
-                    className="w-10 h-10 object-contain"
-                    onError={(e) => {
-                      // Fallback: hide image and show text only
-                      e.target.style.display = 'none';
+            <div className="hidden sm:flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3 lg:gap-4 p-4 rounded-lg" style={{backgroundColor: 'rgb(35, 35, 35)'}}>
+              {loadingBrands ? (
+                <div className="text-gray-400 text-sm">Loading brands...</div>
+              ) : brands.length === 0 ? (
+                <div className="text-gray-400 text-sm">No brands available</div>
+              ) : (
+                brands.map((brand) => (
+                  <button
+                    key={brand.value}
+                    onClick={() => {
+                      // Single selection - clicking same brand deselects it
+                      setSelectedBrand(selectedBrand === brand.value ? null : brand.value);
                     }}
-                  />
-                  <span className={`text-sm font-goldman font-medium ${
-                    selectedBrand === brand.value ? 'text-[rgb(250,146,8)]' : 'text-gray-300'
-                  }`}>
-                    {brand.name}
-                  </span>
-                </button>
-              ))}
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 transform hover:scale-105 ${
+                      selectedBrand === brand.value
+                        ? 'border-2 border-[rgb(250,146,8)] scale-105'
+                        : 'border-2 border-transparent hover:border-[rgb(250,146,8)]'
+                    }`}
+                    style={{backgroundColor: selectedBrand === brand.value ? 'rgba(250,146,8,0.1)' : 'transparent'}}
+                  >
+                    {brand.logo ? (
+                      <img
+                        src={brand.logo}
+                        alt={brand.name}
+                        className="w-10 h-10 object-contain"
+                        onError={(e) => {
+                          // Fallback: hide image and show text only
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-10 h-10 bg-gray-700 rounded flex items-center justify-center text-gray-400 text-xs">
+                        {brand.name.charAt(0)}
+                      </div>
+                    )}
+                    <span className={`text-sm font-goldman font-medium ${
+                      selectedBrand === brand.value ? 'text-[rgb(250,146,8)]' : 'text-gray-300'
+                    }`}>
+                      {brand.name}
+                    </span>
+                  </button>
+                ))
+              )}
             </div>
 
             {/* Brand Filter & Sort - Mobile Row */}
@@ -1174,16 +1204,17 @@ const HomePage = () => {
                   onClick={() => setIsBrandDropdownOpen(!isBrandDropdownOpen)}
                   className="w-full flex items-center justify-between p-4 rounded-lg text-white border border-gray-600"
                   style={{backgroundColor: 'rgb(35, 35, 35)'}}
+                  disabled={loadingBrands}
                 >
                   <span className="font-goldman font-medium">
-                    Značka: {brandFilters.find(b => b.value === selectedBrand)?.name || 'Všetky'}
+                    {loadingBrands ? 'Loading...' : `Značka: ${brands.find(b => b.value === selectedBrand)?.name || 'Všetky'}`}
                   </span>
                   <ChevronDownIcon className={`w-5 h-5 transition-transform ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                {isBrandDropdownOpen && (
+                {isBrandDropdownOpen && !loadingBrands && (
                   <div className="absolute z-50 w-full mt-2 rounded-lg border border-gray-600 overflow-hidden" style={{backgroundColor: 'rgb(35, 35, 35)'}}>
-                    {brandFilters.map((brand) => (
+                    {brands.map((brand) => (
                       <button
                         key={brand.value}
                         onClick={() => {
@@ -1194,16 +1225,17 @@ const HomePage = () => {
                           selectedBrand === brand.value ? 'bg-[rgba(250,146,8,0.1)]' : ''
                         }`}
                       >
-                        <img
-                          src={brand.value === 'bmw'
-                            ? 'https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg'
-                            : brand.value === 'audi'
-                            ? AudiLogo
-                            : MaseratiLogo
-                          }
-                          alt={brand.name}
-                          className="w-10 h-10 object-contain"
-                        />
+                        {brand.logo ? (
+                          <img
+                            src={brand.logo}
+                            alt={brand.name}
+                            className="w-10 h-10 object-contain"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gray-700 rounded flex items-center justify-center text-gray-400 text-xs">
+                            {brand.name.charAt(0)}
+                          </div>
+                        )}
                         <span className={`font-goldman font-medium ${
                           selectedBrand === brand.value ? 'text-[rgb(250,146,8)]' : 'text-gray-300'
                         }`}>

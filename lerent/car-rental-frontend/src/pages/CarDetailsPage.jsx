@@ -600,20 +600,24 @@ const CarDetailsPage = () => {
 
   const calculateLatePickupFee = () => {
     if (!bookingData.pickupTime) return 0;
-    const [hours] = bookingData.pickupTime.split(':');
+    const [hours, minutes] = bookingData.pickupTime.split(':');
     const pickupHour = parseInt(hours);
+    const pickupMinute = parseInt(minutes);
+    const timeInMinutes = pickupHour * 60 + pickupMinute;
 
-    // Fee applies for pickup after 17:00 (5 PM)
-    return pickupHour > 17 ? 30 : 0;
+    // Fee applies for pickup from 17:30 (5:30 PM) onwards
+    return timeInMinutes >= 17 * 60 + 30 ? 30 : 0;
   };
 
   const calculateLateDropoffFee = () => {
     if (!bookingData.returnTime) return 0;
-    const [hours] = bookingData.returnTime.split(':');
+    const [hours, minutes] = bookingData.returnTime.split(':');
     const returnHour = parseInt(hours);
+    const returnMinute = parseInt(minutes);
+    const timeInMinutes = returnHour * 60 + returnMinute;
 
-    // Fee applies for dropoff after 17:00 (5 PM)
-    return returnHour > 17 ? 30 : 0;
+    // Fee applies for dropoff from 17:30 (5:30 PM) onwards
+    return timeInMinutes >= 17 * 60 + 30 ? 30 : 0;
   };
 
   const getKmPackagePrice = () => {
@@ -746,12 +750,11 @@ const CarDetailsPage = () => {
           <div className="absolute bottom-[10%] right-16 z-10">
             <button
               onClick={scrollToBooking}
-              className="hover:opacity-90 px-8 py-3 font-goldman font-bold text-lg transition-colors"
+              className="hover:opacity-90 px-8 py-3 text-base transition-colors duration-200 border border-gray-600 rounded-lg"
               style={{
-                clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
-                borderRadius: '0px',
                 backgroundColor: '#fa9208',
-                color: '#191919'
+                color: '#191919',
+                fontWeight: 700
               }}
             >
               Rezervovať
@@ -798,12 +801,11 @@ const CarDetailsPage = () => {
               {/* Rezervovat Button */}
               <button
                 onClick={scrollToBooking}
-                className="hover:opacity-90 px-6 py-3 font-goldman font-bold text-base transition-colors"
+                className="hover:opacity-90 px-8 py-3 text-base transition-colors duration-200 border border-gray-600 rounded-lg"
                 style={{
-                  clipPath: 'polygon(0px 0px, 89% 0px, 100% 30%, 100% 100%, 10% 100%, 0px 70%)',
-                  borderRadius: '0px',
                   backgroundColor: '#fa9208',
-                  color: '#191919'
+                  color: '#191919',
+                  fontWeight: 700
                 }}
               >
                 Rezervovať
@@ -1068,13 +1070,13 @@ const CarDetailsPage = () => {
                   <>
                     {calculateLatePickupFee() > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-gray-300">Prevzatie po 17:00 ({bookingData.pickupTime}):</span>
+                        <span className="text-gray-300">Prevzatie od 17:30 ({bookingData.pickupTime}):</span>
                         <span className="font-semibold text-white">{calculateLatePickupFee().toFixed(2)}€</span>
                       </div>
                     )}
                     {calculateLateDropoffFee() > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-gray-300">Vrátenie po 17:00 ({bookingData.returnTime}):</span>
+                        <span className="text-gray-300">Vrátenie od 17:30 ({bookingData.returnTime}):</span>
                         <span className="font-semibold text-white">{calculateLateDropoffFee().toFixed(2)}€</span>
                       </div>
                     )}
@@ -1233,13 +1235,13 @@ const CarDetailsPage = () => {
                     <>
                       {calculateLatePickupFee() > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-gray-300">Prevzatie po 17:00 ({bookingData.pickupTime}):</span>
+                          <span className="text-gray-300">Prevzatie od 17:30 ({bookingData.pickupTime}):</span>
                           <span className="font-goldman font-semibold text-white">{calculateLatePickupFee().toFixed(2)}€</span>
                         </div>
                       )}
                       {calculateLateDropoffFee() > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-gray-300">Vrátenie po 17:00 ({bookingData.returnTime}):</span>
+                          <span className="text-gray-300">Vrátenie od 17:30 ({bookingData.returnTime}):</span>
                           <span className="font-goldman font-semibold text-white">{calculateLateDropoffFee().toFixed(2)}€</span>
                         </div>
                       )}
