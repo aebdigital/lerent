@@ -541,7 +541,12 @@ const BookingPage = () => {
         customerEmail: formData.email,
         phone: formData.phone,
         dateOfBirth: formData.dateOfBirth,
-        address: `${formData.address.street}, ${formData.address.postalCode} ${formData.address.city}`,
+        address: {
+          street: formData.address.street,
+          city: formData.address.city,
+          postalCode: formData.address.postalCode,
+          country: formData.address.country
+        },
         licenseNumber: formData.licenseNumber || formData.driverLicenseNumber,
         ...(formData.licenseExpiry && { licenseExpiry: formData.licenseExpiry }),
 
