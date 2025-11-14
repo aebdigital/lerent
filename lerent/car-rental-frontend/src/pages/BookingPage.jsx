@@ -1509,10 +1509,10 @@ const BookingPage = () => {
                         <div>
                           <input
                             type="text"
-                            name="address.city"
-                            value={formData.address.city}
+                            name="address.postalCode"
+                            value={formData.address.postalCode}
                             onChange={handleInputChange}
-                            placeholder="Mesto*"
+                            placeholder="PSČ*"
                             className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                             required
                             disabled={!!currentUser}
@@ -1521,10 +1521,10 @@ const BookingPage = () => {
                         <div>
                           <input
                             type="text"
-                            name="address.postalCode"
-                            value={formData.address.postalCode}
+                            name="address.city"
+                            value={formData.address.city}
                             onChange={handleInputChange}
-                            placeholder="Smerovacíe číslo*"
+                            placeholder="Mesto*"
                             className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                             required
                             disabled={!!currentUser}
