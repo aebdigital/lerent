@@ -16,7 +16,6 @@ import BlogPostPage from './pages/BlogPostPage';
 import PoisteniePage from './pages/PoisteniePage';
 import AutouveryPage from './pages/AutouveryPage';
 import SprostredkovaniePage from './pages/SprostredkovaniePage';
-import ONasPage from './pages/ONasPage';
 import SluzbyPage from './pages/SluzbyPage';
 import FAQPage from './pages/FAQPage';
 import PaymentSuccess from './pages/PaymentSuccess';
@@ -32,7 +31,6 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
-        <Route path="/o-nas" element={<PageTransition><ONasPage /></PageTransition>} />
         <Route path="/sluzby" element={<PageTransition><SluzbyPage /></PageTransition>} />
         <Route path="/faq" element={<PageTransition><FAQPage /></PageTransition>} />
         <Route path="/car/:id" element={<PageTransition><CarDetailsPage /></PageTransition>} />

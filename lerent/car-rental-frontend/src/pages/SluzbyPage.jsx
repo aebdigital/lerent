@@ -220,7 +220,7 @@ const PrenajomPage = () => {
                 DLHODOBÝ PRENÁJOM
               </h2>
               <h3 className="text-xl text-[rgb(250,146,8)] mb-4">
-                (Inak nazývaný aj ako operatívny leasing) je forma využívania automobilu na obdobie dlhšie ako dva mesiace. Ide o alternatívu k nákupu vozidla alebo klasickému finančnému leasingu. Tento typ prenájmu má nasledovné výhody:
+                (alebo operatívny leasing) je forma využívania automobilu na obdobie dlhšie ako niekoľko mesiacov. Ide o alternatívu k nákupu vozidla alebo klasickému finančnému leasingu. Tento typ prenájmu má nasledovné výhody:
               </h3>
               <div className="text-gray-300 text-lg leading-relaxed space-y-6">
                 <div>

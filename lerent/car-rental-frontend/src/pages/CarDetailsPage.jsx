@@ -647,19 +647,8 @@ const CarDetailsPage = () => {
   };
 
   const scrollToBooking = () => {
-    // Check if we're on desktop or mobile and scroll to appropriate booking section
-    const isDesktop = window.innerWidth >= 1024; // lg breakpoint
-    const bookingElement = isDesktop
-      ? document.getElementById('booking-section-desktop')
-      : document.getElementById('booking-section');
-
-    if (bookingElement) {
-      const offsetTop = bookingElement.getBoundingClientRect().top + window.pageYOffset - 100;
-      window.scrollTo({
-        top: offsetTop,
-        behavior: 'smooth'
-      });
-    }
+    // Navigate directly to booking page with the car ID
+    navigate(`/booking?car=${id}`);
   };
 
   const handleBookNow = () => {

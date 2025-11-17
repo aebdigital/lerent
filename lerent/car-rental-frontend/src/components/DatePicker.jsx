@@ -10,7 +10,8 @@ const DatePicker = ({
   placeholder = "Vyberte dátum",
   otherSelectedDate = null, // The other date in the range (pickup or return)
   isReturnPicker = false, // Flag to indicate if this is the return date picker
-  onOtherDateReset = null // Callback to reset the other date picker
+  onOtherDateReset = null, // Callback to reset the other date picker
+  showYearMonthSelectors = false // Flag to show year/month dropdowns for easier navigation
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -139,6 +140,34 @@ const DatePicker = ({
     });
   };
 
+  const handleYearChange = (year) => {
+    setCurrentMonth(prev => {
+      const newMonth = new Date(prev);
+      newMonth.setFullYear(parseInt(year));
+      return newMonth;
+    });
+  };
+
+  const handleMonthChange = (month) => {
+    setCurrentMonth(prev => {
+      const newMonth = new Date(prev);
+      newMonth.setMonth(parseInt(month));
+      return newMonth;
+    });
+  };
+
+  // Generate year options (100 years range centered on current year or based on min/max dates)
+  const getYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const minYear = minDate ? minDate.getFullYear() : currentYear - 100;
+    const maxYear = maxDate ? maxDate.getFullYear() : currentYear + 10;
+    const years = [];
+    for (let year = maxYear; year >= minYear; year--) {
+      years.push(year);
+    }
+    return years;
+  };
+
   const handleDateClick = (date) => {
     if (isDateDisabled(date)) {
       return;
@@ -220,23 +249,52 @@ const DatePicker = ({
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
-            <button
-              onClick={() => navigateMonth(-1)}
-              className="p-1 hover:bg-gray-700 rounded"
-            >
-              <ChevronLeftIcon className="h-5 w-5 text-gray-300" />
-            </button>
-            
-            <h3 className="text-lg font-goldman font-semibold text-white">
-              {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-            </h3>
-            
-            <button
-              onClick={() => navigateMonth(1)}
-              className="p-1 hover:bg-gray-700 rounded"
-            >
-              <ChevronRightIcon className="h-5 w-5 text-gray-300" />
-            </button>
+            {showYearMonthSelectors ? (
+              // Year and Month Dropdowns
+              <div className="flex items-center justify-center gap-2 w-full">
+                <select
+                  value={currentMonth.getMonth()}
+                  onChange={(e) => handleMonthChange(e.target.value)}
+                  className="px-2 py-1 rounded text-sm text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)]"
+                  style={{backgroundColor: '#2a2a2a'}}
+                >
+                  {monthNames.map((month, index) => (
+                    <option key={index} value={index}>{month}</option>
+                  ))}
+                </select>
+                <select
+                  value={currentMonth.getFullYear()}
+                  onChange={(e) => handleYearChange(e.target.value)}
+                  className="px-2 py-1 rounded text-sm text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)]"
+                  style={{backgroundColor: '#2a2a2a'}}
+                >
+                  {getYearOptions().map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              // Navigation Arrows with Month/Year Display
+              <>
+                <button
+                  onClick={() => navigateMonth(-1)}
+                  className="p-1 hover:bg-gray-700 rounded"
+                >
+                  <ChevronLeftIcon className="h-5 w-5 text-gray-300" />
+                </button>
+
+                <h3 className="text-lg font-goldman font-semibold text-white">
+                  {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+                </h3>
+
+                <button
+                  onClick={() => navigateMonth(1)}
+                  className="p-1 hover:bg-gray-700 rounded"
+                >
+                  <ChevronRightIcon className="h-5 w-5 text-gray-300" />
+                </button>
+              </>
+            )}
           </div>
 
           {/* Days of Week Header */}

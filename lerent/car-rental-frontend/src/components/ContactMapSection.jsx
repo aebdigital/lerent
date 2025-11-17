@@ -47,7 +47,7 @@ const ContactMapSection = () => {
               <svg className="w-6 h-6" fill="#fa9208" viewBox="0 0 24 24">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
               </svg>
-              <span className="font-medium">Levická 3, areál STS, Nitra</span>
+              <span className="font-medium">Bratislavská 9, Nitra</span>
             </div>
             <div className="flex items-center justify-center space-x-3 text-white p-4 rounded-lg" style={{background: 'linear-gradient(143deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.00) 100%)'}}>
               <svg className="w-6 h-6" fill="#fa9208" viewBox="0 0 24 24">
@@ -70,7 +70,7 @@ const ContactMapSection = () => {
             allowFullScreen=""
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            title="LeRent - Levická 3, areál STS, Nitra"
+            title="LeRent - Bratislavská 9, Nitra"
           ></iframe>
           </div>
         </FadeInUp>

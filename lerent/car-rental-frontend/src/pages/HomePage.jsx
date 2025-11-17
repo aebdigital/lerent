@@ -171,9 +171,12 @@ const HomePage = () => {
             name: brand.name,
             value: brand.name.toLowerCase().replace(/\s+/g, '-'),
             logo: brand.logo
-          }));
+          }))
+          // Sort brands alphabetically by name (A to Z)
+          .sort((a, b) => a.name.localeCompare(b.name));
+
           setBrands(transformedBrands);
-          console.log('🚗 Brands loaded:', transformedBrands);
+          console.log('🚗 Brands loaded (sorted A-Z):', transformedBrands);
         }
       } catch (error) {
         console.error('Error loading brands:', error);
@@ -747,9 +750,9 @@ const HomePage = () => {
           <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
-        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex flex-col justify-end pb-8 gap-8 max-[480px]:gap-6">
+        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex flex-col justify-end pb-8 gap-8 max-[480px]:gap-4 max-[480px]:pb-4">
           {/* Top - Heading */}
-          <div className="text-white ml-2 sm:ml-8 max-[480px]:ml-2 max-[480px]:mr-2 max-[480px]:relative max-[480px]:w-[90%]" style={{width: '40%', maxWidth: '40%'}}>
+          <div className="text-white ml-2 sm:ml-8 max-[480px]:ml-2 max-[480px]:mr-2 max-[480px]:relative max-[480px]:w-[90%] max-[480px]:mb-0" style={{width: '40%', maxWidth: '40%'}}>
             <h1 className="text-3xl md:text-4xl lg:text-6xl font-goldman font-medium leading-tight max-[480px]:text-3xl max-[480px]:leading-tight">
               <span className="hidden max-[480px]:inline">Autopožičovňa&nbsp;s<br />individuálnym prístupom</span>
               <span className="max-[480px]:hidden">Autopožičovňa s individuálnym prístupom</span>
@@ -766,8 +769,7 @@ const HomePage = () => {
                 background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.18)',
-                boxShadow: '0 8px 32px 0 rgba(250, 146, 8, 0.37)'
+                border: '1px solid rgba(255, 255, 255, 0.18)'
               }}
             >
               {/* Title on Left */}
@@ -855,7 +857,7 @@ const HomePage = () => {
           </div>
 
           {/* Mobile Form - vertical layout (only under 480px) */}
-          <div className="hidden max-[480px]:flex max-[480px]:flex-col gap-4 mx-2 mb-4">
+          <div className="hidden max-[480px]:flex max-[480px]:flex-col gap-4 mx-2">
             <div
               className="p-4 rounded-2xl flex flex-col gap-4"
               style={{
@@ -1533,12 +1535,14 @@ const HomePage = () => {
                 <div className="text-white font-goldman font-bold text-sm sm:text-base">Prémiových áut v našej flotile</div>
               </div>
               <div className="text-center max-[480px]:text-left">
-                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">2.0M+</div>
+                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">
+                  550<span className="text-2xl sm:text-3xl">tisíc+</span>
+                </div>
                 <div className="text-white font-goldman font-bold text-sm sm:text-base">Kilometrov najazdených šťastnými klientmi</div>
               </div>
               <div className="text-center max-[480px]:text-left">
-                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">580</div>
-                <div className="text-white font-goldman font-bold text-sm sm:text-base">Spokojných klientov</div>
+                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">120+</div>
+                <div className="text-white font-goldman font-bold text-sm sm:text-base">Zákazníkov</div>
               </div>
             </div>
           </div>
@@ -1565,12 +1569,14 @@ const HomePage = () => {
                   <div className="text-white font-goldman font-bold">Prémiových áut v našej flotile</div>
                 </div>
                 <div className="text-left">
-                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">2.0M+</div>
+                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">
+                    550<span className="text-3xl">tisíc+</span>
+                  </div>
                   <div className="text-white font-goldman font-bold">Kilometrov najazdených šťastnými klientmi</div>
                 </div>
                 <div className="text-left">
-                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">580</div>
-                  <div className="text-white font-goldman font-bold">Spokojných klientov</div>
+                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">120+</div>
+                  <div className="text-white font-goldman font-bold">Zákazníkov</div>
                 </div>
                 </div>
               </FadeInUp>
@@ -1579,6 +1585,24 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* O nás Section */}
+      <section id="o-nas" className="py-24" style={{backgroundColor: '#000000'}}>
+        <div className="max-w-7xl mx-auto px-4">
+          <FadeInUp>
+            <h2 className="text-4xl md:text-5xl font-medium text-white text-center mb-8 font-goldman">
+              O NÁS
+            </h2>
+          </FadeInUp>
+
+          <FadeInUp delay={0.2}>
+            <div className="max-w-4xl mx-auto">
+              <p className="text-lg text-gray-300 leading-relaxed text-center">
+                Sme autopožičovňa zameraná na individuálne potreby klienta. K zákazníkom pristupujeme s cieľom vyhovieť každej ich požiadavke, aby bol zážitok z prenájmu výnimočný. Pre našich klientov zabezpečujeme profesionálne služby, či už ide o krátkodobý alebo dlhodobý prenájom automobilov, pristavenie vozidla na požadované miesto, preberanie a odovzdanie auta mimo otváracích hodín alebo doplnkové služby, ktoré si naši klienti vedia nastaviť podľa svojich požiadaviek. Kladieme dôraz na individualitu, pretože veríme, že naši klienti si zaslúžia len výnimočné služby šité na mieru.
+              </p>
+            </div>
+          </FadeInUp>
+        </div>
+      </section>
 
       <ReviewsSection />
 

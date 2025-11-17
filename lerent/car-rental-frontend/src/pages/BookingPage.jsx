@@ -34,6 +34,7 @@ const BookingPage = () => {
   const [qrCodeData, setQrCodeData] = useState(null);
   const [qrLoading, setQrLoading] = useState(false);
   const [backendPaymentDetails, setBackendPaymentDetails] = useState(null);
+  const [generatedVariableSymbol, setGeneratedVariableSymbol] = useState(null);
   
   // Generate time slots in 30-minute intervals
   const generateTimeSlots = () => {
@@ -669,6 +670,25 @@ const BookingPage = () => {
       console.log('Reservation created:', reservation.reservationNumber);
       console.log('Full reservation object:', reservation);
 
+      // Store the variable symbol from backend response
+      if (reservation.reservationNumber) {
+        setGeneratedVariableSymbol(reservation.reservationNumber);
+        console.log('Variable symbol from backend:', reservation.reservationNumber);
+      }
+
+      // Store QR codes and payment details from backend if available
+      if (reservation.qrCodes) {
+        console.log('QR codes from backend:', reservation.qrCodes);
+        setBackendPaymentDetails({
+          variableSymbol: reservation.qrCodes.variableSymbol || reservation.reservationNumber,
+          bankAccount: reservation.qrCodes.bankAccount,
+          amount: reservation.qrCodes.amount,
+          constantSymbol: reservation.qrCodes.constantSymbol,
+          payBySquareRental: reservation.qrCodes.payBySquareRental,
+          payBySquareDeposit: reservation.qrCodes.payBySquareDeposit
+        });
+      }
+
       // Step 2: Handle payment based on selected method
       if (formData.paymentMethod === 'stripe') {
         // Stripe payment flow
@@ -838,6 +858,53 @@ const BookingPage = () => {
     return timeInMinutes >= 17 * 60 + 30 ? 30 : 0;
   };
 
+  // Location surcharge mapping (shared across functions)
+  const getLocationFees = () => ({
+    'bratislava': { fee: 50, displayName: 'Bratislava' },
+    'trnava': { fee: 25, displayName: 'Trnava' },
+    'trenčín': { fee: 50, displayName: 'Trenčín' },
+    'trencin': { fee: 50, displayName: 'Trenčín' }, // Alternative spelling
+    'žilina': { fee: 85, displayName: 'Žilina' },
+    'zilina': { fee: 85, displayName: 'Žilina' }, // Alternative spelling
+    'banská bystrica': { fee: 60, displayName: 'Banská Bystrica' },
+    'banska bystrica': { fee: 60, displayName: 'Banská Bystrica' }, // Alternative spelling
+    'liptovský mikuláš': { fee: 100, displayName: 'Liptovský Mikuláš' },
+    'liptovsky mikulas': { fee: 100, displayName: 'Liptovský Mikuláš' }, // Alternative spelling
+    'komárno': { fee: 35, displayName: 'Komárno' },
+    'komarno': { fee: 35, displayName: 'Komárno' }, // Alternative spelling
+    'prievidza': { fee: 45, displayName: 'Prievidza' }
+  });
+
+  const getLocationFeeDetails = (location) => {
+    const locationStr = (location?.name || location?.city || '').toLowerCase();
+    const locationFees = getLocationFees();
+
+    for (const [city, details] of Object.entries(locationFees)) {
+      if (locationStr.includes(city)) {
+        return details;
+      }
+    }
+    return null;
+  };
+
+  const calculateBratislavaLocationFee = () => {
+    let totalFee = 0;
+
+    // Check pickup location
+    const pickupDetails = getLocationFeeDetails(formData.pickupLocation);
+    if (pickupDetails) {
+      totalFee += pickupDetails.fee;
+    }
+
+    // Check dropoff location
+    const dropoffDetails = getLocationFeeDetails(formData.returnLocation);
+    if (dropoffDetails) {
+      totalFee += dropoffDetails.fee;
+    }
+
+    return totalFee;
+  };
+
   const calculateTotal = () => {
     if (!selectedCar || !formData.pickupDate || !formData.returnDate) return 0;
     const days = calculateDays();
@@ -847,7 +914,8 @@ const BookingPage = () => {
     const additionalServicesCost = calculateAdditionalServicesCost();
     const latePickupFee = calculateLatePickupFee();
     const lateDropoffFee = calculateLateDropoffFee();
-    return rentalCost + insuranceCost + additionalServicesCost + latePickupFee + lateDropoffFee;
+    const bratislavaLocationFee = calculateBratislavaLocationFee();
+    return rentalCost + insuranceCost + additionalServicesCost + latePickupFee + lateDropoffFee + bratislavaLocationFee;
   };
 
   const calculateDays = () => {
@@ -914,7 +982,8 @@ const BookingPage = () => {
         carModel: selectedCar.model,
         pickupDate: formData.pickupDate,
         dropoffDate: formData.returnDate,
-        totalAmount: parseFloat(calculateTotal())
+        totalAmount: parseFloat(calculateTotal()),
+        variableSymbol: generatedVariableSymbol || bookingResult?.reservationNumber
       });
       console.log('Payment info generated:', paymentInfo);
     }
@@ -952,6 +1021,13 @@ const BookingPage = () => {
                   <span className="font-semibold text-[rgb(250,146,8)]">{formData.email}</span>
                 </p>
               </div>
+
+              {/* Invoice Notification */}
+              <div className="mt-4 p-4 border border-gray-600 rounded-lg" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
+                <p className="text-gray-300 text-sm text-center">
+                  Faktúra Vám bude zaslaná na kontaktný email.
+                </p>
+              </div>
             </div>
 
             {/* Bank Transfer Payment Details */}
@@ -975,7 +1051,7 @@ const BookingPage = () => {
                     <div>
                       <p className="text-gray-400 text-sm mb-1">Variabilný symbol:</p>
                       <p className="text-white font-mono text-lg">
-                        {backendPaymentDetails?.variableSymbol || paymentInfo.displayDetails.variableSymbol}
+                        {paymentInfo.displayDetails.variableSymbol}
                       </p>
                     </div>
 
@@ -1438,14 +1514,12 @@ const BookingPage = () => {
                         <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-300 mb-2">
                           Dátum narodenia*
                         </label>
-                        <input
-                          id="dateOfBirth"
-                          type="date"
-                          name="dateOfBirth"
-                          value={formData.dateOfBirth}
-                          onChange={handleInputChange}
-                          className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555', colorScheme: 'dark'}}
-                          required
+                        <DatePicker
+                          selectedDate={formData.dateOfBirth}
+                          onDateSelect={(date) => handleDateSelect('dateOfBirth', date)}
+                          maxDate={new Date()}
+                          showYearMonthSelectors={true}
+                          className="w-full"
                           disabled={!!currentUser}
                         />
                       </div>
@@ -1602,7 +1676,8 @@ const BookingPage = () => {
                     {/* Document Upload Section */}
                     <div className="mt-8">
                       <h3 className="text-lg font-semibold text-white mb-4 text-left">Identifikačné údaje</h3>
-                      <div className="space-y-3">
+                      {/* TEMPORARILY HIDDEN - File upload fields (will be re-enabled later) */}
+                      <div className="space-y-3 hidden">
                         <label className="border border-gray-700 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors border border-gray-800">
                           <div className="text-left">
                             <p className="text-gray-300 text-sm">Občiansky preukaz - predná strana</p>
@@ -1611,8 +1686,8 @@ const BookingPage = () => {
                             </p>
                           </div>
                           <span className="text-[rgb(250,146,8)] text-sm hover:text-[rgb(230,126,0)]">Choose file</span>
-                          <input 
-                            type="file" 
+                          <input
+                            type="file"
                             name="idCardFront"
                             accept="image/*,.pdf"
                             onChange={handleInputChange}
@@ -1627,8 +1702,8 @@ const BookingPage = () => {
                             </p>
                           </div>
                           <span className="text-[rgb(250,146,8)] text-sm hover:text-[rgb(230,126,0)]">Choose file</span>
-                          <input 
-                            type="file" 
+                          <input
+                            type="file"
                             name="idCardBack"
                             accept="image/*,.pdf"
                             onChange={handleInputChange}
@@ -1643,8 +1718,8 @@ const BookingPage = () => {
                             </p>
                           </div>
                           <span className="text-[rgb(250,146,8)] text-sm hover:text-[rgb(230,126,0)]">Choose file</span>
-                          <input 
-                            type="file" 
+                          <input
+                            type="file"
                             name="driverLicenseFront"
                             accept="image/*,.pdf"
                             onChange={handleInputChange}
@@ -1659,8 +1734,8 @@ const BookingPage = () => {
                             </p>
                           </div>
                           <span className="text-[rgb(250,146,8)] text-sm hover:text-[rgb(230,126,0)]">Choose file</span>
-                          <input 
-                            type="file" 
+                          <input
+                            type="file"
                             name="driverLicenseBack"
                             accept="image/*,.pdf"
                             onChange={handleInputChange}
@@ -2107,6 +2182,43 @@ const BookingPage = () => {
                         </div>
                       </div>
                     )}
+
+                    {/* Location Fee breakdown */}
+                    {calculateBratislavaLocationFee() > 0 && (() => {
+                      const pickupDetails = getLocationFeeDetails(formData.pickupLocation);
+                      const dropoffDetails = getLocationFeeDetails(formData.returnLocation);
+
+                      return (
+                        <div className="space-y-2 pt-2" style={{borderTop: '0.5px solid #444'}}>
+                          <div className="text-sm text-gray-300 font-semibold">Príplatok za lokalitu:</div>
+
+                          {pickupDetails && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-300">
+                                Prevzatie v meste {pickupDetails.displayName}
+                                <span className="text-gray-400 ml-1">({formData.pickupLocation.name})</span>
+                              </span>
+                              <span className="font-medium text-white">{pickupDetails.fee.toFixed(2)}€</span>
+                            </div>
+                          )}
+
+                          {dropoffDetails && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-300">
+                                Vrátenie v meste {dropoffDetails.displayName}
+                                <span className="text-gray-400 ml-1">({formData.returnLocation.name})</span>
+                              </span>
+                              <span className="font-medium text-white">{dropoffDetails.fee.toFixed(2)}€</span>
+                            </div>
+                          )}
+
+                          <div className="flex justify-between text-sm font-semibold pt-1">
+                            <span className="text-gray-300">Celkom príplatok:</span>
+                            <span className="text-white">{calculateBratislavaLocationFee().toFixed(2)}€</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     <div className="pt-3" style={{borderTop: '0.5px solid #d1d5db'}}>
                       <div className="flex justify-between text-lg font-bold">

@@ -4,21 +4,26 @@
  */
 
 /**
- * Generate variable symbol in format: YYYY00XXX
- * Example: 20250001, 20250002, etc.
+ * Generate variable symbol in format: YYYYMMNN
+ * Example: 20251101 for first invoice in November 2025, 20251102 for second, etc.
  */
 export const generateVariableSymbol = () => {
-  const year = new Date().getFullYear();
-  // Get current count from localStorage or start at 1
-  const currentCount = parseInt(localStorage.getItem('payBySquareCounter') || '0');
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const yearMonth = `${year}${month}`;
+
+  // Get current count for this month from localStorage or start at 1
+  const storageKey = `payBySquareCounter_${yearMonth}`;
+  const currentCount = parseInt(localStorage.getItem(storageKey) || '0');
   const nextCount = currentCount + 1;
 
-  // Save next count
-  localStorage.setItem('payBySquareCounter', nextCount.toString());
+  // Save next count for this month
+  localStorage.setItem(storageKey, nextCount.toString());
 
-  // Format: YYYY + 00 + padded number (001, 002, etc.)
-  const paddedNumber = nextCount.toString().padStart(3, '0');
-  return `${year}00${paddedNumber}`;
+  // Format: YYYYMM + padded number (01, 02, etc.)
+  const paddedNumber = nextCount.toString().padStart(2, '0');
+  return `${yearMonth}${paddedNumber}`;
 };
 
 /**
@@ -93,6 +98,7 @@ export const generatePayBySquareData = ({
  * @param {Date|string} reservationData.pickupDate - Pickup date
  * @param {Date|string} reservationData.dropoffDate - Dropoff date
  * @param {number} reservationData.totalAmount - Total amount in EUR
+ * @param {string} reservationData.variableSymbol - Optional: Pre-generated variable symbol
  * @returns {Object} Payment info with QR data and display details
  */
 export const generatePaymentInfo = (reservationData) => {
@@ -101,11 +107,12 @@ export const generatePaymentInfo = (reservationData) => {
     carModel,
     pickupDate,
     dropoffDate,
-    totalAmount
+    totalAmount,
+    variableSymbol: providedVariableSymbol
   } = reservationData;
 
-  // Generate variable symbol
-  const variableSymbol = generateVariableSymbol();
+  // Use provided variable symbol or generate a new one
+  const variableSymbol = providedVariableSymbol || generateVariableSymbol();
 
   // Format dates for payment note
   const formatDateForNote = (date) => {

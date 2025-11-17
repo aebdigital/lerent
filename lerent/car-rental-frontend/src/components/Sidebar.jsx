@@ -90,9 +90,9 @@ const Sidebar = ({ isOpen, onClose }) => {
 
           {/* O nás */}
           <button
-            onClick={() => handleNavClick('/o-nas')}
+            onClick={() => handleNavClick('#o-nas')}
             className={`px-6 py-4 text-left text-lg font-medium transition-colors border-b border-gray-800 ${
-              isActive('/o-nas') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
+              isActive('#o-nas') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
             }`}
           >
             O nás
