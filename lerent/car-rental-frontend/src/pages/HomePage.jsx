@@ -112,19 +112,28 @@ const HomePage = () => {
         banner.images && banner.images.length > 0
           ? banner.images
               .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)) // Sort by sortOrder
-              .map(image => ({
-                imageUrl: image.url,
-                title: image.title || banner.title || 'Prémiová flotila\nvozidiel',
-                subtitle: image.description || banner.subtitle || 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.',
-                alt: image.alt || image.title || banner.title || 'Premium car',
-                carId: image.carId // Store carId for click-through
-              }))
+              .map(image => {
+                // Handle carId as either string or populated object
+                const carIdValue = image.carId
+                  ? (typeof image.carId === 'object' ? image.carId._id : image.carId)
+                  : null;
+
+                return {
+                  imageUrl: image.url,
+                  title: image.title || banner.title || 'Prémiová flotila\nvozidiel',
+                  subtitle: image.description || banner.subtitle || 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.',
+                  alt: image.alt || image.title || banner.title || 'Premium car',
+                  carId: carIdValue, // Store carId (string) for click-through
+                  carData: typeof image.carId === 'object' ? image.carId : null // Store full car object if available
+                };
+              })
           : [{
               imageUrl: sliderImages[0], // fallback image
               title: banner.title || 'Prémiová flotila\nvozidiel',
               subtitle: banner.subtitle || 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.',
               alt: banner.title || 'Premium car',
-              carId: null
+              carId: null,
+              carData: null
             }]
       )
     : sliderImages.map((img, idx) => ({
@@ -132,27 +141,37 @@ const HomePage = () => {
         title: 'Prémiová flotila\nvozidiel',
         subtitle: 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.',
         alt: 'Premium car',
-        carId: null
+        carId: null,
+        carData: null
       }));
 
   // Navigation functions for slider
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % allSlides.length);
+    setCurrentSlide((prev) => {
+      const nextIndex = (prev + 1) % allSlides.length;
+      console.log('Next slide:', prev, '->', nextIndex);
+      return nextIndex;
+    });
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + allSlides.length) % allSlides.length);
+    setCurrentSlide((prev) => {
+      const prevIndex = prev === 0 ? allSlides.length - 1 : prev - 1;
+      console.log('Prev slide:', prev, '->', prevIndex);
+      return prevIndex;
+    });
   };
 
   // Auto-slide effect
   useEffect(() => {
-    const slideCount = allSlides.length;
+    if (allSlides.length <= 1) return;
+
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slideCount);
+      setCurrentSlide((prev) => (prev + 1) % allSlides.length);
     }, 4000); // Change slide every 4 seconds
 
     return () => clearInterval(interval);
-  }, [allSlides]);
+  }, [allSlides.length]);
 
   // Fetch banners from API
   useEffect(() => {
@@ -1036,7 +1055,13 @@ const HomePage = () => {
                       }}
                       onClick={() => {
                         if (slide.carId) {
+                          console.log('🚗 Banner clicked - Navigating to car:', slide.carId);
+                          if (slide.carData) {
+                            console.log('   Car details:', slide.carData.brand, slide.carData.model);
+                          }
                           navigate(`/car/${slide.carId}`);
+                        } else {
+                          console.log('⚠️ Banner clicked but no carId associated');
                         }
                       }}
                     >
