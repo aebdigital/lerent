@@ -109,7 +109,11 @@ const BookingPage = () => {
     driverLicenseBack: null,
 
     // Payment method
-    paymentMethod: 'stripe' // 'stripe' or 'bank_transfer'
+    paymentMethod: 'stripe', // 'stripe' or 'bank_transfer'
+
+    // Step 3: Agreement checkboxes
+    businessTerms: false,
+    dataProcessing: false
   });
 
   const steps = [
@@ -467,10 +471,11 @@ const BookingPage = () => {
   };
 
   const isStep3Valid = () => {
-    return formData.firstName && formData.lastName && formData.email && formData.phone && 
+    return formData.firstName && formData.lastName && formData.email && formData.phone &&
            formData.dateOfBirth && formData.licenseNumber && formData.driverLicenseNumber &&
            formData.address.street && formData.address.city && formData.address.postalCode &&
-           formData.pickupDate && formData.returnDate && formData.pickupLocation.name && formData.returnLocation.name;
+           formData.pickupDate && formData.returnDate && formData.pickupLocation.name && formData.returnLocation.name &&
+           formData.businessTerms && formData.dataProcessing; // Both checkboxes must be checked
   };
 
   const canNavigateToStep = (stepNumber) => {
@@ -1751,10 +1756,13 @@ const BookingPage = () => {
                         <input
                           type="checkbox"
                           id="businessTerms"
+                          name="businessTerms"
+                          checked={formData.businessTerms}
+                          onChange={handleInputChange}
                           className="w-4 h-4 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)] mt-0.5"
                           required
                         />
-                        <label htmlFor="businessTerms" className="text-white text-sm text-left">
+                        <label htmlFor="businessTerms" className="text-white text-sm text-left cursor-pointer">
                           Súhlasím so <Link to="/terms" className="text-[rgb(250,146,8)] underline hover:text-[rgb(230,126,0)]">všeobecnými obchodnými podmienkami</Link> *
                         </label>
                       </div>
@@ -1763,10 +1771,13 @@ const BookingPage = () => {
                           <input
                             type="checkbox"
                             id="dataProcessing"
+                            name="dataProcessing"
+                            checked={formData.dataProcessing}
+                            onChange={handleInputChange}
                             className="w-4 h-4 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)] mt-0.5"
                             required
                           />
-                          <label htmlFor="dataProcessing" className="text-white text-sm text-left">
+                          <label htmlFor="dataProcessing" className="text-white text-sm text-left cursor-pointer">
                             Súhlasím so <Link to="/privacy" className="text-[rgb(250,146,8)] underline hover:text-[rgb(230,126,0)]">spracovaním osobných údajov</Link> *
                           </label>
                         </div>

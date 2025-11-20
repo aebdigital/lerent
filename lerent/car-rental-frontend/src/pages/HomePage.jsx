@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDownIcon, FunnelIcon, ArrowDownIcon, ArrowUpIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, FunnelIcon, ArrowDownIcon, ArrowUpIcon, ClockIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import CarCard from '../components/CarCard';
 import ReviewsSection from '../components/ReviewsSection';
@@ -134,6 +134,15 @@ const HomePage = () => {
         alt: 'Premium car',
         carId: null
       }));
+
+  // Navigation functions for slider
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % allSlides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + allSlides.length) % allSlides.length);
+  };
 
   // Auto-slide effect
   useEffect(() => {
@@ -1052,6 +1061,35 @@ const HomePage = () => {
                       background: 'radial-gradient(circle at top left, rgba(250, 146, 8, 0.15) 0%, transparent 50%)'
                     }}
                   ></div>
+
+                  {/* Navigation Arrows */}
+                  {allSlides.length > 1 && (
+                    <>
+                      {/* Left Arrow */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          prevSlide();
+                        }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group"
+                        aria-label="Previous slide"
+                      >
+                        <ChevronLeftIcon className="w-6 h-6 text-white group-hover:text-[rgb(250,146,8)] transition-colors" />
+                      </button>
+
+                      {/* Right Arrow */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          nextSlide();
+                        }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group"
+                        aria-label="Next slide"
+                      >
+                        <ChevronRightIcon className="w-6 h-6 text-white group-hover:text-[rgb(250,146,8)] transition-colors" />
+                      </button>
+                    </>
+                  )}
 
                   {/* Slider indicators */}
                   <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">

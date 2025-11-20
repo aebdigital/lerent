@@ -95,7 +95,7 @@ const Footer = () => {
         </div>
 
         {/* Social Media Icons - Above divider, center on mobile, right on desktop */}
-        <div className="flex justify-center lg:justify-end -mt-8 mb-8">
+        <div className="flex justify-center lg:justify-end mt-6 lg:-mt-8 mb-8">
           <div className="flex space-x-4 sm:space-x-6">
             <a
               href="https://www.instagram.com/lerent.sk/"
