@@ -118,7 +118,7 @@ const HomePage = () => {
                   ? (typeof image.carId === 'object' ? image.carId._id : image.carId)
                   : null;
 
-                return {
+                const slide = {
                   imageUrl: image.url,
                   title: image.title || banner.title || 'Prémiová flotila\nvozidiel',
                   subtitle: image.description || banner.subtitle || 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.',
@@ -126,6 +126,16 @@ const HomePage = () => {
                   carId: carIdValue, // Store carId (string) for click-through
                   carData: typeof image.carId === 'object' ? image.carId : null // Store full car object if available
                 };
+
+                // Debug log each slide creation
+                console.log('📸 Creating slide:', {
+                  title: slide.title,
+                  hasCarId: !!slide.carId,
+                  carId: slide.carId,
+                  carData: slide.carData ? `${slide.carData.brand} ${slide.carData.model}` : null
+                });
+
+                return slide;
               })
           : [{
               imageUrl: sliderImages[0], // fallback image
@@ -144,6 +154,13 @@ const HomePage = () => {
         carId: null,
         carData: null
       }));
+
+  // Debug: Log final allSlides array
+  console.log('🎬 Final allSlides array:', allSlides.map(s => ({
+    title: s.title,
+    hasCarId: !!s.carId,
+    carId: s.carId
+  })));
 
   // Navigation functions for slider
   const nextSlide = () => {
@@ -180,6 +197,28 @@ const HomePage = () => {
         setLoadingBanners(true);
         const carouselBanners = await bannersAPI.getByPosition('hero-section');
         console.log('🎨 Homepage banners loaded:', carouselBanners);
+
+        // Debug: Log banner images with carId info
+        if (carouselBanners && carouselBanners.length > 0) {
+          console.log('=== BANNER DEBUG START ===');
+          carouselBanners.forEach((banner, idx) => {
+            console.log(`Banner ${idx}:`, banner.title);
+            if (banner.images && banner.images.length > 0) {
+              banner.images.forEach((img, imgIdx) => {
+                console.log(`  Image ${imgIdx}:`, {
+                  url: img.url,
+                  title: img.title,
+                  carId: img.carId,
+                  carIdType: typeof img.carId,
+                  hasCarId: !!img.carId,
+                  carIdValue: img.carId?._id || img.carId
+                });
+              });
+            }
+          });
+          console.log('=== BANNER DEBUG END ===');
+        }
+
         setBanners(carouselBanners);
       } catch (error) {
         console.error('Error loading banners:', error);
@@ -1046,12 +1085,15 @@ const HomePage = () => {
                   {allSlides.map((slide, index) => (
                     <div
                       key={index}
-                      className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${slide.carId ? 'cursor-pointer' : ''}`}
+                      className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${
+                        slide.carId ? 'cursor-pointer' : ''
+                      } ${currentSlide !== index ? 'pointer-events-none' : ''}`}
                       style={{
                         opacity: currentSlide === index ? 1 : 0,
                         backgroundImage: `url(${slide.imageUrl})`,
                         backgroundSize: 'cover',
-                        backgroundPosition: 'center'
+                        backgroundPosition: 'center',
+                        zIndex: currentSlide === index ? 1 : 0
                       }}
                       onClick={() => {
                         if (slide.carId) {
@@ -1066,7 +1108,7 @@ const HomePage = () => {
                       }}
                     >
                       {/* Subtle overlay */}
-                      <div className="absolute inset-0 bg-black/20"></div>
+                      <div className="absolute inset-0 bg-black/20 pointer-events-none"></div>
                     </div>
                   ))}
 
