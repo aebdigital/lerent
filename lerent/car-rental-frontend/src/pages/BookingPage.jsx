@@ -586,28 +586,55 @@ const BookingPage = () => {
         },
 
         // Additional services (optional) - Send ID, name, and calculated price
-        selectedServices: additionalServices
-          .filter(service => formData[service.name])
-          .map(service => {
-            const days = calculateDays();
-            let cost = 0;
+        // This includes both regular services AND insurance from Step 1
+        selectedServices: [
+          // Regular additional services from Step 2
+          ...additionalServices
+            .filter(service => formData[service.name])
+            .map(service => {
+              const days = calculateDays();
+              let cost = 0;
 
-            // Calculate cost based on pricing type
-            if (service.pricing?.type === 'per_day' && service.pricing?.amount) {
-              cost = service.pricing.amount * days;
-            } else if (service.pricing?.type === 'fixed' && service.pricing?.amount) {
-              cost = service.pricing.amount;
-            } else if (service.pricing?.type === 'percentage' && service.pricing?.amount) {
-              const rentalCost = getPricePerDay(days) * days;
-              cost = (rentalCost * service.pricing.amount) / 100;
-            }
+              // Calculate cost based on pricing type
+              if (service.pricing?.type === 'per_day' && service.pricing?.amount) {
+                cost = service.pricing.amount * days;
+              } else if (service.pricing?.type === 'fixed' && service.pricing?.amount) {
+                cost = service.pricing.amount;
+              } else if (service.pricing?.type === 'percentage' && service.pricing?.amount) {
+                const rentalCost = getPricePerDay(days) * days;
+                cost = (rentalCost * service.pricing.amount) / 100;
+              }
 
-            return {
-              id: service._id || service.id,
-              name: service.name,
-              totalPrice: Number(cost)
-            };
-          }),
+              return {
+                id: service._id || service.id,
+                name: service.name,
+                totalPrice: Number(cost)
+              };
+            }),
+          // Insurance from Step 1 (poistenie)
+          ...(Array.isArray(formData.selectedInsurance)
+            ? formData.selectedInsurance.map(insurance => {
+                const days = calculateDays();
+                let cost = 0;
+
+                // Calculate cost based on pricing type
+                if (insurance.pricing?.type === 'per_day' && insurance.pricing?.amount) {
+                  cost = insurance.pricing.amount * days;
+                } else if (insurance.pricing?.type === 'fixed' && insurance.pricing?.amount) {
+                  cost = insurance.pricing.amount;
+                } else if (insurance.pricing?.type === 'percentage' && insurance.pricing?.amount) {
+                  const rentalCost = getPricePerDay(days) * days;
+                  cost = (rentalCost * insurance.pricing.amount) / 100;
+                }
+
+                return {
+                  id: insurance._id || insurance.id,
+                  name: insurance.name,
+                  totalPrice: Number(cost)
+                };
+              })
+            : [])
+        ],
         servicesTotal: calculateAdditionalServicesCost(),
 
         // Insurance (optional) - Send ID, name, and calculated price
