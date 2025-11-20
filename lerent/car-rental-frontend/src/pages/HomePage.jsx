@@ -110,24 +110,29 @@ const HomePage = () => {
   const allSlides = banners.length > 0
     ? banners.flatMap(banner =>
         banner.images && banner.images.length > 0
-          ? banner.images.map(image => ({
-              imageUrl: image.url,
-              title: banner.title,
-              subtitle: banner.subtitle,
-              alt: image.alt || banner.title
-            }))
+          ? banner.images
+              .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)) // Sort by sortOrder
+              .map(image => ({
+                imageUrl: image.url,
+                title: image.title || banner.title || 'Prémiová flotila\nvozidiel',
+                subtitle: image.description || banner.subtitle || 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.',
+                alt: image.alt || image.title || banner.title || 'Premium car',
+                carId: image.carId // Store carId for click-through
+              }))
           : [{
               imageUrl: sliderImages[0], // fallback image
-              title: banner.title,
-              subtitle: banner.subtitle,
-              alt: banner.title
+              title: banner.title || 'Prémiová flotila\nvozidiel',
+              subtitle: banner.subtitle || 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.',
+              alt: banner.title || 'Premium car',
+              carId: null
             }]
       )
     : sliderImages.map((img, idx) => ({
         imageUrl: img,
-        title: idx === 0 ? 'Prémiová flotila\nvozidiel' : 'Prémiová flotila\nvozidiel',
+        title: 'Prémiová flotila\nvozidiel',
         subtitle: 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.',
-        alt: 'Premium car'
+        alt: 'Premium car',
+        carId: null
       }));
 
   // Auto-slide effect
@@ -1013,12 +1018,17 @@ const HomePage = () => {
                   {allSlides.map((slide, index) => (
                     <div
                       key={index}
-                      className="absolute inset-0 w-full h-full transition-opacity duration-1000"
+                      className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${slide.carId ? 'cursor-pointer' : ''}`}
                       style={{
                         opacity: currentSlide === index ? 1 : 0,
                         backgroundImage: `url(${slide.imageUrl})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center'
+                      }}
+                      onClick={() => {
+                        if (slide.carId) {
+                          navigate(`/car/${slide.carId}`);
+                        }
                       }}
                     >
                       {/* Subtle overlay */}
