@@ -75,7 +75,7 @@ const Footer = () => {
               </div>
 
               {/* Social Media Icons - On mobile only, under opening hours */}
-              <div className="flex lg:hidden space-x-4 mt-4">
+              <div className="flex lg:hidden space-x-4 mt-6">
                 <a
                   href="https://www.instagram.com/lerent.sk/"
                   target="_blank"

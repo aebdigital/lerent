@@ -512,10 +512,10 @@ const HomePage = () => {
 
         // If API returns no cars, fall back to static data
         if (carsData && carsData.length > 0) {
-          // Fetch availability data for all cars for the next 2 weeks
+          // Fetch availability data for all cars for the next month (30 days)
           const startDate = new Date();
           const endDate = new Date();
-          endDate.setDate(startDate.getDate() + 14); // Next 2 weeks
+          endDate.setDate(startDate.getDate() + 30); // Next month
 
           const carsWithAvailability = await Promise.all(
             carsData.map(async (car) => {
@@ -673,45 +673,32 @@ const HomePage = () => {
         const priceB = b.pricing?.dailyRate || b.dailyRate || 0;
         return priceA - priceB;
       } else if (sortBy === 'availability') {
-        // Calculate availability score for next 2 weeks
-        const getAvailabilityScore = (car) => {
+        // Calculate available days for next month (31 days)
+        const getAvailableDays = (car) => {
           const today = new Date();
-          const twoWeeksLater = new Date();
-          twoWeeksLater.setDate(today.getDate() + 14);
+          const oneMonthLater = new Date();
+          oneMonthLater.setDate(today.getDate() + 30);
 
-          // Create array of dates for next 2 weeks
-          const next2Weeks = [];
+          const nextMonth = [];
           const currentDate = new Date(today);
-          while (currentDate <= twoWeeksLater) {
-            next2Weeks.push(currentDate.toISOString().split('T')[0]);
+          while (currentDate <= oneMonthLater) {
+            nextMonth.push(currentDate.toISOString().split('T')[0]);
             currentDate.setDate(currentDate.getDate() + 1);
           }
 
-          // Check how many days are available in next 2 weeks
           const unavailableDates = car.unavailableDates || [];
-          const availableDaysCount = next2Weeks.filter(date =>
-            !unavailableDates.includes(date)
-          ).length;
-
-          // Return availability score (higher = more available)
-          // Available cars get score based on available days (0-14)
-          // Unavailable cars get negative score
-          if (car.status === 'available') {
-            return availableDaysCount;
-          } else {
-            return -1; // Unavailable cars go to bottom
-          }
+          return nextMonth.filter(date => !unavailableDates.includes(date)).length;
         };
 
-        const scoreA = getAvailabilityScore(a);
-        const scoreB = getAvailabilityScore(b);
+        const daysA = getAvailableDays(a);
+        const daysB = getAvailableDays(b);
 
-        // Sort by availability score (higher score first)
-        if (scoreB !== scoreA) {
-          return scoreB - scoreA;
+        // Sort by available days (most available first)
+        if (daysB !== daysA) {
+          return daysB - daysA;
         }
 
-        // If same availability, sort by price (ascending)
+        // If same availability, sort by lower price first
         const priceA = a.pricing?.dailyRate || a.dailyRate || 0;
         const priceB = b.pricing?.dailyRate || b.dailyRate || 0;
         return priceA - priceB;
@@ -1367,7 +1354,7 @@ const HomePage = () => {
               </div>
 
               {/* Sort Filter - 30% width */}
-              <div className="relative" style={{width: '30%'}}>
+              <div className="relative dropdown-container" style={{width: '30%'}}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="w-full h-full text-white p-4 border border-gray-600 rounded-lg flex items-center justify-center gap-1"

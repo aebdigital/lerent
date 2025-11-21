@@ -21,6 +21,11 @@ const FadeInUp = ({ children, delay = 0 }) => {
 
 const ReviewsSection = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
 
   const testimonials = [
     {
@@ -67,7 +72,33 @@ const ReviewsSection = () => {
     }
   };
 
-  // Get 3 reviews to display starting from currentIndex
+  // Mobile swipe handlers
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && currentIndex < testimonials.length - 1) {
+      // Swipe left = next review
+      setCurrentIndex(currentIndex + 1);
+    }
+    if (isRightSwipe && currentIndex > 0) {
+      // Swipe right = previous review
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  // Get 3 reviews to display starting from currentIndex (desktop)
   const visibleReviews = testimonials.slice(currentIndex, currentIndex + 3);
 
   return (
@@ -117,64 +148,111 @@ const ReviewsSection = () => {
             }`} />
           </button>
 
-          {/* Reviews Grid */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            >
-              {visibleReviews.map((testimonial, index) => (
-                <motion.div
-                  key={currentIndex + index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                >
-                  <div
-                    className="rounded-lg p-6 relative h-full"
-                    style={{
-                      background: 'linear-gradient(143deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.00) 100%)'
-                    }}
+          {/* Desktop Reviews Grid */}
+          <div className="hidden md:block">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -100 }}
+                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                className="grid grid-cols-3 gap-8"
+              >
+                {visibleReviews.map((testimonial, index) => (
+                  <motion.div
+                    key={currentIndex + index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.1 }}
                   >
-                    {/* Top left - Year only */}
-                    <div className="mb-4">
-                      <span className="text-white font-bold text-lg">{testimonial.year}</span>
-                    </div>
+                    <div
+                      className="rounded-lg p-6 relative h-full"
+                      style={{
+                        background: 'linear-gradient(143deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.00) 100%)'
+                      }}
+                    >
+                      {/* Top left - Year only */}
+                      <div className="mb-4">
+                        <span className="text-white font-bold text-lg">{testimonial.year}</span>
+                      </div>
 
-                    {/* Review text */}
-                    <p className="text-white mb-16 text-sm leading-relaxed">
-                      {testimonial.text}
-                    </p>
+                      {/* Review text */}
+                      <p className="text-white mb-16 text-sm leading-relaxed">
+                        {testimonial.text}
+                      </p>
 
-                    {/* Bottom right - Name and Stars */}
-                    <div className="absolute bottom-6 right-6 text-right">
-                      <p className="text-white font-semibold text-sm mb-2">{testimonial.name}</p>
-                      <div className="flex justify-end space-x-1">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <span key={i} style={{color: '#fc9200', fontSize: '14px'}}>★</span>
-                        ))}
+                      {/* Bottom right - Name and Stars */}
+                      <div className="absolute bottom-6 right-6 text-right">
+                        <p className="text-white font-semibold text-sm mb-2">{testimonial.name}</p>
+                        <div className="flex justify-end space-x-1">
+                          {[...Array(testimonial.rating)].map((_, i) => (
+                            <span key={i} style={{color: '#fc9200', fontSize: '14px'}}>★</span>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-          {/* Mobile Navigation Dots */}
+          {/* Mobile Reviews - Single review with swipe */}
+          <div
+            className="md:hidden"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -100 }}
+                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              >
+                <div
+                  className="rounded-lg p-6 relative min-h-[250px]"
+                  style={{
+                    background: 'linear-gradient(143deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.00) 100%)'
+                  }}
+                >
+                  {/* Top left - Year only */}
+                  <div className="mb-4">
+                    <span className="text-white font-bold text-lg">{testimonials[currentIndex].year}</span>
+                  </div>
+
+                  {/* Review text */}
+                  <p className="text-white mb-16 text-sm leading-relaxed">
+                    {testimonials[currentIndex].text}
+                  </p>
+
+                  {/* Bottom right - Name and Stars */}
+                  <div className="absolute bottom-6 right-6 text-right">
+                    <p className="text-white font-semibold text-sm mb-2">{testimonials[currentIndex].name}</p>
+                    <div className="flex justify-end space-x-1">
+                      {[...Array(testimonials[currentIndex].rating)].map((_, i) => (
+                        <span key={i} style={{color: '#fc9200', fontSize: '14px'}}>★</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Mobile Navigation Dots - One for each review */}
           <div className="flex md:hidden justify-center mt-8 space-x-2">
-            {Array.from({ length: testimonials.length - 2 }).map((_, index) => (
+            {testimonials.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  currentIndex === index ? 'bg-[rgb(250,146,8)] w-8' : 'bg-white/50'
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  currentIndex === index ? 'bg-[rgb(250,146,8)] w-6' : 'bg-white/30'
                 }`}
-                aria-label={`Go to review set ${index + 1}`}
+                aria-label={`Go to review ${index + 1}`}
               />
             ))}
           </div>
