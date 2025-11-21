@@ -26,9 +26,10 @@ const Sidebar = ({ isOpen, onClose }) => {
       } else {
         // Not on homepage, navigate there first then scroll
         navigate('/');
-        // Use multiple attempts to ensure element is loaded after navigation
+        // Wait for page to fully load including dynamic content (cars) before scrolling
+        // Use multiple attempts and re-scroll to handle content loading shifts
         const scrollToElement = (attempts = 0) => {
-          if (attempts > 15) return; // Give up after 15 attempts
+          if (attempts > 20) return; // Give up after 20 attempts
 
           setTimeout(() => {
             const element = document.querySelector(href);
@@ -38,10 +39,14 @@ const Sidebar = ({ isOpen, onClose }) => {
                 top: offsetTop,
                 behavior: 'smooth'
               });
+              // Re-scroll after a delay to handle dynamic content loading
+              if (attempts < 5) {
+                scrollToElement(attempts + 1);
+              }
             } else {
               scrollToElement(attempts + 1);
             }
-          }, 200 + (attempts * 100));
+          }, attempts === 0 ? 800 : 400 + (attempts * 150));
         };
         scrollToElement();
       }
