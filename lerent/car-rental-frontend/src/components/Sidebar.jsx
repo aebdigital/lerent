@@ -12,18 +12,38 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   const handleNavClick = (href) => {
     if (href.startsWith('#')) {
-      // Check if the target section exists on current page
-      const element = document.querySelector(href);
-      if (element) {
-        // Section exists on current page, scroll to it with offset for fixed header
-        const offsetTop = element.getBoundingClientRect().top + window.pageYOffset - 100;
-        window.scrollTo({
-          top: offsetTop,
-          behavior: 'smooth'
-        });
+      // Check if we're on homepage
+      if (location.pathname === '/') {
+        // On homepage, check if element exists
+        const element = document.querySelector(href);
+        if (element) {
+          const offsetTop = element.getBoundingClientRect().top + window.pageYOffset - 100;
+          window.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth'
+          });
+        }
       } else {
-        // Section doesn't exist on current page, navigate to home page
-        navigate('/' + href);
+        // Not on homepage, navigate there first then scroll
+        navigate('/');
+        // Use multiple attempts to ensure element is loaded after navigation
+        const scrollToElement = (attempts = 0) => {
+          if (attempts > 15) return; // Give up after 15 attempts
+
+          setTimeout(() => {
+            const element = document.querySelector(href);
+            if (element) {
+              const offsetTop = element.getBoundingClientRect().top + window.pageYOffset - 100;
+              window.scrollTo({
+                top: offsetTop,
+                behavior: 'smooth'
+              });
+            } else {
+              scrollToElement(attempts + 1);
+            }
+          }, 200 + (attempts * 100));
+        };
+        scrollToElement();
       }
     } else {
       // Check if we're already on the target page

@@ -1258,34 +1258,6 @@ const CarDetailsPage = () => {
           </div>
         )}
 
-        {/* Location Information */}
-        {locationObjects.length > 0 && (
-          <div className="mt-8">
-            <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-              <h2 className="text-2xl font-semibold text-white mb-4">Miesto prevzatia</h2>
-              <div className="space-y-4">
-                {locationObjects.map((location, index) => (
-                  <div key={location.id || index} className="flex items-start space-x-3">
-                    <MapPinIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0 mt-1" />
-                    <div className="text-gray-300">
-                      <div className="font-semibold text-white mb-1">{location.name}</div>
-                      {location.address && (
-                        <div className="text-sm">
-                          <div>{location.address}</div>
-                        </div>
-                      )}
-                      {location.openingHours && (
-                        <div className="text-sm text-gray-400 mt-1">
-                          Otváracie hodiny: {location.openingHours}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Reviews Section */}
         <ReviewsSection />

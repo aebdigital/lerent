@@ -55,10 +55,10 @@ const Header = () => {
         }
       } else {
         // Not on homepage, navigate there first then scroll
-        navigate('/' + href);
-        // Use multiple attempts to ensure element is loaded
+        navigate('/');
+        // Use multiple attempts to ensure element is loaded after navigation
         const scrollToElement = (attempts = 0) => {
-          if (attempts > 10) return; // Give up after 10 attempts
+          if (attempts > 15) return; // Give up after 15 attempts
 
           setTimeout(() => {
             const element = document.querySelector(href);

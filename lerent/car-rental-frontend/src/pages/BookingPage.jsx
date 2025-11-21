@@ -210,8 +210,7 @@ const BookingPage = () => {
             const nonInsuranceServices = services.filter(service =>
               service.type !== 'insurance' &&
               service.category !== 'insurance' &&
-              !service.name?.toLowerCase().includes('poistenie') &&
-              !service.name?.toLowerCase().includes('insurance')
+              service.category !== 'insurance_assistance'
             );
 
             console.log('📋 Non-insurance services for Step 2:', nonInsuranceServices);
@@ -240,12 +239,11 @@ const BookingPage = () => {
             const services = await servicesAPI.getServices();
             console.log('📋 All services from API:', services);
 
-            // Filter for insurance services (type === 'insurance')
+            // Filter for insurance services (category === 'insurance_assistance')
             const insuranceServices = services.filter(service =>
               service.type === 'insurance' ||
               service.category === 'insurance' ||
-              service.name?.toLowerCase().includes('poistenie') ||
-              service.name?.toLowerCase().includes('insurance')
+              service.category === 'insurance_assistance'
             );
 
             if (insuranceServices && insuranceServices.length > 0) {
@@ -419,18 +417,16 @@ const BookingPage = () => {
       );
 
       if (isSelected) {
-        // Remove insurance
+        // Remove insurance (deselect)
         return {
           ...prev,
-          selectedInsurance: prev.selectedInsurance.filter(
-            ins => ins._id !== insurance._id && ins.name !== insurance.name
-          )
+          selectedInsurance: []
         };
       } else {
-        // Add insurance
+        // Select this insurance (only one allowed at a time)
         return {
           ...prev,
-          selectedInsurance: [...prev.selectedInsurance, insurance]
+          selectedInsurance: [insurance]
         };
       }
     });
@@ -1305,11 +1301,12 @@ const BookingPage = () => {
                             >
                               <div className="flex items-start space-x-3">
                                 <input
-                                  type="checkbox"
+                                  type="radio"
+                                  name="insurance-selection"
                                   checked={isSelected}
                                   onChange={() => handleInsuranceToggle(insurance)}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="w-5 h-5 mt-1 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)] rounded"
+                                  className="w-5 h-5 mt-1 text-[rgb(250,146,8)] border-gray-700 focus:ring-[rgb(250,146,8)]"
                                 />
                                 <div className="flex-1">
                                   <div className="flex items-start justify-between">
@@ -1318,19 +1315,19 @@ const BookingPage = () => {
                                       <p className="text-gray-300 text-sm mt-1">{insurance.descriptionSk || insurance.description || ''}</p>
                                     </div>
                                     <div className="text-[rgb(250,146,8)] font-bold text-lg ml-4 whitespace-nowrap">
-                                      {insurance.pricing?.type === 'per_day' && insurance.pricing?.amount
+                                      {insurance.pricing?.type === 'per_day' && typeof insurance.pricing?.amount === 'number'
                                         ? `+${insurance.pricing.amount}€/deň`
-                                        : insurance.pricing?.type === 'fixed' && insurance.pricing?.amount
+                                        : insurance.pricing?.type === 'fixed' && typeof insurance.pricing?.amount === 'number'
                                         ? `+${insurance.pricing.amount}€`
-                                        : insurance.pricing?.type === 'percentage' && insurance.pricing?.amount
+                                        : insurance.pricing?.type === 'percentage' && typeof insurance.pricing?.amount === 'number'
                                         ? `+${insurance.pricing.amount}%`
-                                        : insurance.pricePerDay
+                                        : typeof insurance.pricePerDay === 'number'
                                         ? `+${insurance.pricePerDay}€/deň`
-                                        : insurance.price
+                                        : typeof insurance.price === 'number'
                                         ? `+${insurance.price}€`
-                                        : insurance.dailyRate
+                                        : typeof insurance.dailyRate === 'number'
                                         ? `+${insurance.dailyRate}€/deň`
-                                        : 'Cena na vyžiadanie'}
+                                        : '0€'}
                                     </div>
                                   </div>
                                 </div>
