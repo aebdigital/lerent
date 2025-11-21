@@ -1015,24 +1015,6 @@ const CarDetailsPage = () => {
                 </div>
               </div>
 
-              {/* Pickup Location Dropdown */}
-              <div>
-                <label className="block text-white text-sm font-medium mb-2">Miesto prevzatia</label>
-                <select
-                  value={bookingData.pickupLocation}
-                  onChange={(e) => handleInputChange('pickupLocation', e.target.value)}
-                  className="w-full text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
-                  style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
-                >
-                  <option value="">Vyberte miesto</option>
-                  {locations.map((location, index) => (
-                    <option key={index} value={location}>
-                      {location}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               {/* Pricing Information */}
               <div className="rounded-lg p-4 space-y-3" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
                 {bookingData.pickupDate && bookingData.returnDate && (

@@ -1649,7 +1649,7 @@ const HomePage = () => {
             {/* Mobile Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 px-4">
               <div className="text-center max-[480px]:text-left">
-                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">10</div>
+                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">19</div>
                 <div className="text-white font-goldman font-bold text-sm sm:text-base">Prémiových áut v našej flotile</div>
               </div>
               <div className="text-center max-[480px]:text-left">
@@ -1683,7 +1683,7 @@ const HomePage = () => {
               <FadeInUp delay={0.4}>
                 <div className="grid grid-cols-3 gap-8">
                 <div className="text-left">
-                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">10</div>
+                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">19</div>
                   <div className="text-white font-goldman font-bold">Prémiových áut v našej flotile</div>
                 </div>
                 <div className="text-left">
