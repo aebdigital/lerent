@@ -102,8 +102,8 @@ const formatDurationText = (duration) => {
 const getValidPricingEntries = (car) => {
   const entries = [];
 
-  // Define allowed duration keys and their display order
-  const allowedDurations = ['2-3days', '4-10days', '11-20days', '21-29days', '30-60days', '60plus'];
+  // Define allowed duration keys and their display order (excluding 60plus - we add it manually)
+  const allowedDurations = ['2-3days', '4-10days', '11-20days', '21-29days', '30-60days'];
 
   // Only use pricing.rates from API
   if (car.pricing?.rates && Object.keys(car.pricing.rates).length > 0) {
@@ -129,6 +129,12 @@ const getValidPricingEntries = (car) => {
       }
     });
   }
+
+  // Always add 60+ dni entry at the end
+  entries.push({
+    label: '60+ dni',
+    price: 'dohoda - volať/písať mail'
+  });
 
   return entries;
 };
