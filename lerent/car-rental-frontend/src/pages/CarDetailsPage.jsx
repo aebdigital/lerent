@@ -80,12 +80,10 @@ const getCarImage = (car) => {
 // Function to format duration text with proper Slovak plurals
 const formatDurationText = (duration) => {
   // Handle specific API duration formats
-  if (duration.includes('1day')) return '1 deň';
   if (duration.includes('2-3days')) return '2-3 dni';
   if (duration.includes('4-10days')) return '4-10 dni';
-  if (duration.includes('11-17days')) return '11-17 dni';
-  if (duration.includes('18-24days')) return '18-24 dni';
-  if (duration.includes('25-29days')) return '25-29 dni';
+  if (duration.includes('11-20days')) return '11-20 dni';
+  if (duration.includes('21-29days')) return '21-29 dni';
   if (duration.includes('30-60days')) return '30-60 dni';
   if (duration.includes('60plus')) return '60+ dni';
 
@@ -100,15 +98,19 @@ const formatDurationText = (duration) => {
     });
 };
 
-// Function to filter and format pricing data - only show API-fetched rates
+// Function to filter and format pricing data - only show specific duration tiers
 const getValidPricingEntries = (car) => {
   const entries = [];
 
+  // Define allowed duration keys and their display order
+  const allowedDurations = ['2-3days', '4-10days', '11-20days', '21-29days', '30-60days', '60plus'];
+
   // Only use pricing.rates from API
   if (car.pricing?.rates && Object.keys(car.pricing.rates).length > 0) {
-    Object.entries(car.pricing.rates).forEach(([duration, price]) => {
+    allowedDurations.forEach((duration) => {
+      const price = car.pricing.rates[duration];
       // Only include entries where price is valid (number > 0 or truthy string)
-      if ((typeof price === 'number' && price > 0) || (typeof price === 'string' && price.trim())) {
+      if (price && ((typeof price === 'number' && price > 0) || (typeof price === 'string' && price.trim()))) {
         entries.push({
           label: formatDurationText(duration),
           price: typeof price === 'number' ? `${price}€` : price
