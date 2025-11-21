@@ -543,7 +543,8 @@ const CarDetailsPage = () => {
       if (days >= 11 && days <= 20 && rates['11-20days']) return rates['11-20days'];
       if (days >= 21 && days <= 29 && rates['21-29days']) return rates['21-29days'];
       if (days >= 30 && days <= 60 && rates['30-60days']) return rates['30-60days'];
-      if (days > 60 && rates['60plus']) return rates['60plus'];
+      // For 60+ days, use the 30-60days rate
+      if (days > 60 && rates['30-60days']) return rates['30-60days'];
 
       // Fallback to 2-3days rate for 1 day or if no tier matches
       return rates['2-3days'] || car.pricing?.dailyRate || car.dailyRate || 0;
