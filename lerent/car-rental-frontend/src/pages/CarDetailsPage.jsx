@@ -523,6 +523,7 @@ const CarDetailsPage = () => {
   };
 
   // Calculate price per day based on tiered pricing from API
+  // Only use allowed tiers: 2-3days, 4-10days, 11-20days, 21-29days, 30-60days, 60plus
   const getPricePerDay = (days) => {
     if (!car) return 0;
 
@@ -530,24 +531,19 @@ const CarDetailsPage = () => {
     if (car.pricing?.rates) {
       const rates = car.pricing.rates;
 
-      // Match the number of days to the appropriate tier
-      if (days === 1 && rates['1day']) return rates['1day'];
+      // Match the number of days to the appropriate tier (only allowed tiers)
       if (days >= 2 && days <= 3 && rates['2-3days']) return rates['2-3days'];
       if (days >= 4 && days <= 10 && rates['4-10days']) return rates['4-10days'];
-      if (days >= 11 && days <= 17 && rates['11-17days']) return rates['11-17days'];
-      if (days >= 18 && days <= 24 && rates['18-24days']) return rates['18-24days'];
-      if (days >= 25 && days <= 29 && rates['25-29days']) return rates['25-29days'];
+      if (days >= 11 && days <= 20 && rates['11-20days']) return rates['11-20days'];
+      if (days >= 21 && days <= 29 && rates['21-29days']) return rates['21-29days'];
       if (days >= 30 && days <= 60 && rates['30-60days']) return rates['30-60days'];
       if (days > 60 && rates['60plus']) return rates['60plus'];
 
-      // Fallback to pricing.dailyRate or car.dailyRate
-      return car.pricing?.dailyRate || car.dailyRate || 50;
+      // Fallback to 2-3days rate for 1 day or if no tier matches
+      return rates['2-3days'] || car.pricing?.dailyRate || car.dailyRate || 0;
     }
 
-    // Fallback to simple dailyRate, weeklyRate, monthlyRate
-    if (days >= 30 && car.monthlyRate) return car.monthlyRate / 30;
-    if (days >= 7 && car.weeklyRate) return car.weeklyRate / 7;
-    return car.dailyRate || 50;
+    return car.dailyRate || 0;
   };
 
   const calculateDaysWithTime = () => {
