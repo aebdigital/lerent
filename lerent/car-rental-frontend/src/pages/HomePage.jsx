@@ -235,14 +235,17 @@ const HomePage = () => {
     const fetchBrands = async () => {
       try {
         setLoadingBrands(true);
-        const response = await fetch(`${config.API_BASE_URL}/api/public/users/${config.ADMIN_EMAIL}/brands`);
+        const response = await fetch(`${config.API_BASE_URL}/api/public/users/${config.ADMIN_EMAIL}/brands-catalog`);
         const data = await response.json();
         if (data.success && data.data) {
+          console.log(`🚗 Found ${data.count} brands from brands-catalog`);
+
           // Transform API data to match the format needed by the component
           const transformedBrands = data.data.map(brand => ({
             name: brand.name,
             value: brand.name.toLowerCase().replace(/\s+/g, '-'),
-            logo: brand.logo
+            logo: brand.logo,
+            usageCount: brand.usageCount || 0
           }))
           // Sort brands alphabetically by name (A to Z)
           .sort((a, b) => a.name.localeCompare(b.name));
