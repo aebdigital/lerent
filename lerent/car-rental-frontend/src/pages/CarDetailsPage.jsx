@@ -100,15 +100,13 @@ const formatDurationText = (duration) => {
     });
 };
 
-// Function to filter and format pricing data
+// Function to filter and format pricing data - only show API-fetched rates
 const getValidPricingEntries = (car) => {
   const entries = [];
 
+  // Only use pricing.rates from API
   if (car.pricing?.rates && Object.keys(car.pricing.rates).length > 0) {
     Object.entries(car.pricing.rates).forEach(([duration, price]) => {
-      // Filter out 30plus since we want only 30-60days and 60plus
-      if (duration === '30plus') return;
-
       // Only include entries where price is valid (number > 0 or truthy string)
       if ((typeof price === 'number' && price > 0) || (typeof price === 'string' && price.trim())) {
         entries.push({
@@ -117,15 +115,9 @@ const getValidPricingEntries = (car) => {
         });
       }
     });
-
-    // Always add the hardcoded 60+ dni entry
-    entries.push({
-      label: '60+ dni',
-      price: 'dohoda - volať/písať mail'
-    });
   } else if (car.priceList && car.priceList.length > 0) {
+    // Fallback to priceList from API if available
     car.priceList.forEach((priceItem) => {
-      // Only include entries where price is valid
       const price = priceItem.price || priceItem.rate;
       if ((typeof price === 'number' && price > 0) || (typeof price === 'string' && price.trim())) {
         entries.push({
@@ -134,17 +126,6 @@ const getValidPricingEntries = (car) => {
         });
       }
     });
-  } else {
-    // Fallback to individual rate fields - only show if value exists and > 0
-    if (car.dailyRate && car.dailyRate > 0) {
-      entries.push({ label: 'Deň', price: `${car.dailyRate}€` });
-    }
-    if (car.weeklyRate && car.weeklyRate > 0) {
-      entries.push({ label: 'Týždeň', price: `${car.weeklyRate}€` });
-    }
-    if (car.monthlyRate && car.monthlyRate > 0) {
-      entries.push({ label: 'Mesiac', price: `${car.monthlyRate}€` });
-    }
   }
 
   return entries;
