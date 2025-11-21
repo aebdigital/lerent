@@ -65,8 +65,9 @@ const PrenajomPage = () => {
 
       {/* Container for all three sections - trigger for scroll animation */}
       <div ref={containerRef} style={{position: 'relative'}}>
-        {/* Orange Line Overlay - Only in 3 sections */}
+        {/* Orange Line Overlay - Only in 3 sections - Hidden on mobile */}
         <div
+          className="hidden lg:flex"
           style={{
             position: 'absolute',
             top: 0,
@@ -75,7 +76,6 @@ const PrenajomPage = () => {
             height: '100%',
             pointerEvents: 'none',
             zIndex: 10,
-            display: 'flex',
             justifyContent: 'center',
             alignItems: 'flex-start',
             overflow: 'visible'
