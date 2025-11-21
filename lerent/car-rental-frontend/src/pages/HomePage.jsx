@@ -185,7 +185,7 @@ const HomePage = () => {
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % allSlides.length);
-    }, 4000); // Change slide every 4 seconds
+    }, 7000); // Change slide every 7 seconds
 
     return () => clearInterval(interval);
   }, [allSlides.length]);
