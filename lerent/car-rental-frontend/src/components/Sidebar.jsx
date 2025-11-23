@@ -6,9 +6,6 @@ const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const navigation = [
-    { name: 'Kontakt', href: '#contact' },
-  ];
 
   const handleNavClick = (href) => {
     if (href.startsWith('#')) {
@@ -113,6 +110,16 @@ const Sidebar = ({ isOpen, onClose }) => {
             Domov
           </button>
 
+          {/* Ponuka */}
+          <button
+            onClick={() => handleNavClick('#cars')}
+            className={`px-6 py-4 text-left text-lg font-medium transition-colors border-b border-gray-800 ${
+              isActive('#cars') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
+            }`}
+          >
+            Ponuka
+          </button>
+
           {/* O nás */}
           <button
             onClick={() => handleNavClick('#o-nas')}
@@ -143,18 +150,6 @@ const Sidebar = ({ isOpen, onClose }) => {
             FAQ
           </button>
 
-          {/* Kontakt */}
-          {navigation.map((item) => (
-            <button
-              key={item.name}
-              onClick={() => handleNavClick(item.href)}
-              className={`px-6 py-4 text-left text-lg font-medium transition-colors border-b border-gray-800 ${
-                isActive(item.href) ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
-              }`}
-            >
-              {item.name}
-            </button>
-          ))}
 
           {/* Rezervovať Button */}
           <div className="px-6 py-6">

@@ -1635,17 +1635,17 @@ const HomePage = () => {
 
             {/* Mobile Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 px-4">
-              <div className="text-center max-[480px]:text-left">
+              <div className="text-center">
                 <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">19</div>
                 <div className="text-white font-goldman font-bold text-sm sm:text-base">Prémiových áut v našej flotile</div>
               </div>
-              <div className="text-center max-[480px]:text-left">
+              <div className="text-center">
                 <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">
                   550<span className="text-2xl sm:text-3xl">tisíc+</span>
                 </div>
                 <div className="text-white font-goldman font-bold text-sm sm:text-base">Kilometrov najazdených šťastnými klientmi</div>
               </div>
-              <div className="text-center max-[480px]:text-left">
+              <div className="text-center">
                 <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">120+</div>
                 <div className="text-white font-goldman font-bold text-sm sm:text-base">Zákazníkov</div>
               </div>

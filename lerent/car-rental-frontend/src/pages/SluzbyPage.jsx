@@ -52,12 +52,12 @@ const PrenajomPage = () => {
   return (
     <div className="min-h-screen text-white" style={{backgroundColor: '#000000'}}>
       {/* Hero Section */}
-      <section className="pt-32 pb-16" style={{backgroundColor: '#000000'}}>
+      <section className="pt-32 pb-8 md:pb-16" style={{backgroundColor: '#000000'}}>
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl md:text-6xl font-bold text-white text-center mb-8 font-goldman">
+          <h1 className="text-4xl md:text-6xl font-bold text-white text-center mb-6 md:mb-8 font-goldman">
             PRENÁJOM VOZIDIEL
           </h1>
-          <p className="text-xl text-gray-300 text-center max-w-3xl mx-auto mb-12">
+          <p className="text-xl text-gray-300 text-center max-w-3xl mx-auto mb-6 md:mb-12">
             Kompletné riešenia prenájmu automobilov pre všetky vaše potreby
           </p>
         </div>

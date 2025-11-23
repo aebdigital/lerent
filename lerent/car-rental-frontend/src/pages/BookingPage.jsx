@@ -1025,9 +1025,9 @@ const BookingPage = () => {
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
           {/* Car Summary Container */}
-          <div className="rounded-lg shadow-sm p-8 mb-8 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+          <div className="rounded-lg shadow-sm p-4 md:p-8 mb-8 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
             {/* Thank You Section - Inside Container */}
             <div className="text-center mb-12">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-[rgba(250,146,8,0.1)] rounded-full mb-6">
@@ -1055,7 +1055,7 @@ const BookingPage = () => {
 
             {/* Bank Transfer Payment Details */}
             {paymentInfo && (
-              <div className="mt-8 p-6 border border-gray-600 rounded-lg" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
+              <div className="mt-8 p-4 md:p-6 border border-gray-600 rounded-lg" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
                 <h2 className="text-2xl font-bold text-white mb-6 text-center">Platobné údaje</h2>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1150,7 +1150,7 @@ const BookingPage = () => {
     <div className="min-h-screen text-white" style={{backgroundColor: '#000000', fontFamily: 'AvantGarde, sans-serif'}}>
       {/* Mini Hero Section */}
       <div
-        className="relative h-[30vh] bg-cover bg-center"
+        className="relative h-[30vh] md:h-[30vh] max-[480px]:h-[20vh] bg-cover bg-center"
         style={{
           backgroundColor: '#000000'
         }}
@@ -1162,7 +1162,7 @@ const BookingPage = () => {
 
       {/* Progress Steps at Top */}
       <div className="border-b border-gray-700" style={{backgroundColor: '#000000'}}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
           <div className="max-w-4xl mx-auto">
             {/* Step boxes */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1248,11 +1248,11 @@ const BookingPage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Left Side - Form Content */}
           <div className="lg:col-span-3">
-            <div className="rounded-lg shadow-sm p-8 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+            <div className="rounded-lg shadow-sm p-4 md:p-8 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
               {error && (
                 <div className="border border-red-400 rounded-md p-4 mb-6" style={{backgroundColor: 'rgba(220, 38, 38, 0.1)'}}>
                   <div className="flex">
@@ -1292,7 +1292,7 @@ const BookingPage = () => {
                             <div
                               key={insurance._id || insurance.name || index}
                               onClick={() => handleInsuranceToggle(insurance)}
-                              className={`rounded-lg p-6 cursor-pointer transition-all duration-200 border ${
+                              className={`rounded-lg p-4 md:p-6 cursor-pointer transition-all duration-200 border ${
                                 isSelected
                                   ? 'border-[rgb(250,146,8)] bg-gray-700'
                                   : 'border-gray-800 hover:bg-gray-700'
@@ -1367,7 +1367,7 @@ const BookingPage = () => {
                       {/* Render additional services from API if available, otherwise use hardcoded fallback */}
                       {additionalServices && additionalServices.length > 0 ? (
                         additionalServices.map((service) => (
-                          <label key={service._id || service.name} className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                          <label key={service._id || service.name} className="rounded-lg p-4 md:p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                             <div className="flex items-center space-x-3">
                               <input
                                 type="checkbox"
@@ -1401,7 +1401,7 @@ const BookingPage = () => {
                       ) : (
                         <>
                           {/* Hardcoded fallback services */}
-                          <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                          <label className="rounded-lg p-4 md:p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                             <div className="flex items-center space-x-3">
                               <input
                                 type="checkbox"
@@ -1418,7 +1418,7 @@ const BookingPage = () => {
                             <span className="text-[rgb(250,146,8)] font-semibold">+5€/deň</span>
                           </label>
 
-                          <label className="rounded-lg p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                          <label className="rounded-lg p-4 md:p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                             <div className="flex items-center space-x-3">
                               <input
                                 type="checkbox"
@@ -1437,7 +1437,7 @@ const BookingPage = () => {
                         </>
                       )}
                       
-                      <div className="rounded-lg p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                      <div className="rounded-lg p-4 md:p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                         <label className="block text-sm font-medium text-white mb-2">
                           Špeciálne požiadavky
                         </label>
@@ -1647,7 +1647,7 @@ const BookingPage = () => {
                     <div className="mt-8">
                       <h3 className="text-lg font-semibold text-white mb-4 text-left">Spôsob platby *</h3>
                       <div className="space-y-3">
-                        <label className="border border-gray-700 rounded-lg p-4 flex items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors" style={{backgroundColor: formData.paymentMethod === 'stripe' ? 'rgba(250,146,8,0.1)' : 'transparent', borderColor: formData.paymentMethod === 'stripe' ? 'rgb(250,146,8)' : '#555'}}>
+                        <label className="border border-gray-700 rounded-lg p-3 md:p-4 flex items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors" style={{backgroundColor: formData.paymentMethod === 'stripe' ? 'rgba(250,146,8,0.1)' : 'transparent', borderColor: formData.paymentMethod === 'stripe' ? 'rgb(250,146,8)' : '#555'}}>
                           <input
                             type="radio"
                             name="paymentMethod"
@@ -1671,7 +1671,7 @@ const BookingPage = () => {
                           </div>
                         </label>
 
-                        <label className="border border-gray-700 rounded-lg p-4 flex items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors" style={{backgroundColor: formData.paymentMethod === 'bank_transfer' ? 'rgba(250,146,8,0.1)' : 'transparent', borderColor: formData.paymentMethod === 'bank_transfer' ? 'rgb(250,146,8)' : '#555'}}>
+                        <label className="border border-gray-700 rounded-lg p-3 md:p-4 flex items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors" style={{backgroundColor: formData.paymentMethod === 'bank_transfer' ? 'rgba(250,146,8,0.1)' : 'transparent', borderColor: formData.paymentMethod === 'bank_transfer' ? 'rgb(250,146,8)' : '#555'}}>
                           <input
                             type="radio"
                             name="paymentMethod"
@@ -1832,7 +1832,7 @@ const BookingPage = () => {
 
                     <div className="space-y-6">
                       {/* Summary Information */}
-                      <div className="rounded-lg p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                      <div className="rounded-lg p-4 md:p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                         <h3 className="text-lg font-semibold text-white mb-4">Osobné údaje</h3>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
@@ -1854,7 +1854,7 @@ const BookingPage = () => {
                         </div>
                       </div>
 
-                      <div className="rounded-lg p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                      <div className="rounded-lg p-4 md:p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                         <h3 className="text-lg font-semibold text-white mb-4">Detaily rezervácie</h3>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
@@ -1916,7 +1916,7 @@ const BookingPage = () => {
                       </div>
 
                       {formData.specialRequests && (
-                        <div className="rounded-lg p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
+                        <div className="rounded-lg p-4 md:p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                           <h3 className="text-lg font-semibold text-white mb-2">Špeciálne požiadavky</h3>
                           <p className="text-gray-300 text-sm">{formData.specialRequests}</p>
                         </div>
