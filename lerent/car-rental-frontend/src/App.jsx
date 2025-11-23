@@ -6,6 +6,7 @@ import ScrollToTop from './components/ScrollToTop';
 import PageTransition from './components/PageTransition';
 import ApiStatus from './components/ApiStatus';
 import HomePage from './pages/HomePage';
+import MaintenancePage from './pages/MaintenancePage';
 import BookingPage from './pages/BookingPage';
 import CarDetailsPage from './pages/CarDetailsPage';
 import TermsPage from './pages/TermsPage';
@@ -30,7 +31,7 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+        <Route path="/" element={<PageTransition><MaintenancePage /></PageTransition>} />
         <Route path="/sluzby" element={<PageTransition><SluzbyPage /></PageTransition>} />
         <Route path="/faq" element={<PageTransition><FAQPage /></PageTransition>} />
         <Route path="/car/:id" element={<PageTransition><CarDetailsPage /></PageTransition>} />
