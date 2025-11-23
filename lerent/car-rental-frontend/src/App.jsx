@@ -27,28 +27,42 @@ import './index.css';
 
 function AnimatedRoutes() {
   const location = useLocation();
+  const isMaintenancePage = location.pathname === '/';
 
+  // Render maintenance page without layout
+  if (isMaintenancePage) {
+    return (
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<PageTransition><MaintenancePage /></PageTransition>} />
+        </Routes>
+      </AnimatePresence>
+    );
+  }
+
+  // Render other pages with layout
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><MaintenancePage /></PageTransition>} />
-        <Route path="/sluzby" element={<PageTransition><SluzbyPage /></PageTransition>} />
-        <Route path="/faq" element={<PageTransition><FAQPage /></PageTransition>} />
-        <Route path="/car/:id" element={<PageTransition><CarDetailsPage /></PageTransition>} />
-        <Route path="/booking" element={<PageTransition><BookingPage /></PageTransition>} />
-        <Route path="/payment-success" element={<PageTransition><PaymentSuccess /></PageTransition>} />
-        <Route path="/payment-cancelled" element={<PageTransition><PaymentCancelled /></PageTransition>} />
-        <Route path="/bank-transfer-info" element={<PageTransition><BankTransferInfoPage /></PageTransition>} />
-        <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
-        <Route path="/cennik-poplatkov" element={<PageTransition><CennikPoplatkovPage /></PageTransition>} />
-        <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
-        <Route path="/blog" element={<PageTransition><BlogPage /></PageTransition>} />
-        <Route path="/blog/:id" element={<PageTransition><BlogPostPage /></PageTransition>} />
-        <Route path="/poistenie" element={<PageTransition><PoisteniePage /></PageTransition>} />
-        <Route path="/autouvery" element={<PageTransition><AutouveryPage /></PageTransition>} />
-        <Route path="/sprostredkovanie" element={<PageTransition><SprostredkovaniePage /></PageTransition>} />
-      </Routes>
-    </AnimatePresence>
+    <DefaultLayout>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/sluzby" element={<PageTransition><SluzbyPage /></PageTransition>} />
+          <Route path="/faq" element={<PageTransition><FAQPage /></PageTransition>} />
+          <Route path="/car/:id" element={<PageTransition><CarDetailsPage /></PageTransition>} />
+          <Route path="/booking" element={<PageTransition><BookingPage /></PageTransition>} />
+          <Route path="/payment-success" element={<PageTransition><PaymentSuccess /></PageTransition>} />
+          <Route path="/payment-cancelled" element={<PageTransition><PaymentCancelled /></PageTransition>} />
+          <Route path="/bank-transfer-info" element={<PageTransition><BankTransferInfoPage /></PageTransition>} />
+          <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
+          <Route path="/cennik-poplatkov" element={<PageTransition><CennikPoplatkovPage /></PageTransition>} />
+          <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
+          <Route path="/blog" element={<PageTransition><BlogPage /></PageTransition>} />
+          <Route path="/blog/:id" element={<PageTransition><BlogPostPage /></PageTransition>} />
+          <Route path="/poistenie" element={<PageTransition><PoisteniePage /></PageTransition>} />
+          <Route path="/autouvery" element={<PageTransition><AutouveryPage /></PageTransition>} />
+          <Route path="/sprostredkovanie" element={<PageTransition><SprostredkovaniePage /></PageTransition>} />
+        </Routes>
+      </AnimatePresence>
+    </DefaultLayout>
   );
 }
 
@@ -69,9 +83,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
-      <DefaultLayout>
-        <AnimatedRoutes />
-      </DefaultLayout>
+      <AnimatedRoutes />
       <ApiStatus />
     </Router>
   );
