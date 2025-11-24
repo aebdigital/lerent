@@ -1015,10 +1015,10 @@ const HomePage = () => {
       </section>
 
       {/* Premium Fleet Section - Slider */}
-      <section className="pb-0 pt-4 max-[480px]:pb-0 lg:py-12 bg-black overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="pb-0 pt-4 max-[480px]:pb-0 max-[480px]:pt-0 lg:py-12 bg-black overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 max-[480px]:px-2">
           <div
-            className="relative grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 lg:gap-0 items-center p-8 max-[480px]:p-4 max-[480px]:pb-8 rounded-2xl"
+            className="relative grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 lg:gap-0 items-center p-8 max-[480px]:p-3 max-[480px]:pt-4 max-[480px]:pb-6 rounded-2xl"
             style={{
               background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
               backdropFilter: 'blur(20px)',
