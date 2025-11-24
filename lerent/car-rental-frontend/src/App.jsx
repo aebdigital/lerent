@@ -5,6 +5,7 @@ import DefaultLayout from './layouts/DefaultLayout';
 import ScrollToTop from './components/ScrollToTop';
 import PageTransition from './components/PageTransition';
 import ApiStatus from './components/ApiStatus';
+import SEOWrapper from './components/SEOWrapper';
 import HomePage from './pages/HomePage';
 import BookingPage from './pages/BookingPage';
 import CarDetailsPage from './pages/CarDetailsPage';
@@ -30,22 +31,22 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
-        <Route path="/sluzby" element={<PageTransition><SluzbyPage /></PageTransition>} />
-        <Route path="/faq" element={<PageTransition><FAQPage /></PageTransition>} />
+        <Route path="/" element={<PageTransition><SEOWrapper page="home"><HomePage /></SEOWrapper></PageTransition>} />
+        <Route path="/sluzby" element={<PageTransition><SEOWrapper page="sluzby"><SluzbyPage /></SEOWrapper></PageTransition>} />
+        <Route path="/faq" element={<PageTransition><SEOWrapper page="faq"><FAQPage /></SEOWrapper></PageTransition>} />
         <Route path="/car/:id" element={<PageTransition><CarDetailsPage /></PageTransition>} />
-        <Route path="/booking" element={<PageTransition><BookingPage /></PageTransition>} />
+        <Route path="/booking" element={<PageTransition><SEOWrapper page="booking"><BookingPage /></SEOWrapper></PageTransition>} />
         <Route path="/payment-success" element={<PageTransition><PaymentSuccess /></PageTransition>} />
         <Route path="/payment-cancelled" element={<PageTransition><PaymentCancelled /></PageTransition>} />
         <Route path="/bank-transfer-info" element={<PageTransition><BankTransferInfoPage /></PageTransition>} />
-        <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
-        <Route path="/cennik-poplatkov" element={<PageTransition><CennikPoplatkovPage /></PageTransition>} />
-        <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
-        <Route path="/blog" element={<PageTransition><BlogPage /></PageTransition>} />
+        <Route path="/terms" element={<PageTransition><SEOWrapper page="terms"><TermsPage /></SEOWrapper></PageTransition>} />
+        <Route path="/cennik-poplatkov" element={<PageTransition><SEOWrapper page="cennik"><CennikPoplatkovPage /></SEOWrapper></PageTransition>} />
+        <Route path="/privacy" element={<PageTransition><SEOWrapper page="privacy"><PrivacyPage /></SEOWrapper></PageTransition>} />
+        <Route path="/blog" element={<PageTransition><SEOWrapper page="blog"><BlogPage /></SEOWrapper></PageTransition>} />
         <Route path="/blog/:id" element={<PageTransition><BlogPostPage /></PageTransition>} />
-        <Route path="/poistenie" element={<PageTransition><PoisteniePage /></PageTransition>} />
-        <Route path="/autouvery" element={<PageTransition><AutouveryPage /></PageTransition>} />
-        <Route path="/sprostredkovanie" element={<PageTransition><SprostredkovaniePage /></PageTransition>} />
+        <Route path="/poistenie" element={<PageTransition><SEOWrapper page="poistenie"><PoisteniePage /></SEOWrapper></PageTransition>} />
+        <Route path="/autouvery" element={<PageTransition><SEOWrapper page="autouvery"><AutouveryPage /></SEOWrapper></PageTransition>} />
+        <Route path="/sprostredkovanie" element={<PageTransition><SEOWrapper page="sprostredkovanie"><SprostredkovaniePage /></SEOWrapper></PageTransition>} />
       </Routes>
     </AnimatePresence>
   );

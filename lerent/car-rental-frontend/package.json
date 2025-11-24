@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 3005",
-    "build": "vite build",
+    "build": "npm run generate-sitemap && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-sitemap": "node scripts/generate-sitemap.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
