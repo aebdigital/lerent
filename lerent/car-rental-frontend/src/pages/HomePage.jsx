@@ -1128,9 +1128,11 @@ const HomePage = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          console.log('Left arrow clicked');
                           prevSlide();
                         }}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group"
+                        style={{zIndex: 30}}
                         aria-label="Previous slide"
                       >
                         <ChevronLeftIcon className="w-6 h-6 text-white group-hover:text-[rgb(250,146,8)] transition-colors" />
@@ -1140,9 +1142,11 @@ const HomePage = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          console.log('Right arrow clicked');
                           nextSlide();
                         }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group"
+                        style={{zIndex: 30}}
                         aria-label="Next slide"
                       >
                         <ChevronRightIcon className="w-6 h-6 text-white group-hover:text-[rgb(250,146,8)] transition-colors" />
