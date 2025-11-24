@@ -164,7 +164,7 @@ export const generateBlogPostSchema = (post, baseUrl = 'https://lerent.sk') => {
     "@type": "BlogPosting",
     "headline": post.title,
     "description": post.description || post.excerpt,
-    "image": post.image || `${baseUrl}/main page final1.jpg`,
+    "image": post.image || `${baseUrl}/main-page-final1.jpg`,
     "author": {
       "@type": "Person",
       "name": post.author || "Lerent Team"

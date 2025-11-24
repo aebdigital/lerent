@@ -11,7 +11,7 @@ import CustomDatePicker from '../components/CustomDatePicker';
 import DatePicker from '../components/DatePicker';
 import { carsAPI, locationsAPI, bannersAPI } from '../services/api';
 import config from '../config/config';
-import HeroImg from '../main page final1.jpg';
+import HeroImg from '../main-page-final1.jpg';
 import VasenImg from '../vasen.webp';
 import CarClassImg from '../testfilter2.png';
 import AudiA6Img from '../audia6.JPG';

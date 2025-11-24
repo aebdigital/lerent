@@ -5,7 +5,7 @@ const SEOHead = ({
   title = 'Lerent autopožičovňa - Prenájom áut Nitra | Luxusné vozidlá',
   description = 'Prenájom áut v Nitre s Lerent. Luxusné vozidlá, profesionálne služby, konkurenčné ceny. BMW, Audi, Mercedes a ďalšie prémiové značky. Rezervujte si auto už dnes!',
   keywords = 'prenájom áut Nitra, autopožičovňa Nitra, luxusné vozidlá, BMW prenájom, Audi prenájom, Mercedes prenájom, car rental Nitra',
-  image = '/main page final1.jpg',
+  image = '/main-page-final1.jpg',
   url = 'https://lerent.sk',
   type = 'website',
   author = 'Lerent',
@@ -65,6 +65,7 @@ const SEOHead = ({
     updateMetaTag('og:locale', locale);
     updateMetaTag('og:image:width', '1200');
     updateMetaTag('og:image:height', '630');
+    updateMetaTag('og:image:type', 'image/jpeg');
     
     // Twitter Card tags
     updateMetaTag('twitter:card', 'summary_large_image', true);
