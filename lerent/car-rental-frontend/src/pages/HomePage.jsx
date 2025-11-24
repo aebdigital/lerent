@@ -1031,7 +1031,7 @@ const HomePage = () => {
             {/* Left Side - Text Content */}
             <div className="order-1 max-[480px]:order-1 lg:order-1 flex items-center justify-center max-[480px]:justify-start lg:justify-start max-[480px]:min-h-0 min-h-[280px]" style={{zIndex: 2}}>
               <FadeInUp>
-                <div className="max-[480px]:mt-0 h-[280px] flex flex-col justify-center overflow-hidden">
+                <div className="h-[280px] max-[480px]:h-auto max-[480px]:py-2 flex flex-col justify-center overflow-hidden">
                   <h2
                     className="font-goldman font-medium leading-tight text-xl sm:text-2xl lg:text-2xl xl:text-3xl max-[480px]:text-left mb-3 max-[480px]:mb-2"
                     style={{
