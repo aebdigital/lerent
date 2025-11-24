@@ -249,6 +249,15 @@ const BookingPage = () => {
             if (insuranceServices && insuranceServices.length > 0) {
               console.log('🛡️ Insurance options loaded from services:', insuranceServices);
               setInsuranceOptions(insuranceServices);
+
+              // Pre-select the first insurance option by default
+              if (insuranceServices.length > 0) {
+                setFormData(prev => ({
+                  ...prev,
+                  selectedInsurance: [insuranceServices[0]]
+                }));
+                console.log('✅ Pre-selected first insurance:', insuranceServices[0].name);
+              }
             } else {
               console.warn('No insurance services found in additional services');
             }
@@ -459,7 +468,8 @@ const BookingPage = () => {
   };
 
   const isStep1Valid = () => {
-    return true; // Insurance is optional, step 1 is always valid
+    // At least one insurance option must be selected
+    return formData.selectedInsurance && formData.selectedInsurance.length > 0;
   };
 
   const isStep2Valid = () => {

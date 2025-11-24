@@ -880,13 +880,6 @@ const CarDetailsPage = () => {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-center text-center">
-              <BoltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
-              <div>
-                <div className="text-xs font-goldman text-gray-300">Výkon</div>
-                <div className="font-goldman font-semibold text-xs text-white">{car.engine?.power || car.power || '140'} kW</div>
-              </div>
-            </div>
             {car.color && (
               <div className="flex flex-col items-center text-center">
                 <div className="h-4 w-4 flex-shrink-0 mb-1 rounded-full border-2 border-[rgb(250,146,8)]" style={{backgroundColor: car.color.toLowerCase()}}></div>

@@ -1015,10 +1015,10 @@ const HomePage = () => {
       </section>
 
       {/* Premium Fleet Section - Slider */}
-      <section className="pb-0 pt-4 max-[480px]:pb-0 lg:py-12 bg-black overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="pb-0 pt-4 max-[480px]:pb-0 max-[480px]:pt-0 lg:py-12 bg-black overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 max-[480px]:px-2">
           <div
-            className="relative grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 lg:gap-0 items-center p-8 max-[480px]:p-4 max-[480px]:pb-8 rounded-2xl"
+            className="relative grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 lg:gap-0 items-center p-8 max-[480px]:p-3 max-[480px]:pt-4 max-[480px]:pb-6 rounded-2xl"
             style={{
               background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
               backdropFilter: 'blur(20px)',
@@ -1031,14 +1031,16 @@ const HomePage = () => {
             {/* Left Side - Text Content */}
             <div className="order-1 max-[480px]:order-1 lg:order-1 flex items-center justify-center max-[480px]:justify-start lg:justify-start max-[480px]:min-h-0 min-h-[280px]" style={{zIndex: 2}}>
               <FadeInUp>
-                <div className="max-[480px]:mt-0">
+                <div className="h-[280px] max-[480px]:h-auto max-[480px]:py-2 flex flex-col justify-center overflow-hidden">
                   <h2
-                    className="font-goldman font-medium leading-tight text-3xl sm:text-4xl lg:text-4xl xl:text-5xl max-[480px]:text-left mb-4 max-[480px]:mb-2"
+                    className="font-goldman font-medium leading-tight text-xl sm:text-2xl lg:text-2xl xl:text-3xl max-[480px]:text-left mb-3 max-[480px]:mb-2"
                     style={{
                       background: 'linear-gradient(180deg, #ffffff 0%, rgb(250, 146, 8) 100%)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text'
+                      backgroundClip: 'text',
+                      maxHeight: '140px',
+                      overflow: 'hidden'
                     }}
                   >
                     {/* Use current slide title */}
@@ -1053,7 +1055,7 @@ const HomePage = () => {
                       </>
                     )}
                   </h2>
-                  <p className="text-gray-300 text-base sm:text-lg lg:text-xl max-w-md max-[480px]:text-left max-[480px]:mb-0">
+                  <p className="text-gray-300 text-xs sm:text-sm lg:text-base max-w-md max-[480px]:text-left max-[480px]:mb-0 leading-relaxed" style={{maxHeight: '140px', overflow: 'hidden'}}>
                     {/* Use current slide subtitle */}
                     {allSlides[currentSlide]?.subtitle || 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.'}
                   </p>
@@ -1062,10 +1064,10 @@ const HomePage = () => {
             </div>
 
             {/* Right Side - Image Slider with Overlap */}
-            <div className="order-2 max-[480px]:order-2 lg:order-2 relative max-[480px]:ml-0 max-[480px]:w-full lg:-ml-[10%]" style={{zIndex: 1}}>
+            <div className="order-2 max-[480px]:order-2 lg:order-2 relative max-[480px]:ml-0 max-[480px]:w-full lg:-ml-[10%]">
               <FadeInUp delay={0.1}>
                 <div
-                  className="relative overflow-hidden rounded-2xl max-[480px]:mx-0 max-[480px]:w-full max-[480px]:aspect-video max-[480px]:h-auto max-[480px]:max-h-[200px]"
+                  className="relative overflow-visible rounded-2xl max-[480px]:mx-0 max-[480px]:w-full max-[480px]:aspect-video max-[480px]:h-auto max-[480px]:max-h-[200px]"
                   style={{
                     height: '280px',
                     boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(250, 146, 8, 0.1)'
@@ -1075,7 +1077,7 @@ const HomePage = () => {
                   {allSlides.map((slide, index) => (
                     <div
                       key={index}
-                      className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${
+                      className={`absolute inset-0 w-full h-full transition-opacity duration-2000 ${
                         slide.carId ? 'cursor-pointer' : ''
                       } ${currentSlide !== index ? 'pointer-events-none' : ''}`}
                       style={{
@@ -1126,24 +1128,30 @@ const HomePage = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          e.preventDefault();
+                          console.log('Left arrow clicked');
                           prevSlide();
                         }}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group cursor-pointer"
+                        style={{zIndex: 50, pointerEvents: 'auto'}}
                         aria-label="Previous slide"
                       >
-                        <ChevronLeftIcon className="w-6 h-6 text-white group-hover:text-[rgb(250,146,8)] transition-colors" />
+                        <ChevronLeftIcon className="w-6 h-6 text-white group-hover:text-[rgb(250,146,8)] transition-colors" style={{pointerEvents: 'none'}} />
                       </button>
 
                       {/* Right Arrow */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          e.preventDefault();
+                          console.log('Right arrow clicked');
                           nextSlide();
                         }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group cursor-pointer"
+                        style={{zIndex: 50, pointerEvents: 'auto'}}
                         aria-label="Next slide"
                       >
-                        <ChevronRightIcon className="w-6 h-6 text-white group-hover:text-[rgb(250,146,8)] transition-colors" />
+                        <ChevronRightIcon className="w-6 h-6 text-white group-hover:text-[rgb(250,146,8)] transition-colors" style={{pointerEvents: 'none'}} />
                       </button>
                     </>
                   )}
