@@ -1064,10 +1064,10 @@ const HomePage = () => {
             </div>
 
             {/* Right Side - Image Slider with Overlap */}
-            <div className="order-2 max-[480px]:order-2 lg:order-2 relative max-[480px]:ml-0 max-[480px]:w-full lg:-ml-[10%]" style={{zIndex: 1}}>
+            <div className="order-2 max-[480px]:order-2 lg:order-2 relative max-[480px]:ml-0 max-[480px]:w-full lg:-ml-[10%]">
               <FadeInUp delay={0.1}>
                 <div
-                  className="relative overflow-hidden rounded-2xl max-[480px]:mx-0 max-[480px]:w-full max-[480px]:aspect-video max-[480px]:h-auto max-[480px]:max-h-[200px]"
+                  className="relative overflow-visible rounded-2xl max-[480px]:mx-0 max-[480px]:w-full max-[480px]:aspect-video max-[480px]:h-auto max-[480px]:max-h-[200px]"
                   style={{
                     height: '280px',
                     boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(250, 146, 8, 0.1)'
@@ -1128,28 +1128,30 @@ const HomePage = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          e.preventDefault();
                           console.log('Left arrow clicked');
                           prevSlide();
                         }}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group"
-                        style={{zIndex: 30}}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group cursor-pointer"
+                        style={{zIndex: 50, pointerEvents: 'auto'}}
                         aria-label="Previous slide"
                       >
-                        <ChevronLeftIcon className="w-6 h-6 text-white group-hover:text-[rgb(250,146,8)] transition-colors" />
+                        <ChevronLeftIcon className="w-6 h-6 text-white group-hover:text-[rgb(250,146,8)] transition-colors" style={{pointerEvents: 'none'}} />
                       </button>
 
                       {/* Right Arrow */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          e.preventDefault();
                           console.log('Right arrow clicked');
                           nextSlide();
                         }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group"
-                        style={{zIndex: 30}}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 group cursor-pointer"
+                        style={{zIndex: 50, pointerEvents: 'auto'}}
                         aria-label="Next slide"
                       >
-                        <ChevronRightIcon className="w-6 h-6 text-white group-hover:text-[rgb(250,146,8)] transition-colors" />
+                        <ChevronRightIcon className="w-6 h-6 text-white group-hover:text-[rgb(250,146,8)] transition-colors" style={{pointerEvents: 'none'}} />
                       </button>
                     </>
                   )}
