@@ -1077,7 +1077,7 @@ const HomePage = () => {
                   {allSlides.map((slide, index) => (
                     <div
                       key={index}
-                      className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${
+                      className={`absolute inset-0 w-full h-full transition-opacity duration-2000 ${
                         slide.carId ? 'cursor-pointer' : ''
                       } ${currentSlide !== index ? 'pointer-events-none' : ''}`}
                       style={{
