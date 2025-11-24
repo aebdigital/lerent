@@ -1031,15 +1031,16 @@ const HomePage = () => {
             {/* Left Side - Text Content */}
             <div className="order-1 max-[480px]:order-1 lg:order-1 flex items-center justify-center max-[480px]:justify-start lg:justify-start max-[480px]:min-h-0 min-h-[280px]" style={{zIndex: 2}}>
               <FadeInUp>
-                <div className="max-[480px]:mt-0 h-[280px] flex flex-col justify-center">
+                <div className="max-[480px]:mt-0 h-[280px] flex flex-col justify-center overflow-hidden">
                   <h2
-                    className="font-goldman font-medium leading-tight text-2xl sm:text-3xl lg:text-3xl xl:text-4xl max-[480px]:text-left mb-3 max-[480px]:mb-2 line-clamp-2 overflow-hidden"
+                    className="font-goldman font-medium leading-tight text-xl sm:text-2xl lg:text-2xl xl:text-3xl max-[480px]:text-left mb-3 max-[480px]:mb-2"
                     style={{
                       background: 'linear-gradient(180deg, #ffffff 0%, rgb(250, 146, 8) 100%)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
-                      maxHeight: '120px'
+                      maxHeight: '140px',
+                      overflow: 'hidden'
                     }}
                   >
                     {/* Use current slide title */}
@@ -1054,7 +1055,7 @@ const HomePage = () => {
                       </>
                     )}
                   </h2>
-                  <p className="text-gray-300 text-sm sm:text-base lg:text-lg max-w-md max-[480px]:text-left max-[480px]:mb-0 line-clamp-3 overflow-hidden" style={{maxHeight: '90px'}}>
+                  <p className="text-gray-300 text-xs sm:text-sm lg:text-base max-w-md max-[480px]:text-left max-[480px]:mb-0 leading-relaxed" style={{maxHeight: '140px', overflow: 'hidden'}}>
                     {/* Use current slide subtitle */}
                     {allSlides[currentSlide]?.subtitle || 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.'}
                   </p>
