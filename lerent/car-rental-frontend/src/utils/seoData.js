@@ -1,23 +1,23 @@
 // SEO data for different pages
 export const seoData = {
   home: {
-    title: 'Lerent autopožičovňa - Prenájom áut Košice | Luxusné vozidlá',
-    description: 'Prenájom áut v Košiciach s Lerent. Luxusné vozidlá, profesionálne služby, konkurenčné ceny. BMW, Audi, Mercedes a ďalšie prémiové značky. Rezervujte si auto už dnes!',
-    keywords: 'prenájom áut Košice, autopožičovňa Košice, luxusné vozidlá, BMW prenájom, Audi prenájom, Mercedes prenájom, car rental Košice, lerent',
+    title: 'Lerent autopožičovňa - Prenájom áut Nitra | Luxusné vozidlá',
+    description: 'Prenájom áut v Nitre s Lerent. Luxusné vozidlá, profesionálne služby, konkurenčné ceny. BMW, Audi, Mercedes a ďalšie prémiové značky. Rezervujte si auto už dnes!',
+    keywords: 'prenájom áut Nitra, autopožičovňa Nitra, luxusné vozidlá, BMW prenájom, Audi prenájom, Mercedes prenájom, car rental Nitra, lerent',
     type: 'website'
   },
   
   booking: {
-    title: 'Rezervácia vozidla - Lerent autopožičovňa Košice',
-    description: 'Rezervujte si vozidlo online v autopožičovni Lerent. Jednoduchý proces rezervácie, flexibilné platby, okamžité potvrdenie. Prenájom áut Košice.',
-    keywords: 'rezervácia auta, booking car rental, prenájom vozidla online, rezervácia Košice',
+    title: 'Rezervácia vozidla - Lerent autopožičovňa Nitra',
+    description: 'Rezervujte si vozidlo online v autopožičovni Lerent. Jednoduchý proces rezervácie, flexibilné platby, okamžité potvrdenie. Prenájom áut Nitra.',
+    keywords: 'rezervácia auta, booking car rental, prenájom vozidla online, rezervácia Nitra',
     type: 'website'
   },
 
   sluzby: {
     title: 'Naše služby - Lerent autopožičovňa | Komplexné služby pre prenájom áut',
-    description: 'Objavte všetky naše služby: prenájom luxusných áut, dlhodobý prenájom, autopožičky, sprostredkovanie, poistenie. Profesionálne služby v Košiciach.',
-    keywords: 'služby autopožičovne, dlhodobý prenájom, autopožičky Košice, sprostredkovanie áut, poistenie vozidiel',
+    description: 'Objavte všetky naše služby: prenájom luxusných áut, dlhodobý prenájom, autopožičky, sprostredkovanie, poistenie. Profesionálne služby v Nitre.',
+    keywords: 'služby autopožičovne, dlhodobý prenájom, autopožičky Nitra, sprostredkovanie áut, poistenie vozidiel',
     type: 'website'
   },
 
@@ -31,7 +31,7 @@ export const seoData = {
   poistenie: {
     title: 'Poistenie vozidiel - Lerent autopožičovňa | Komplexné poistenie',
     description: 'Komplexné poistenie pre prenajímané vozidlá. Povinné zmluvné poistenie, havarijné poistenie, asistenčné služby. Bezpečný prenájom áut.',
-    keywords: 'poistenie prenájom áut, havarijné poistenie, PZP, asistenčné služby, poistenie vozidiel Košice',
+    keywords: 'poistenie prenájom áut, havarijné poistenie, PZP, asistenčné služby, poistenie vozidiel Nitra',
     type: 'website'
   },
 

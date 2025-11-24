@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const SEOHead = ({ 
-  title = 'Lerent autopožičovňa - Prenájom áut Košice | Luxusné vozidlá',
-  description = 'Prenájom áut v Košiciach s Lerent. Luxusné vozidlá, profesionálne služby, konkurenčné ceny. BMW, Audi, Mercedes a ďalšie prémiové značky. Rezervujte si auto už dnes!',
-  keywords = 'prenájom áut Košice, autopožičovňa Košice, luxusné vozidlá, BMW prenájom, Audi prenájom, Mercedes prenájom, car rental Košice',
+  title = 'Lerent autopožičovňa - Prenájom áut Nitra | Luxusné vozidlá',
+  description = 'Prenájom áut v Nitre s Lerent. Luxusné vozidlá, profesionálne služby, konkurenčné ceny. BMW, Audi, Mercedes a ďalšie prémiové značky. Rezervujte si auto už dnes!',
+  keywords = 'prenájom áut Nitra, autopožičovňa Nitra, luxusné vozidlá, BMW prenájom, Audi prenájom, Mercedes prenájom, car rental Nitra',
   image = '/main page final1.jpg',
   url = 'https://lerent.sk',
   type = 'website',
@@ -60,7 +60,7 @@ const SEOHead = ({
     updateMetaTag('og:type', type);
     updateMetaTag('og:url', currentUrl);
     updateMetaTag('og:image', image);
-    updateMetaTag('og:image:alt', 'Lerent autopožičovňa - Prenájom luxusných áut v Košiciach');
+    updateMetaTag('og:image:alt', 'Lerent autopožičovňa - Prenájom luxusných áut v Nitre');
     updateMetaTag('og:site_name', 'Lerent');
     updateMetaTag('og:locale', locale);
     updateMetaTag('og:image:width', '1200');
@@ -71,7 +71,7 @@ const SEOHead = ({
     updateMetaTag('twitter:title', title, true);
     updateMetaTag('twitter:description', description, true);
     updateMetaTag('twitter:image', image, true);
-    updateMetaTag('twitter:image:alt', 'Lerent autopožičovňa - Prenájom luxusných áut v Košiciach', true);
+    updateMetaTag('twitter:image:alt', 'Lerent autopožičovňa - Prenájom luxusných áut v Nitre', true);
     
     // Additional SEO tags
     updateMetaTag('theme-color', '#FF5722', true);
@@ -89,7 +89,7 @@ const SEOHead = ({
       "@context": "https://schema.org",
       "@type": "CarRental",
       "name": "Lerent",
-      "description": "Prenájom luxusných áut v Košiciach. Profesionálne služby, konkurenčné ceny.",
+      "description": "Prenájom luxusných áut v Nitre. Profesionálne služby, konkurenčné ceny.",
       "url": url,
       "logo": `${url}/logoRENT.svg`,
       "image": `${url}${image}`,
@@ -98,14 +98,14 @@ const SEOHead = ({
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "Ulica 123",
-        "addressLocality": "Košice",
-        "postalCode": "04001",
+        "addressLocality": "Nitra",
+        "postalCode": "94901",
         "addressCountry": "SK"
       },
       "geo": {
         "@type": "GeoCoordinates",
-        "latitude": 48.7164,
-        "longitude": 21.2611
+        "latitude": 48.311863,
+        "longitude": 18.064591
       },
       "openingHours": [
         "Mo-Fr 08:00-18:00",

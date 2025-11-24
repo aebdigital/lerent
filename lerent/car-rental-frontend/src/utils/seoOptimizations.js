@@ -112,7 +112,7 @@ export const generateServiceSchema = (services, baseUrl = 'https://lerent.sk') =
     },
     "areaServed": {
       "@type": "Place",
-      "name": "Košice, Slovakia"
+      "name": "Nitra, Slovakia"
     },
     "hasOfferCatalog": {
       "@type": "OfferCatalog",

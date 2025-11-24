@@ -9,7 +9,7 @@ const CarDetailsSEO = ({ car, baseUrl = 'https://lerent.sk' }) => {
     const carDescription = car.description || `Prenájom ${carName} - luxusné vozidlo s profesionálnymi službami. Výhodné ceny, plné poistenie, 24/7 podpora.`;
     
     // Update document title
-    document.title = `${carName} - Prenájom | Lerent autopožičovňa Košice`;
+    document.title = `${carName} - Prenájom | Lerent autopožičovňa Nitra`;
     
     // Update meta tags
     const updateMetaTag = (property, content, name = false) => {
@@ -30,7 +30,7 @@ const CarDetailsSEO = ({ car, baseUrl = 'https://lerent.sk' }) => {
 
     // Basic SEO meta tags
     updateMetaTag('description', carDescription, true);
-    updateMetaTag('keywords', `${carName}, prenájom ${car.brand}, ${car.model} prenájom, autopožičovňa Košice, ${car.category || ''} vozidlo`, true);
+    updateMetaTag('keywords', `${carName}, prenájom ${car.brand}, ${car.model} prenájom, autopožičovňa Nitra, ${car.category || ''} vozidlo`, true);
     
     // Open Graph tags
     updateMetaTag('og:title', `${carName} - Prenájom | Lerent autopožičovňa`);
