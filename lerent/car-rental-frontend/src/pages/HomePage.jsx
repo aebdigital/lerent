@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDownIcon, FunnelIcon, ArrowDownIcon, ArrowUpIcon, ClockIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, FunnelIcon, ArrowDownIcon, ArrowUpIcon, ClockIcon, ChevronLeftIcon, ChevronRightIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import CarCard from '../components/CarCard';
 import ReviewsSection from '../components/ReviewsSection';
@@ -1417,6 +1417,9 @@ const HomePage = () => {
                       <ArrowUpIcon className="h-4 w-4" />
                     </>
                   )}
+                  {sortBy === 'power-desc' && (
+                    <BoltIcon className="h-4 w-4" />
+                  )}
                   {sortBy === 'availability' && (
                     <ClockIcon className="h-4 w-4" />
                   )}
@@ -1455,6 +1458,17 @@ const HomePage = () => {
                     </button>
                     <button
                       onClick={() => {
+                        setSortBy('power-desc');
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-center gap-2 p-3 transition-all hover:bg-[rgba(250,146,8,0.1)] ${
+                        sortBy === 'power-desc' ? 'bg-[rgba(250,146,8,0.1)]' : ''
+                      }`}
+                    >
+                      <BoltIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => {
                         setSortBy('availability');
                         setIsDropdownOpen(false);
                       }}
@@ -1487,6 +1501,9 @@ const HomePage = () => {
                     <span className="text-2xl">€</span>
                     <ArrowUpIcon className="h-6 w-6" />
                   </>
+                )}
+                {sortBy === 'power-desc' && (
+                  <BoltIcon className="h-6 w-6" />
                 )}
                 {sortBy === 'availability' && (
                   <ClockIcon className="h-6 w-6" />
