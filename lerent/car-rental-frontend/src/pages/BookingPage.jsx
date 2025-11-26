@@ -1376,38 +1376,49 @@ const BookingPage = () => {
                     <div className="space-y-4">
                       {/* Render additional services from API if available, otherwise use hardcoded fallback */}
                       {additionalServices && additionalServices.length > 0 ? (
-                        additionalServices.map((service) => (
-                          <label key={service._id || service.name} className="rounded-lg p-4 md:p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                            <div className="flex items-center space-x-3">
-                              <input
-                                type="checkbox"
-                                name={service.name}
-                                checked={formData[service.name] || false}
-                                onChange={handleInputChange}
-                                className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
-                              />
-                              <div>
-                                <h3 className="text-lg font-semibold text-white">{service.nameSk || service.displayName || service.name}</h3>
-                                <p className="text-gray-300 text-sm">{service.descriptionSk || service.description || ''}</p>
+                        additionalServices.map((service) => {
+                          const isSelected = formData[service.name] || false;
+                          return (
+                            <label
+                              key={service._id || service.name}
+                              className={`rounded-lg p-4 md:p-6 cursor-pointer transition-all duration-200 flex items-center justify-between border ${
+                                isSelected
+                                  ? 'border-[rgb(250,146,8)]'
+                                  : 'border-gray-800 hover:bg-gray-700'
+                              }`}
+                              style={{backgroundColor: isSelected ? 'rgba(250, 146, 8, 0.1)' : 'rgb(25, 25, 25)'}}
+                            >
+                              <div className="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  name={service.name}
+                                  checked={isSelected}
+                                  onChange={handleInputChange}
+                                  className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
+                                />
+                                <div>
+                                  <h3 className="text-lg font-semibold text-white">{service.nameSk || service.displayName || service.name}</h3>
+                                  <p className="text-gray-300 text-sm">{service.descriptionSk || service.description || ''}</p>
+                                </div>
                               </div>
-                            </div>
-                            <span className="text-[rgb(250,146,8)] font-bold text-lg ml-4 whitespace-nowrap">
-                              {service.pricing?.type === 'per_day' && service.pricing?.amount
-                                ? `+${service.pricing.amount}€/deň`
-                                : service.pricing?.type === 'fixed' && service.pricing?.amount
-                                ? `+${service.pricing.amount}€`
-                                : service.pricing?.type === 'percentage' && service.pricing?.amount
-                                ? `+${service.pricing.amount}%`
-                                : service.pricePerDay
-                                ? `+${service.pricePerDay}€/deň`
-                                : service.price
-                                ? `+${service.price}€`
-                                : service.dailyRate
-                                ? `+${service.dailyRate}€/deň`
-                                : 'Cena na vyžiadanie'}
-                            </span>
-                          </label>
-                        ))
+                              <span className="text-[rgb(250,146,8)] font-bold text-lg ml-4 whitespace-nowrap">
+                                {service.pricing?.type === 'per_day' && service.pricing?.amount
+                                  ? `+${service.pricing.amount}€/deň`
+                                  : service.pricing?.type === 'fixed' && service.pricing?.amount
+                                  ? `+${service.pricing.amount}€`
+                                  : service.pricing?.type === 'percentage' && service.pricing?.amount
+                                  ? `+${service.pricing.amount}%`
+                                  : service.pricePerDay
+                                  ? `+${service.pricePerDay}€/deň`
+                                  : service.price
+                                  ? `+${service.price}€`
+                                  : service.dailyRate
+                                  ? `+${service.dailyRate}€/deň`
+                                  : 'Cena na vyžiadanie'}
+                              </span>
+                            </label>
+                          );
+                        })
                       ) : (
                         <>
                           {/* Hardcoded fallback services */}

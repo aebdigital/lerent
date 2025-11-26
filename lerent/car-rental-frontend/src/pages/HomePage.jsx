@@ -98,6 +98,7 @@ const HomePage = () => {
   const sortOptions = [
     { value: 'price-asc', label: 'Od najlacnejšieho' },
     { value: 'price-desc', label: 'Od najdrahšieho' },
+    { value: 'power-desc', label: 'Výkon (kW) - od najvyššieho' },
     { value: 'availability', label: 'Podľa dostupnosti' }
   ];
 
@@ -672,33 +673,69 @@ const HomePage = () => {
         const priceA = a.pricing?.dailyRate || a.dailyRate || 0;
         const priceB = b.pricing?.dailyRate || b.dailyRate || 0;
         return priceA - priceB;
+      } else if (sortBy === 'power-desc') {
+        // Sort from highest to lowest power (kW)
+        const getPowerValue = (car) => {
+          const powerStr = car.engine?.power || car.power || '0';
+          // Extract numeric value from strings like "140 kW" or "140kW"
+          const match = powerStr.toString().match(/(\d+)/);
+          return match ? parseInt(match[1], 10) : 0;
+        };
+        const powerA = getPowerValue(a);
+        const powerB = getPowerValue(b);
+        return powerB - powerA;
       } else if (sortBy === 'availability') {
-        // Calculate available days for next month (31 days)
-        const getAvailableDays = (car) => {
+        // Intelligent availability sorting - prioritizes immediate availability
+        const getAvailabilityScore = (car) => {
           const today = new Date();
-          const oneMonthLater = new Date();
-          oneMonthLater.setDate(today.getDate() + 30);
+          const unavailableDates = car.unavailableDates || [];
 
-          const nextMonth = [];
-          const currentDate = new Date(today);
-          while (currentDate <= oneMonthLater) {
-            nextMonth.push(currentDate.toISOString().split('T')[0]);
-            currentDate.setDate(currentDate.getDate() + 1);
+          // Check next 7 days (immediate availability - highest weight)
+          let immediateAvailable = 0;
+          for (let i = 0; i < 7; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            const dateStr = date.toISOString().split('T')[0];
+            if (!unavailableDates.includes(dateStr)) {
+              immediateAvailable++;
+            }
           }
 
-          const unavailableDates = car.unavailableDates || [];
-          return nextMonth.filter(date => !unavailableDates.includes(date)).length;
+          // Check next 8-14 days (near-term availability - medium weight)
+          let nearTermAvailable = 0;
+          for (let i = 7; i < 14; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            const dateStr = date.toISOString().split('T')[0];
+            if (!unavailableDates.includes(dateStr)) {
+              nearTermAvailable++;
+            }
+          }
+
+          // Check next 15-30 days (future availability - lower weight)
+          let futureAvailable = 0;
+          for (let i = 14; i < 30; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            const dateStr = date.toISOString().split('T')[0];
+            if (!unavailableDates.includes(dateStr)) {
+              futureAvailable++;
+            }
+          }
+
+          // Weighted score: immediate availability is 4x more important, near-term is 2x
+          return (immediateAvailable * 4) + (nearTermAvailable * 2) + futureAvailable;
         };
 
-        const daysA = getAvailableDays(a);
-        const daysB = getAvailableDays(b);
+        const scoreA = getAvailabilityScore(a);
+        const scoreB = getAvailabilityScore(b);
 
-        // Sort by available days (most available first)
-        if (daysB !== daysA) {
-          return daysB - daysA;
+        // Sort by availability score (higher score = more available soon)
+        if (scoreB !== scoreA) {
+          return scoreB - scoreA;
         }
 
-        // If same availability, sort by lower price first
+        // If same score, sort by lower price first
         const priceA = a.pricing?.dailyRate || a.dailyRate || 0;
         const priceB = b.pricing?.dailyRate || b.dailyRate || 0;
         return priceA - priceB;
