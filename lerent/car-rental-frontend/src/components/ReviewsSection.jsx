@@ -29,25 +29,25 @@ const ReviewsSection = () => {
 
   const testimonials = [
     {
-      year: 2024,
+      year: 2025,
       text: "Úžasná komunikácia. Keď bol nejaký problém tak ho hneď riešili a komunikovali. Určite si aj v budúcnosti budeme požičiavať auta z tejto požičovne. Férová, ústretová a dole klobúk pred prístupom 👌",
       name: "Dávid Šmotlák",
       rating: 5
     },
     {
-      year: 2024,
+      year: 2025,
       text: "Ďakujem za super služby. Príjemné vystupovanie a autíčka v super stave. Problém neexistoval, ale verím, že keby nastal je vyriešený k mojej spokojnosti. Takto by to malo fungovať všade. Určite keď budem potrebovať auto, tak určite sa obráti opäť na LeRent. Ďakujem",
       name: "Ladislav Frniak",
       rating: 5
     },
     {
-      year: 2024,
+      year: 2025,
       text: "Požičiaval som už 2krát a musím povedať že som vždy na 100% spokojný !! Autá sú rýchle a vždy v dokonalom stave 😃",
       name: "Alexander Hidveghy",
       rating: 5
     },
     {
-      year: 2024,
+      year: 2025,
       text: "Spokojnosť, ako narodeninový darček som si to veľmi užil. Komunikáciu musím oceniť, nastal problém, ale všetko sa vyriešilo. Určite odporúčam 🤝",
       name: "Radovan Fuňak",
       rating: 5
