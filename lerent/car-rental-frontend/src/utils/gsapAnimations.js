@@ -24,6 +24,16 @@ export const initGSAPAnimations = () => {
     infinite: false,
   });
 
+  // Force background colors after Lenis initialization
+  document.documentElement.style.backgroundColor = '#0d0d0d';
+  document.body.style.backgroundColor = '#0d0d0d';
+
+  // Update theme-color meta tag to ensure it stays black
+  let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeColorMeta) {
+    themeColorMeta.setAttribute('content', '#0d0d0d');
+  }
+
   function raf(time) {
     lenis.raf(time);
     requestAnimationFrame(raf);
@@ -39,6 +49,20 @@ export const initGSAPAnimations = () => {
   });
 
   gsap.ticker.lagSmoothing(0);
+
+  // Apply background color to any wrapper elements Lenis might create
+  setTimeout(() => {
+    const lenisWrapper = document.querySelector('[data-lenis-prevent]');
+    if (lenisWrapper) {
+      lenisWrapper.style.backgroundColor = '#0d0d0d';
+    }
+    // Force background on all potential wrapper elements
+    document.querySelectorAll('body > div').forEach(div => {
+      if (!div.style.backgroundColor || div.style.backgroundColor === 'transparent') {
+        div.style.backgroundColor = '#0d0d0d';
+      }
+    });
+  }, 100);
 
   // Return lenis instance for cleanup
   return lenis;
