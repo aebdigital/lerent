@@ -12,6 +12,19 @@ function PaymentSuccess() {
     const verifyPayment = async () => {
       const sessionId = searchParams.get('session_id');
       const paymentId = searchParams.get('payment_id');
+      const devMode = searchParams.get('dev');
+
+      // Development mode bypass
+      if (devMode === 'true') {
+        console.log('Development mode: Bypassing payment verification');
+        setStatus('success');
+        setPaymentData({
+          _id: 'DEV-PAYMENT-ID',
+          amount: 150.00,
+          status: 'confirmed'
+        });
+        return;
+      }
 
       if (!sessionId || !paymentId) {
         setStatus('failed');
