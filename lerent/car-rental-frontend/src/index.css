@@ -35,6 +35,9 @@
   html {
     /* Disable native smooth scrolling - Lenis handles this */
     scroll-behavior: auto;
+    background-color: #0d0d0d !important;
+    min-height: 100%;
+    height: 100%;
   }
 
   body {
@@ -44,10 +47,36 @@
     overflow-x: hidden;
     background-color: #0d0d0d !important;
     color: white !important;
+    min-height: 100vh;
+    position: relative;
   }
 
-  html {
+  /* Fix iOS Safari overscroll background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -100vh;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    background-color: #0d0d0d;
+    z-index: -1;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -100vh;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    background-color: #0d0d0d;
+    z-index: -1;
+  }
+
+  #root {
     background-color: #0d0d0d !important;
+    min-height: 100vh;
   }
   
   /* Use Goldman font for all headings */
