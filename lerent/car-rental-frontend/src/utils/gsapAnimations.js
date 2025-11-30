@@ -34,18 +34,23 @@ export const initGSAPAnimations = () => {
     themeColorMeta.setAttribute('content', '#0d0d0d');
   }
 
-  function raf(time) {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
-  }
-
-  requestAnimationFrame(raf);
-
   // Pripojenie Lenis k GSAP ScrollTrigger
   lenis.on('scroll', ScrollTrigger.update);
 
+  // Use only GSAP ticker for animation loop (remove duplicate requestAnimationFrame)
   gsap.ticker.add((time) => {
     lenis.raf(time * 1000);
+  });
+
+  // Pause animations when page is not visible to improve performance
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      gsap.globalTimeline.pause();
+      lenis.stop();
+    } else {
+      gsap.globalTimeline.resume();
+      lenis.start();
+    }
   });
 
   gsap.ticker.lagSmoothing(0);
