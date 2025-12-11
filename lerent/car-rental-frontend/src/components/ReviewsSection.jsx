@@ -214,7 +214,7 @@ const ReviewsSection = () => {
                 transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               >
                 <div
-                  className="rounded-lg p-6 relative min-h-[250px]"
+                  className="rounded-lg p-6 relative min-h-[320px]"
                   style={{
                     background: 'linear-gradient(143deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.00) 100%)'
                   }}
