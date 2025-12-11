@@ -447,17 +447,34 @@ const CarDetailsPage = () => {
       ...prev,
       [field]: value
     }));
-    
-    // Show location input when "Vybrať miesto" is selected
-    if (field === 'pickupLocation' && value === 'Vybrať miesto') {
+
+    // Show location input when "Iné miesto" is selected
+    if (field === 'pickupLocation' && value === 'Iné miesto') {
       setShowLocationInput(true);
-    } else if (field === 'pickupLocation' && value !== 'Vybrať miesto') {
+    } else if (field === 'pickupLocation' && value !== 'Iné miesto') {
       setShowLocationInput(false);
       setCustomLocation('');
       setDistance(null);
       setDeliveryPrice(0);
     }
+
+    // Same for return location
+    if (field === 'returnLocation' && value === 'Iné miesto') {
+      setShowLocationInput(true);
+    } else if (field === 'returnLocation' && value !== 'Iné miesto') {
+      // Only hide if pickup is also not "Iné miesto"
+      if (bookingData.pickupLocation !== 'Iné miesto') {
+        setShowLocationInput(false);
+        setCustomLocation('');
+        setDistance(null);
+        setDeliveryPrice(0);
+      }
+    }
   };
+
+  // Base location coordinates (Nitra)
+  const BASE_LOCATION = { lat: 48.31196950348447, lng: 18.064612454449065 };
+  const PRICE_PER_KM = 0.60; // €0.60 per km
 
   // Calculate distance using Google Maps API
   const calculateDistance = async (destination) => {
@@ -467,13 +484,17 @@ const CarDetailsPage = () => {
       return;
     }
 
+    if (!window.google || !window.google.maps) {
+      console.error('Google Maps API not loaded');
+      return;
+    }
+
     setCalculating(true);
     try {
       const service = new window.google.maps.DistanceMatrixService();
-      const origin = 'Novozámocká 138, Horné Krškany, 949 05 Nitra, Slovakia';
-      
+
       service.getDistanceMatrix({
-        origins: [origin],
+        origins: [BASE_LOCATION],
         destinations: [destination],
         travelMode: window.google.maps.TravelMode.DRIVING,
         unitSystem: window.google.maps.UnitSystem.METRIC,
@@ -483,10 +504,11 @@ const CarDetailsPage = () => {
         if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
           const distanceKm = response.rows[0].elements[0].distance.value / 1000;
           setDistance(distanceKm);
-          // Calculate delivery price: 0.13€ per km for the round trip
-          const price = Math.round(distanceKm * 2 * 0.13 * 100) / 100;
+          // Calculate delivery price: €0.60 per km (one way)
+          const price = Math.round(distanceKm * PRICE_PER_KM * 100) / 100;
           setDeliveryPrice(price);
         } else {
+          console.error('Distance Matrix error:', status, response);
           setDistance(null);
           setDeliveryPrice(0);
         }
@@ -510,16 +532,47 @@ const CarDetailsPage = () => {
     }, 1000);
   };
 
-  // Load Google Maps API
+  // Load Google Maps API with Places library
   useEffect(() => {
     if (!window.google) {
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      if (!apiKey) {
+        console.error('Google Maps API key not found in environment variables');
+        return;
+      }
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=geometry`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry`;
       script.async = true;
       script.defer = true;
+      script.onload = () => {
+        console.log('Google Maps API loaded successfully');
+      };
       document.head.appendChild(script);
     }
   }, []);
+
+  // Initialize Google Places Autocomplete when input becomes visible
+  useEffect(() => {
+    if (showLocationInput && window.google && window.google.maps && window.google.maps.places) {
+      const input = document.getElementById('custom-location-input');
+      if (input && !input.dataset.autocompleteInit) {
+        const autocomplete = new window.google.maps.places.Autocomplete(input, {
+          componentRestrictions: { country: 'sk' },
+          fields: ['formatted_address', 'geometry']
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          if (place.formatted_address) {
+            setCustomLocation(place.formatted_address);
+            calculateDistance(place.formatted_address);
+          }
+        });
+
+        input.dataset.autocompleteInit = 'true';
+      }
+    }
+  }, [showLocationInput]);
 
   const handleKmPackageChange = (packageValue) => {
     setBookingData(prev => ({

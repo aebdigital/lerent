@@ -35,7 +35,23 @@ const BookingPage = () => {
   const [qrLoading, setQrLoading] = useState(false);
   const [backendPaymentDetails, setBackendPaymentDetails] = useState(null);
   const [generatedVariableSymbol, setGeneratedVariableSymbol] = useState(null);
-  
+
+  // Custom location for "Iné miesto" option
+  const [customPickupLocation, setCustomPickupLocation] = useState('');
+  const [customReturnLocation, setCustomReturnLocation] = useState('');
+  const [showCustomPickupInput, setShowCustomPickupInput] = useState(false);
+  const [showCustomReturnInput, setShowCustomReturnInput] = useState(false);
+  const [pickupDistance, setPickupDistance] = useState(null);
+  const [returnDistance, setReturnDistance] = useState(null);
+  const [pickupDeliveryPrice, setPickupDeliveryPrice] = useState(0);
+  const [returnDeliveryPrice, setReturnDeliveryPrice] = useState(0);
+  const [calculatingPickup, setCalculatingPickup] = useState(false);
+  const [calculatingReturn, setCalculatingReturn] = useState(false);
+
+  // Base location coordinates (Nitra)
+  const BASE_LOCATION = { lat: 48.31196950348447, lng: 18.064612454449065 };
+  const PRICE_PER_KM = 0.60; // €0.60 per km
+
   // Generate time slots in 30-minute intervals
   const generateTimeSlots = () => {
     const slots = [];
@@ -441,17 +457,209 @@ const BookingPage = () => {
     });
   };
 
+  // Load Google Maps API with Places library
+  useEffect(() => {
+    if (!window.google) {
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      if (!apiKey) {
+        console.error('Google Maps API key not found in environment variables');
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        console.log('Google Maps API loaded successfully');
+      };
+      document.head.appendChild(script);
+    }
+  }, []);
+
+  // Initialize Google Places Autocomplete for pickup location
+  useEffect(() => {
+    if (showCustomPickupInput && window.google && window.google.maps && window.google.maps.places) {
+      const input = document.getElementById('custom-pickup-location');
+      if (input && !input.dataset.autocompleteInit) {
+        const autocomplete = new window.google.maps.places.Autocomplete(input, {
+          componentRestrictions: { country: 'sk' },
+          fields: ['formatted_address', 'geometry']
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          if (place.formatted_address) {
+            setCustomPickupLocation(place.formatted_address);
+            calculateDistance(place.formatted_address, 'pickup');
+          }
+        });
+
+        input.dataset.autocompleteInit = 'true';
+      }
+    }
+  }, [showCustomPickupInput]);
+
+  // Initialize Google Places Autocomplete for return location
+  useEffect(() => {
+    if (showCustomReturnInput && window.google && window.google.maps && window.google.maps.places) {
+      const input = document.getElementById('custom-return-location');
+      if (input && !input.dataset.autocompleteInit) {
+        const autocomplete = new window.google.maps.places.Autocomplete(input, {
+          componentRestrictions: { country: 'sk' },
+          fields: ['formatted_address', 'geometry']
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          if (place.formatted_address) {
+            setCustomReturnLocation(place.formatted_address);
+            calculateDistance(place.formatted_address, 'return');
+          }
+        });
+
+        input.dataset.autocompleteInit = 'true';
+      }
+    }
+  }, [showCustomReturnInput]);
+
+  // Calculate distance using Google Maps API
+  const calculateDistance = async (destination, type) => {
+    if (!destination || destination.trim() === '') {
+      if (type === 'pickup') {
+        setPickupDistance(null);
+        setPickupDeliveryPrice(0);
+      } else {
+        setReturnDistance(null);
+        setReturnDeliveryPrice(0);
+      }
+      return;
+    }
+
+    if (!window.google || !window.google.maps) {
+      console.error('Google Maps API not loaded');
+      return;
+    }
+
+    if (type === 'pickup') {
+      setCalculatingPickup(true);
+    } else {
+      setCalculatingReturn(true);
+    }
+
+    try {
+      const service = new window.google.maps.DistanceMatrixService();
+
+      service.getDistanceMatrix({
+        origins: [BASE_LOCATION],
+        destinations: [destination],
+        travelMode: window.google.maps.TravelMode.DRIVING,
+        unitSystem: window.google.maps.UnitSystem.METRIC,
+        avoidHighways: false,
+        avoidTolls: false
+      }, (response, status) => {
+        if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
+          const distanceKm = response.rows[0].elements[0].distance.value / 1000;
+          const price = Math.round(distanceKm * PRICE_PER_KM * 100) / 100;
+
+          if (type === 'pickup') {
+            setPickupDistance(distanceKm);
+            setPickupDeliveryPrice(price);
+          } else {
+            setReturnDistance(distanceKm);
+            setReturnDeliveryPrice(price);
+          }
+        } else {
+          console.error('Distance Matrix error:', status, response);
+          if (type === 'pickup') {
+            setPickupDistance(null);
+            setPickupDeliveryPrice(0);
+          } else {
+            setReturnDistance(null);
+            setReturnDeliveryPrice(0);
+          }
+        }
+
+        if (type === 'pickup') {
+          setCalculatingPickup(false);
+        } else {
+          setCalculatingReturn(false);
+        }
+      });
+    } catch (error) {
+      console.error('Error calculating distance:', error);
+      if (type === 'pickup') {
+        setPickupDistance(null);
+        setPickupDeliveryPrice(0);
+        setCalculatingPickup(false);
+      } else {
+        setReturnDistance(null);
+        setReturnDeliveryPrice(0);
+        setCalculatingReturn(false);
+      }
+    }
+  };
+
+  // Handle custom location input change with debounce
+  const handleCustomLocationChange = (value, type) => {
+    if (type === 'pickup') {
+      setCustomPickupLocation(value);
+    } else {
+      setCustomReturnLocation(value);
+    }
+
+    // Debounce the API call
+    clearTimeout(window[`${type}LocationTimeout`]);
+    window[`${type}LocationTimeout`] = setTimeout(() => {
+      calculateDistance(value, type);
+    }, 1000);
+  };
+
   const handleLocationChange = (locationType, locationIndex) => {
     if (locationIndex === '' || locationIndex < 0) {
       setFormData(prev => ({
         ...prev,
         [locationType]: { name: '', address: '', city: '', state: '', postalCode: '', country: 'SK' }
       }));
+      // Reset custom location state
+      if (locationType === 'pickupLocation') {
+        setShowCustomPickupInput(false);
+        setCustomPickupLocation('');
+        setPickupDistance(null);
+        setPickupDeliveryPrice(0);
+      } else {
+        setShowCustomReturnInput(false);
+        setCustomReturnLocation('');
+        setReturnDistance(null);
+        setReturnDeliveryPrice(0);
+      }
     } else {
+      const selectedLocation = locations[locationIndex];
       setFormData(prev => ({
         ...prev,
-        [locationType]: locations[locationIndex]
+        [locationType]: selectedLocation
       }));
+
+      // Check if "Iné miesto" was selected
+      if (selectedLocation.name === 'Iné miesto') {
+        if (locationType === 'pickupLocation') {
+          setShowCustomPickupInput(true);
+        } else {
+          setShowCustomReturnInput(true);
+        }
+      } else {
+        // Reset custom location state for non-custom locations
+        if (locationType === 'pickupLocation') {
+          setShowCustomPickupInput(false);
+          setCustomPickupLocation('');
+          setPickupDistance(null);
+          setPickupDeliveryPrice(0);
+        } else {
+          setShowCustomReturnInput(false);
+          setCustomReturnLocation('');
+          setReturnDistance(null);
+          setReturnDeliveryPrice(0);
+        }
+      }
     }
   };
 
@@ -948,7 +1156,9 @@ const BookingPage = () => {
     const latePickupFee = calculateLatePickupFee();
     const lateDropoffFee = calculateLateDropoffFee();
     const bratislavaLocationFee = calculateBratislavaLocationFee();
-    return rentalCost + insuranceCost + additionalServicesCost + latePickupFee + lateDropoffFee + bratislavaLocationFee;
+    // Add custom location delivery fees
+    const customDeliveryFee = pickupDeliveryPrice + returnDeliveryPrice;
+    return rentalCost + insuranceCost + additionalServicesCost + latePickupFee + lateDropoffFee + bratislavaLocationFee + customDeliveryFee;
   };
 
   const calculateDays = () => {
@@ -2038,6 +2248,55 @@ const BookingPage = () => {
                   </select>
                 </div>
 
+                {/* Custom Location Inputs for "Iné miesto" */}
+                {(showCustomPickupInput || showCustomReturnInput) && (
+                  <div className="grid grid-cols-2 gap-4">
+                    {showCustomPickupInput && (
+                      <div>
+                        <input
+                          type="text"
+                          id="custom-pickup-location"
+                          value={customPickupLocation}
+                          onChange={(e) => handleCustomLocationChange(e.target.value, 'pickup')}
+                          placeholder="Zadajte adresu prevzatia"
+                          className="w-full border border-gray-700 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)]"
+                          style={{ backgroundColor: '#191919', border: '1px solid #555' }}
+                        />
+                        {calculatingPickup && (
+                          <p className="text-xs text-gray-400 mt-1">Počítam vzdialenosť...</p>
+                        )}
+                        {pickupDistance !== null && !calculatingPickup && (
+                          <p className="text-xs text-[rgb(250,146,8)] mt-1">
+                            {pickupDistance.toFixed(1)} km = +{pickupDeliveryPrice.toFixed(2)}€
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {!showCustomPickupInput && showCustomReturnInput && <div></div>}
+                    {showCustomReturnInput && (
+                      <div>
+                        <input
+                          type="text"
+                          id="custom-return-location"
+                          value={customReturnLocation}
+                          onChange={(e) => handleCustomLocationChange(e.target.value, 'return')}
+                          placeholder="Zadajte adresu vrátenia"
+                          className="w-full border border-gray-700 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)]"
+                          style={{ backgroundColor: '#191919', border: '1px solid #555' }}
+                        />
+                        {calculatingReturn && (
+                          <p className="text-xs text-gray-400 mt-1">Počítam vzdialenosť...</p>
+                        )}
+                        {returnDistance !== null && !calculatingReturn && (
+                          <p className="text-xs text-[rgb(250,146,8)] mt-1">
+                            {returnDistance.toFixed(1)} km = +{returnDeliveryPrice.toFixed(2)}€
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Row 2: Date Selects */}
                 <div className="grid grid-cols-2 gap-4">
                   <DatePicker
@@ -2270,6 +2529,38 @@ const BookingPage = () => {
                         </div>
                       );
                     })()}
+
+                    {/* Custom Location Delivery Fee breakdown */}
+                    {(pickupDeliveryPrice > 0 || returnDeliveryPrice > 0) && (
+                      <div className="space-y-2 pt-2" style={{borderTop: '0.5px solid #444'}}>
+                        <div className="text-sm text-gray-300 font-semibold">Príplatok za pristavenie:</div>
+
+                        {pickupDeliveryPrice > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-300">
+                              Prevzatie - {customPickupLocation}
+                              <span className="text-gray-400 ml-1">({pickupDistance?.toFixed(1)} km × {PRICE_PER_KM.toFixed(2)}€)</span>
+                            </span>
+                            <span className="font-medium text-white">{pickupDeliveryPrice.toFixed(2)}€</span>
+                          </div>
+                        )}
+
+                        {returnDeliveryPrice > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-300">
+                              Vrátenie - {customReturnLocation}
+                              <span className="text-gray-400 ml-1">({returnDistance?.toFixed(1)} km × {PRICE_PER_KM.toFixed(2)}€)</span>
+                            </span>
+                            <span className="font-medium text-white">{returnDeliveryPrice.toFixed(2)}€</span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between text-sm font-semibold pt-1">
+                          <span className="text-gray-300">Celkom pristavenie:</span>
+                          <span className="text-white">{(pickupDeliveryPrice + returnDeliveryPrice).toFixed(2)}€</span>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="pt-3" style={{borderTop: '0.5px solid #d1d5db'}}>
                       <div className="flex justify-between text-lg font-bold">
