@@ -167,21 +167,39 @@
 
 /* Google Places Autocomplete dropdown styling */
 .pac-container {
-  z-index: 10000 !important;
+  z-index: 99999 !important;
   background-color: #191919 !important;
   border: 1px solid #555 !important;
   border-radius: 8px !important;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
   font-family: 'Goldman', system-ui, -apple-system, sans-serif !important;
   margin-top: 4px !important;
+  position: fixed !important;
+  width: calc(100% - 32px) !important;
+  max-width: 400px !important;
+  left: 16px !important;
+  right: 16px !important;
+}
+
+/* Desktop - wider dropdown */
+@media (min-width: 768px) {
+  .pac-container {
+    width: auto !important;
+    max-width: none !important;
+    left: auto !important;
+    right: auto !important;
+    position: absolute !important;
+  }
 }
 
 .pac-item {
-  padding: 10px 12px !important;
+  padding: 12px 14px !important;
   color: #fff !important;
   background-color: #191919 !important;
   border-top: 1px solid #333 !important;
   cursor: pointer !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
 }
 
 .pac-item:first-child {
@@ -196,6 +214,7 @@
 .pac-item-query {
   color: #fa9208 !important;
   font-weight: 600 !important;
+  font-size: 14px !important;
 }
 
 .pac-matched {
@@ -205,9 +224,16 @@
 
 .pac-icon {
   filter: invert(1) !important;
+  margin-right: 8px !important;
 }
 
 .pac-icon-marker {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23fa9208' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E") !important;
   background-size: contain !important;
+}
+
+/* Ensure the Google logo at bottom is visible */
+.pac-logo:after {
+  background-color: #191919 !important;
+  padding: 8px !important;
 }

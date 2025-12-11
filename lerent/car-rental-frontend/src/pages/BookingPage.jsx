@@ -2187,7 +2187,7 @@ const BookingPage = () => {
 
           {/* Right Side - Rental Details */}
           <div className="lg:col-span-2">
-            <div className="rounded-lg shadow-sm sticky overflow-hidden border border-gray-800" style={{ top: '140px', backgroundColor: 'rgb(25, 25, 25)' }}>
+            <div className="rounded-lg shadow-sm sticky overflow-visible border border-gray-800" style={{ top: '140px', backgroundColor: 'rgb(25, 25, 25)' }}>
               {/* Selected Car */}
               {selectedCar && (
                 <div>
