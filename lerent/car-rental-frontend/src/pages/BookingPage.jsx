@@ -476,6 +476,54 @@ const BookingPage = () => {
     }
   }, []);
 
+  // Fix for mobile - prevent pac-container from closing on touch
+  useEffect(() => {
+    let isSelectingFromDropdown = false;
+
+    const handleTouchStart = (e) => {
+      const pacContainer = e.target.closest('.pac-container');
+      const pacItem = e.target.closest('.pac-item');
+      if (pacContainer || pacItem) {
+        isSelectingFromDropdown = true;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    const handleTouchEnd = (e) => {
+      const pacItem = e.target.closest('.pac-item');
+      if (pacItem && isSelectingFromDropdown) {
+        e.preventDefault();
+        e.stopPropagation();
+        // Simulate a click on the pac-item to trigger selection
+        const clickEvent = new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window
+        });
+        pacItem.dispatchEvent(clickEvent);
+        isSelectingFromDropdown = false;
+      }
+    };
+
+    const handleMouseDown = (e) => {
+      if (e.target.closest('.pac-container') || e.target.closest('.pac-item')) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    document.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
+    document.addEventListener('mousedown', handleMouseDown, { passive: false });
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      document.removeEventListener('touchend', handleTouchEnd, { capture: true });
+      document.removeEventListener('mousedown', handleMouseDown);
+    };
+  }, []);
+
   // Initialize Google Places Autocomplete for pickup location
   useEffect(() => {
     if (showCustomPickupInput && window.google && window.google.maps && window.google.maps.places) {
