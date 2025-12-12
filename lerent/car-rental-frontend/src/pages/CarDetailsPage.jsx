@@ -554,23 +554,36 @@ const CarDetailsPage = () => {
   // Initialize Google Places Autocomplete when input becomes visible
   useEffect(() => {
     if (showLocationInput && window.google && window.google.maps && window.google.maps.places) {
-      const input = document.getElementById('custom-location-input');
-      if (input && !input.dataset.autocompleteInit) {
-        const autocomplete = new window.google.maps.places.Autocomplete(input, {
-          componentRestrictions: { country: 'sk' },
-          fields: ['formatted_address', 'geometry']
-        });
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        const input = document.getElementById('custom-location-input');
+        if (input && !input.dataset.autocompleteInit) {
+          const autocomplete = new window.google.maps.places.Autocomplete(input, {
+            componentRestrictions: { country: 'sk' },
+            fields: ['formatted_address', 'geometry'],
+            types: ['address']
+          });
 
-        autocomplete.addListener('place_changed', () => {
-          const place = autocomplete.getPlace();
-          if (place.formatted_address) {
-            setCustomLocation(place.formatted_address);
-            calculateDistance(place.formatted_address);
-          }
-        });
+          autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            if (place.formatted_address) {
+              setCustomLocation(place.formatted_address);
+              calculateDistance(place.formatted_address);
+            }
+          });
 
-        input.dataset.autocompleteInit = 'true';
-      }
+          // Prevent form submission on enter
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+            }
+          });
+
+          input.dataset.autocompleteInit = 'true';
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
     }
   }, [showLocationInput]);
 

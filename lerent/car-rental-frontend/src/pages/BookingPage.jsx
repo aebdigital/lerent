@@ -479,46 +479,72 @@ const BookingPage = () => {
   // Initialize Google Places Autocomplete for pickup location
   useEffect(() => {
     if (showCustomPickupInput && window.google && window.google.maps && window.google.maps.places) {
-      const input = document.getElementById('custom-pickup-location');
-      if (input && !input.dataset.autocompleteInit) {
-        const autocomplete = new window.google.maps.places.Autocomplete(input, {
-          componentRestrictions: { country: 'sk' },
-          fields: ['formatted_address', 'geometry']
-        });
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        const input = document.getElementById('custom-pickup-location');
+        if (input && !input.dataset.autocompleteInit) {
+          const autocomplete = new window.google.maps.places.Autocomplete(input, {
+            componentRestrictions: { country: 'sk' },
+            fields: ['formatted_address', 'geometry'],
+            types: ['address']
+          });
 
-        autocomplete.addListener('place_changed', () => {
-          const place = autocomplete.getPlace();
-          if (place.formatted_address) {
-            setCustomPickupLocation(place.formatted_address);
-            calculateDistance(place.formatted_address, 'pickup');
-          }
-        });
+          autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            if (place.formatted_address) {
+              setCustomPickupLocation(place.formatted_address);
+              calculateDistance(place.formatted_address, 'pickup');
+            }
+          });
 
-        input.dataset.autocompleteInit = 'true';
-      }
+          // Prevent form submission on enter
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+            }
+          });
+
+          input.dataset.autocompleteInit = 'true';
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
     }
   }, [showCustomPickupInput]);
 
   // Initialize Google Places Autocomplete for return location
   useEffect(() => {
     if (showCustomReturnInput && window.google && window.google.maps && window.google.maps.places) {
-      const input = document.getElementById('custom-return-location');
-      if (input && !input.dataset.autocompleteInit) {
-        const autocomplete = new window.google.maps.places.Autocomplete(input, {
-          componentRestrictions: { country: 'sk' },
-          fields: ['formatted_address', 'geometry']
-        });
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        const input = document.getElementById('custom-return-location');
+        if (input && !input.dataset.autocompleteInit) {
+          const autocomplete = new window.google.maps.places.Autocomplete(input, {
+            componentRestrictions: { country: 'sk' },
+            fields: ['formatted_address', 'geometry'],
+            types: ['address']
+          });
 
-        autocomplete.addListener('place_changed', () => {
-          const place = autocomplete.getPlace();
-          if (place.formatted_address) {
-            setCustomReturnLocation(place.formatted_address);
-            calculateDistance(place.formatted_address, 'return');
-          }
-        });
+          autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            if (place.formatted_address) {
+              setCustomReturnLocation(place.formatted_address);
+              calculateDistance(place.formatted_address, 'return');
+            }
+          });
 
-        input.dataset.autocompleteInit = 'true';
-      }
+          // Prevent form submission on enter
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+            }
+          });
+
+          input.dataset.autocompleteInit = 'true';
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
     }
   }, [showCustomReturnInput]);
 
@@ -2252,13 +2278,14 @@ const BookingPage = () => {
                 {(showCustomPickupInput || showCustomReturnInput) && (
                   <div className="grid grid-cols-2 gap-4">
                     {showCustomPickupInput && (
-                      <div>
+                      <div className="relative">
                         <input
                           type="text"
                           id="custom-pickup-location"
                           value={customPickupLocation}
                           onChange={(e) => handleCustomLocationChange(e.target.value, 'pickup')}
                           placeholder="Zadajte adresu prevzatia"
+                          autoComplete="off"
                           className="w-full border border-gray-700 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)]"
                           style={{ backgroundColor: '#191919', border: '1px solid #555' }}
                         />
@@ -2274,13 +2301,14 @@ const BookingPage = () => {
                     )}
                     {!showCustomPickupInput && showCustomReturnInput && <div></div>}
                     {showCustomReturnInput && (
-                      <div>
+                      <div className="relative">
                         <input
                           type="text"
                           id="custom-return-location"
                           value={customReturnLocation}
                           onChange={(e) => handleCustomLocationChange(e.target.value, 'return')}
                           placeholder="Zadajte adresu vrátenia"
+                          autoComplete="off"
                           className="w-full border border-gray-700 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)]"
                           style={{ backgroundColor: '#191919', border: '1px solid #555' }}
                         />
