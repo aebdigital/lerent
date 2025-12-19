@@ -277,6 +277,7 @@ const DatePicker = ({
               // Navigation Arrows with Month/Year Display
               <>
                 <button
+                  type="button"
                   onClick={() => navigateMonth(-1)}
                   className="p-1 hover:bg-gray-700 rounded"
                 >
@@ -288,6 +289,7 @@ const DatePicker = ({
                 </h3>
 
                 <button
+                  type="button"
                   onClick={() => navigateMonth(1)}
                   className="p-1 hover:bg-gray-700 rounded"
                 >
@@ -312,6 +314,7 @@ const DatePicker = ({
               <div key={index} className="aspect-square">
                 {date && (
                   <button
+                    type="button"
                     onClick={() => handleDateClick(date)}
                     disabled={isDateDisabled(date)}
                     className={`w-full h-full flex items-center justify-center text-sm rounded transition-colors ${

@@ -440,6 +440,15 @@ const HomePage = () => {
   const [returnDate, setReturnDate] = useState('');
   const [heroFormUnavailableDates, setHeroFormUnavailableDates] = useState([]);
   const [heroFormLocations, setHeroFormLocations] = useState([]);
+  const [heroFormAvailableCars, setHeroFormAvailableCars] = useState([]);
+  const [loadingHeroFormCars, setLoadingHeroFormCars] = useState(false);
+
+  // Stats section state
+  const [statsData, setStatsData] = useState({
+    carsCount: 19, // fallback
+    kmBonus: 0, // bonus km to add to 550
+    customersBonus: 0 // bonus customers to add to 120
+  });
 
   const handleInputChange = (e) => {
     setFormData({
@@ -592,7 +601,104 @@ const HomePage = () => {
     loadLocations();
   }, []);
 
-  // Fetch car availability when a car is selected in hero form
+  // Fetch stats for the "VÁŠEŇ PRE AUTÁ" section
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch cars count
+        const carsResponse = await fetch(`${config.API_BASE_URL}/api/lerent-stats/cars-count`);
+        const carsData = await carsResponse.json();
+
+        // Fetch rental revenue (for km calculation)
+        const revenueResponse = await fetch(`${config.API_BASE_URL}/api/lerent-stats/rental-revenue`);
+        const revenueData = await revenueResponse.json();
+
+        // Fetch unique customers
+        const customersResponse = await fetch(`${config.API_BASE_URL}/api/lerent-stats/unique-customers`);
+        const customersData = await customersResponse.json();
+
+        // Calculate km bonus: totalDays * multiplier (200) = estimated km driven
+        // For every 1000km, add +1 to 550 (cap at 999 bonus)
+        let kmBonus = 0;
+        if (revenueData.success && revenueData.data) {
+          const totalDays = revenueData.data.totalDays || 0;
+          const multiplier = revenueData.data.multiplier || 200;
+          const estimatedKm = totalDays * multiplier;
+          kmBonus = Math.min(Math.floor(estimatedKm / 1000), 999);
+        }
+
+        setStatsData({
+          carsCount: carsData.success ? carsData.data.carsCount : 19,
+          kmBonus: kmBonus,
+          customersBonus: customersData.success ? customersData.data.uniqueCustomersCount : 0
+        });
+
+        console.log('📊 Stats loaded:', {
+          carsCount: carsData.success ? carsData.data.carsCount : 19,
+          kmBonus,
+          customersBonus: customersData.success ? customersData.data.uniqueCustomersCount : 0
+        });
+      } catch (err) {
+        console.error('❌ Error fetching stats:', err);
+        // Keep default values on error
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  // Filter available cars based on selected dates in hero form
+  // Uses the already-loaded unavailableDates from each car (same approach as "podla dostupnosti" sorting)
+  useEffect(() => {
+    const filterCarsByDates = () => {
+      if (!pickupDate || !returnDate) {
+        // No dates selected, show all cars
+        setHeroFormAvailableCars(cars);
+        return;
+      }
+
+      setLoadingHeroFormCars(true);
+
+      // Ensure we have Date objects
+      const startDateObj = pickupDate instanceof Date ? pickupDate : new Date(pickupDate);
+      const endDateObj = returnDate instanceof Date ? returnDate : new Date(returnDate);
+
+      console.log('🚗 Filtering cars for hero form dates:', startDateObj.toISOString().split('T')[0], 'to', endDateObj.toISOString().split('T')[0]);
+
+      // Check availability using the already-loaded unavailableDates for each car
+      const available = cars.filter((car) => {
+        const unavailableDates = car.unavailableDates || [];
+
+        // Check if any date in the selected range is unavailable
+        const currentDate = new Date(startDateObj);
+        while (currentDate <= endDateObj) {
+          const dateStr = currentDate.toISOString().split('T')[0];
+          if (unavailableDates.includes(dateStr)) {
+            // This car has an unavailable date in the range
+            return false;
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // All dates in range are available
+        return true;
+      });
+
+      setHeroFormAvailableCars(available);
+      console.log('🚗 Hero form - Filtered to', available.length, 'available cars for selected dates');
+
+      // If selected car is not available, clear selection
+      if (formData.selectedCar && !available.find(car => car._id === formData.selectedCar)) {
+        setFormData(prev => ({ ...prev, selectedCar: '' }));
+      }
+
+      setLoadingHeroFormCars(false);
+    };
+
+    filterCarsByDates();
+  }, [pickupDate, returnDate, cars]);
+
+  // Fetch car availability when a car is selected in hero form (for date picker unavailable dates)
   useEffect(() => {
     const fetchHeroFormCarAvailability = async () => {
       if (!formData.selectedCar) {
@@ -880,24 +986,55 @@ const HomePage = () => {
 
               {/* Form inputs in horizontal columns */}
               <form onSubmit={handleSubmit} className="flex items-center gap-4 flex-1">
-                {/* Car Selection */}
+                {/* Date From - FIRST */}
+                <div className="flex-1">
+                  <DatePicker
+                    selectedDate={pickupDate}
+                    onDateSelect={setPickupDate}
+                    minDate={new Date()}
+                    unavailableDates={heroFormUnavailableDates}
+                    placeholder="Dátum prevzatia"
+                    otherSelectedDate={returnDate}
+                    isReturnPicker={false}
+                    onOtherDateReset={() => setReturnDate(null)}
+                  />
+                </div>
+
+                {/* Date To - SECOND */}
+                <div className="flex-1">
+                  <DatePicker
+                    selectedDate={returnDate}
+                    onDateSelect={setReturnDate}
+                    minDate={pickupDate || new Date()}
+                    unavailableDates={heroFormUnavailableDates}
+                    placeholder="Dátum vrátenia"
+                    otherSelectedDate={pickupDate}
+                    isReturnPicker={true}
+                  />
+                </div>
+
+                {/* Car Selection - THIRD (filtered by dates) */}
                 <select
                   name="selectedCar"
                   value={formData.selectedCar || ''}
                   onChange={handleInputChange}
                   className="flex-1 text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
                   style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
-                  disabled={loading}
+                  disabled={loading || loadingHeroFormCars}
                 >
-                  <option value="">{loading ? 'Načítavam autá...' : 'Vyberte auto'}</option>
-                  {cars.map((car) => (
+                  <option value="">
+                    {loading ? 'Načítavam autá...' :
+                     loadingHeroFormCars ? 'Kontrolujem dostupnosť...' :
+                     pickupDate && returnDate ? `Vyberte auto (${heroFormAvailableCars.length} dostupných)` : 'Vyberte auto'}
+                  </option>
+                  {(pickupDate && returnDate ? heroFormAvailableCars : cars).map((car) => (
                     <option key={car._id} value={car._id}>
                       {car.brand} {car.model} - od {car.pricing?.dailyRate || car.dailyRate || 0}€/deň
                     </option>
                   ))}
                 </select>
 
-                {/* Location Selection */}
+                {/* Location Selection - FOURTH */}
                 <select
                   name="location"
                   value={formData.location || ''}
@@ -912,33 +1049,6 @@ const HomePage = () => {
                     </option>
                   ))}
                 </select>
-
-                {/* Date From */}
-                <div className="flex-1">
-                  <DatePicker
-                    selectedDate={pickupDate}
-                    onDateSelect={setPickupDate}
-                    minDate={new Date()}
-                    unavailableDates={heroFormUnavailableDates}
-                    placeholder="Dátum prevzatia"
-                    otherSelectedDate={returnDate}
-                    isReturnPicker={false}
-                    onOtherDateReset={() => setReturnDate(null)}
-                  />
-                </div>
-
-                {/* Date To */}
-                <div className="flex-1">
-                  <DatePicker
-                    selectedDate={returnDate}
-                    onDateSelect={setReturnDate}
-                    minDate={pickupDate || new Date()}
-                    unavailableDates={heroFormUnavailableDates}
-                    placeholder="Dátum vrátenia"
-                    otherSelectedDate={pickupDate}
-                    isReturnPicker={true}
-                  />
-                </div>
 
                 {/* Submit Button */}
                 <button
@@ -973,24 +1083,55 @@ const HomePage = () => {
 
               {/* Form inputs in vertical rows */}
               <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-                {/* Car Selection */}
+                {/* Date From - FIRST */}
+                <div className="w-full">
+                  <DatePicker
+                    selectedDate={pickupDate}
+                    onDateSelect={setPickupDate}
+                    minDate={new Date()}
+                    unavailableDates={heroFormUnavailableDates}
+                    placeholder="Dátum prevzatia"
+                    otherSelectedDate={returnDate}
+                    isReturnPicker={false}
+                    onOtherDateReset={() => setReturnDate(null)}
+                  />
+                </div>
+
+                {/* Date To - SECOND */}
+                <div className="w-full">
+                  <DatePicker
+                    selectedDate={returnDate}
+                    onDateSelect={setReturnDate}
+                    minDate={pickupDate || new Date()}
+                    unavailableDates={heroFormUnavailableDates}
+                    placeholder="Dátum vrátenia"
+                    otherSelectedDate={pickupDate}
+                    isReturnPicker={true}
+                  />
+                </div>
+
+                {/* Car Selection - THIRD (filtered by dates) */}
                 <select
                   name="selectedCar"
                   value={formData.selectedCar || ''}
                   onChange={handleInputChange}
                   className="w-full text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
                   style={{backgroundColor: 'rgba(25, 25, 25, 0.8)'}}
-                  disabled={loading}
+                  disabled={loading || loadingHeroFormCars}
                 >
-                  <option value="">{loading ? 'Načítavam autá...' : 'Vyberte auto'}</option>
-                  {cars.map((car) => (
+                  <option value="">
+                    {loading ? 'Načítavam autá...' :
+                     loadingHeroFormCars ? 'Kontrolujem dostupnosť...' :
+                     pickupDate && returnDate ? `Vyberte auto (${heroFormAvailableCars.length} dostupných)` : 'Vyberte auto'}
+                  </option>
+                  {(pickupDate && returnDate ? heroFormAvailableCars : cars).map((car) => (
                     <option key={car._id} value={car._id}>
                       {car.brand} {car.model} - od {car.pricing?.dailyRate || car.dailyRate || 0}€/deň
                     </option>
                   ))}
                 </select>
 
-                {/* Location Selection */}
+                {/* Location Selection - FOURTH */}
                 <select
                   name="location"
                   value={formData.location || ''}
@@ -1005,33 +1146,6 @@ const HomePage = () => {
                     </option>
                   ))}
                 </select>
-
-                {/* Date From */}
-                <div className="w-full">
-                  <DatePicker
-                    selectedDate={pickupDate}
-                    onDateSelect={setPickupDate}
-                    minDate={new Date()}
-                    unavailableDates={heroFormUnavailableDates}
-                    placeholder="Dátum prevzatia"
-                    otherSelectedDate={returnDate}
-                    isReturnPicker={false}
-                    onOtherDateReset={() => setReturnDate(null)}
-                  />
-                </div>
-
-                {/* Date To */}
-                <div className="w-full">
-                  <DatePicker
-                    selectedDate={returnDate}
-                    onDateSelect={setReturnDate}
-                    minDate={pickupDate || new Date()}
-                    unavailableDates={heroFormUnavailableDates}
-                    placeholder="Dátum vrátenia"
-                    otherSelectedDate={pickupDate}
-                    isReturnPicker={true}
-                  />
-                </div>
 
                 {/* Submit Button */}
                 <button
@@ -1698,17 +1812,17 @@ const HomePage = () => {
             {/* Mobile Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 px-4">
               <div className="text-center">
-                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">19</div>
-                <div className="text-white font-goldman font-bold text-sm sm:text-base">Prémiových áut v našej flotile</div>
+                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">{statsData.carsCount}</div>
+                <div className="text-white font-goldman font-bold text-sm sm:text-base">Áut v našej flotile</div>
               </div>
               <div className="text-center">
                 <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">
-                  550<span className="text-2xl sm:text-3xl">tisíc+</span>
+                  {550 + statsData.kmBonus}<span className="text-2xl sm:text-3xl">tisíc+</span>
                 </div>
                 <div className="text-white font-goldman font-bold text-sm sm:text-base">Kilometrov najazdených šťastnými klientmi</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">120+</div>
+                <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">{120 + statsData.customersBonus}+</div>
                 <div className="text-white font-goldman font-bold text-sm sm:text-base">Zákazníkov</div>
               </div>
             </div>
@@ -1732,17 +1846,17 @@ const HomePage = () => {
               <FadeInUp delay={0.4}>
                 <div className="grid grid-cols-3 gap-8">
                 <div className="text-left">
-                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">19</div>
-                  <div className="text-white font-goldman font-bold">Prémiových áut v našej flotile</div>
+                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">{statsData.carsCount}</div>
+                  <div className="text-white font-goldman font-bold">Áut v našej flotile</div>
                 </div>
                 <div className="text-left">
                   <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">
-                    550<span className="text-3xl">tisíc+</span>
+                    {550 + statsData.kmBonus}<span className="text-3xl">tisíc+</span>
                   </div>
                   <div className="text-white font-goldman font-bold">Kilometrov najazdených šťastnými klientmi</div>
                 </div>
                 <div className="text-left">
-                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">120+</div>
+                  <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">{120 + statsData.customersBonus}+</div>
                   <div className="text-white font-goldman font-bold">Zákazníkov</div>
                 </div>
                 </div>
