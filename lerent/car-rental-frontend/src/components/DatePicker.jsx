@@ -248,11 +248,10 @@ const DatePicker = ({
             backgroundColor: 'rgb(25, 25, 25)',
             ...(isReturnPicker ? { right: 0 } : { left: 0 }),
             // Positioning based on direction and offset
-            ...(direction === 'up'
-              ? { bottom: `calc(100% + ${offsetY}px)`, marginBottom: '0.25rem' } // Adjusted bottom for 'up'
-              : { top: '100%', marginTop: '0.25rem' } // Default for 'down' with small margin
-            )
-          }}
+                            ...(direction === 'up'
+                              ? { bottom: `calc(100% - ${offsetY}px)`, marginBottom: '0.25rem' } // Adjusted bottom for 'up'
+                              : { top: '100%', marginTop: '0.25rem' } // Default for 'down' with small margin
+                            )          }}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
