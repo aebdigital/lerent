@@ -11,7 +11,8 @@ const DatePicker = ({
   otherSelectedDate = null, // The other date in the range (pickup or return)
   isReturnPicker = false, // Flag to indicate if this is the return date picker
   onOtherDateReset = null, // Callback to reset the other date picker
-  showYearMonthSelectors = false // Flag to show year/month dropdowns for easier navigation
+  showYearMonthSelectors = false, // Flag to show year/month dropdowns for easier navigation
+  direction = 'up' // 'up' or 'down'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -241,7 +242,7 @@ const DatePicker = ({
       {/* Calendar Dropdown */}
       {isOpen && (
         <div
-          className={`absolute bottom-full mb-1 w-80 rounded-lg shadow-lg z-50 border border-gray-700`}
+          className={`absolute ${direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'} w-80 rounded-lg shadow-lg z-50 border border-gray-700`}
           style={{
             backgroundColor: 'rgb(25, 25, 25)',
             ...(isReturnPicker ? { right: 0, transform: 'translateX(0)' } : { left: 0 })
