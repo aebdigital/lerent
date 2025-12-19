@@ -955,10 +955,10 @@ const HomePage = () => {
           <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
-        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex flex-col justify-end pb-8 gap-8 max-[480px]:gap-4 max-[480px]:pb-4">
+        <div className="relative z-10 h-full px-4 md:px-8 lg:px-16 w-full flex flex-col justify-end pb-8 gap-8 max-[480px]:gap-4 max-[480px]:pb-32">
           {/* Top - Heading */}
           <div className="text-white ml-2 sm:ml-8 max-[480px]:ml-2 max-[480px]:mr-2 max-[480px]:relative max-[480px]:w-[90%] max-[480px]:mb-0" style={{width: '40%', maxWidth: '40%'}}>
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-goldman font-medium leading-tight max-[480px]:text-3xl max-[480px]:leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-goldman font-medium leading-tight max-[480px]:text-4xl max-[480px]:leading-tight">
               <span className="hidden max-[480px]:inline">Autopožičovňa&nbsp;s<br />individuálnym prístupom</span>
               <span className="max-[480px]:hidden">Autopožičovňa s individuálnym prístupom</span>
             </h1>

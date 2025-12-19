@@ -61,7 +61,23 @@ const ContactMapSection = () => {
         </FadeInUp>
 
         <FadeInUp delay={0.4}>
-          <div className="h-96 overflow-hidden" style={{backgroundColor: '#000000'}}>
+          {/* Mobile only "Get Directions" button */}
+          <div className="lg:hidden flex justify-center mb-4">
+            <a 
+              href="https://www.google.com/maps/dir//LeRent,+Bratislavsk%C3%A1+9,+949+01+Nitra" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-6 py-3 rounded-lg font-goldman font-bold text-black bg-[#fa9208] hover:bg-[#e08206] transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Navigovať do LeRent
+            </a>
+          </div>
+
+          <div className="h-[500px] lg:h-96 overflow-hidden rounded-lg" style={{backgroundColor: '#000000'}}>
           <iframe 
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2596.325896779728!2d18.110927!3d48.3174613!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476b3f0017a7734b%3A0x5b52f8d9b7ea2f1!2sLeRent!5e0!3m2!1sen!2ssk!4v1699999999999!5m2!1sen!2ssk"
             width="100%"
