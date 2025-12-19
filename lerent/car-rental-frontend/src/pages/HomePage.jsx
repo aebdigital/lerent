@@ -1094,7 +1094,7 @@ const HomePage = () => {
                     otherSelectedDate={returnDate}
                     isReturnPicker={false}
                     onOtherDateReset={() => setReturnDate(null)}
-                    direction="down"
+                    offsetY={40}
                   />
                 </div>
 
