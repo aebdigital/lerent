@@ -968,8 +968,8 @@ const BookingPage = () => {
         // Pricing
         totalPrice: Number(calculateTotal()) || 0,
 
-        // Payment type - send 'stripe' or 'prevod' based on selection
-        paymentType: formData.paymentMethod === 'stripe' ? 'stripe' : 'prevod',
+        // Payment type - send 'stripe', 'prevod', or 'hotovost' based on selection
+        paymentType: formData.paymentMethod === 'stripe' ? 'stripe' : formData.paymentMethod === 'hotovost' ? 'hotovost' : 'prevod',
 
         // Important: Mark as pending payment until Stripe payment is confirmed
         status: 'pending_payment'
@@ -1047,6 +1047,19 @@ const BookingPage = () => {
           reservationId: reservation._id,
           reservationNumber: reservation.reservationNumber,
           totalAmount: calculateTotal()
+        });
+        setCurrentStep(5);
+        setLoading(false);
+      } else if (formData.paymentMethod === 'hotovost') {
+        // Cash payment flow - show success directly without QR codes
+        console.log('Cash payment selected, showing success...');
+        console.log('Reservation data:', reservation);
+
+        setBookingResult({
+          reservationId: reservation._id,
+          reservationNumber: reservation.reservationNumber,
+          totalAmount: calculateTotal(),
+          paymentMethod: 'hotovost'
         });
         setCurrentStep(5);
         setLoading(false);
@@ -1346,6 +1359,19 @@ const BookingPage = () => {
                 </p>
               </div>
             </div>
+
+            {/* Cash Payment Message */}
+            {formData.paymentMethod === 'hotovost' && (
+              <div className="mt-8 p-4 md:p-6 border border-[rgb(250,146,8)] rounded-lg" style={{backgroundColor: 'rgba(250,146,8,0.1)'}}>
+                <h2 className="text-2xl font-bold text-white mb-4 text-center">Platba v hotovosti</h2>
+                <p className="text-gray-300 text-center">
+                  Platbu vo výške <strong className="text-[rgb(250,146,8)]">{calculateTotal()}€</strong> uhradíte pri prevzatí vozidla.
+                </p>
+                <p className="text-gray-400 text-sm text-center mt-4">
+                  Budeme Vás kontaktovať na poskytnutej mailovej adrese s ďalšími inštrukciami.
+                </p>
+              </div>
+            )}
 
             {/* Bank Transfer Payment Details */}
             {paymentInfo && (
@@ -1999,6 +2025,30 @@ const BookingPage = () => {
                             <p className="text-gray-400 text-sm">Platba bankovým prevodom</p>
                           </div>
                         </label>
+
+                        <label className="border border-gray-700 rounded-lg p-3 md:p-4 flex items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors" style={{backgroundColor: formData.paymentMethod === 'hotovost' ? 'rgba(250,146,8,0.1)' : 'transparent', borderColor: formData.paymentMethod === 'hotovost' ? 'rgb(250,146,8)' : '#555'}}>
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="hotovost"
+                            checked={formData.paymentMethod === 'hotovost'}
+                            onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
+                            className="sr-only"
+                          />
+                          <div className="relative flex items-center justify-center w-5 h-5 rounded-full border-2 transition-colors"
+                               style={{
+                                 borderColor: formData.paymentMethod === 'hotovost' ? 'rgb(250,146,8)' : '#6b7280',
+                                 backgroundColor: 'transparent'
+                               }}>
+                            {formData.paymentMethod === 'hotovost' && (
+                              <div className="w-3 h-3 rounded-full" style={{backgroundColor: 'rgb(250,146,8)'}}></div>
+                            )}
+                          </div>
+                          <div className="ml-3 text-left">
+                            <p className="text-white font-goldman font-medium">Hotovosť</p>
+                            <p className="text-gray-400 text-sm">Platba v hotovosti pri prevzatí</p>
+                          </div>
+                        </label>
                       </div>
                     </div>
 
@@ -2214,7 +2264,7 @@ const BookingPage = () => {
                           <div>
                             <p className="text-gray-400">Spôsob platby:</p>
                             <p className="text-white font-goldman font-medium">
-                              {formData.paymentMethod === 'stripe' ? 'Stripe (Karta online)' : 'Bankový prevod'}
+                              {formData.paymentMethod === 'stripe' ? 'Stripe (Karta online)' : formData.paymentMethod === 'hotovost' ? 'Hotovosť' : 'Bankový prevod'}
                             </p>
                           </div>
                         </div>
