@@ -4,6 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fetch from 'cross-fetch';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,11 +35,11 @@ const staticPages = [
 async function fetchData(endpoint) {
   try {
     const response = await fetch(`${apiUrl}${endpoint}`);
-    if (!response.ok) throw new Error(`Failed to fetch ${endpoint}`);
+    if (!response.ok) throw new Error(`Failed to fetch ${endpoint}: ${response.statusText}`);
     return await response.json();
   } catch (error) {
-    console.warn(`⚠️ Warning: Could not fetch ${endpoint}`, error.message);
-    return [];
+    console.error(`❌ CRITICAL ERROR: Could not fetch ${endpoint}`, error.message);
+    throw error; // Propagate error to fail the build
   }
 }
 
@@ -46,22 +47,34 @@ async function getDynamicPages() {
   const pages = [];
 
 
+
   // Fetch Cars
   console.log('Fetching cars from:', `${apiUrl}/cars`);
-  const response = await fetchData('/cars');
 
-  if (response && response.success && Array.isArray(response.data)) {
-    const cars = response.data;
-    cars.forEach(car => {
-      pages.push({
-        url: `/car/${car._id}`, // Using _id as ID
-        priority: '0.8',
-        changefreq: 'weekly'
+  try {
+    const response = await fetchData('/cars');
+
+    if (response && response.success && Array.isArray(response.data)) {
+      const cars = response.data;
+      if (cars.length === 0) {
+        console.warn('⚠️ Warning: API returned 0 cars. Sitemap will be empty for cars.');
+      }
+
+      cars.forEach(car => {
+        pages.push({
+          url: `/car/${car._id}`, // Using _id as ID
+          priority: '0.8',
+          changefreq: 'weekly'
+        });
       });
-    });
-    console.log(`✅ Added ${cars.length} cars`);
-  } else {
-    console.warn('⚠️ Unexpected response format or no cars found:', response);
+      console.log(`✅ Added ${cars.length} cars`);
+    } else {
+      throw new Error('Unexpected response format: ' + JSON.stringify(response).substring(0, 100));
+    }
+  } catch (error) {
+    console.error('🚨 FAILED to fetch cars for sitemap. Stopping build to prevent bad deployment.');
+    console.error(error);
+    process.exit(1); // Fail the build
   }
 
   // Fetch Blog Posts (Mock implementation if API endpoint doesn't exist yet, or real if it does)
