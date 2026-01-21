@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://lerent.sk/sitemap.xml
+
+# Block sensitive areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /payment-success/
+Disallow: /payment-cancelled/
+Disallow: /bank-transfer-info/
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
