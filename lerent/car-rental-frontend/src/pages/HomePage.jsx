@@ -107,7 +107,7 @@ const HomePage = () => {
     setIsDropdownOpen(false);
   };
 
-  // Create slides from all banner images
+  // Create slides from all banner images (no fallback - section hidden if no banners)
   const allSlides = banners.length > 0
     ? banners.flatMap(banner =>
       banner.images && banner.images.length > 0
@@ -138,23 +138,9 @@ const HomePage = () => {
 
             return slide;
           })
-        : [{
-          imageUrl: sliderImages[0], // fallback image
-          title: banner.title || 'Prémiová flotila\nvozidiel',
-          subtitle: banner.subtitle || 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.',
-          alt: banner.title || 'Premium car',
-          carId: null,
-          carData: null
-        }]
+        : [] // No images in banner - return empty array
     )
-    : sliderImages.map((img, idx) => ({
-      imageUrl: img,
-      title: 'Prémiová flotila\nvozidiel',
-      subtitle: 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.',
-      alt: 'Premium car',
-      carId: null,
-      carData: null
-    }));
+    : []; // No banners - return empty array (section will be hidden)
 
   // Debug: Log final allSlides array
   console.log('🎬 Final allSlides array:', allSlides.map(s => ({
@@ -1166,7 +1152,8 @@ const HomePage = () => {
 
       </section>
 
-      {/* Premium Fleet Section - Slider */}
+      {/* Premium Fleet Section - Slider (only shown when banners exist) */}
+      {allSlides.length > 0 && (
       <section className="pb-0 pt-4 max-[480px]:pb-0 max-[480px]:pt-0 lg:py-12 bg-black overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 max-[480px]:px-2">
           <div
@@ -1325,6 +1312,7 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* Car Categories Section */}
       <section id="cars" className="py-8 max-[480px]:pt-[15px]" style={{ backgroundColor: '#000000', paddingTop: '50px', paddingBottom: '100px' }}>
