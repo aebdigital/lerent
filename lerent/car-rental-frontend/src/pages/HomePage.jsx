@@ -67,6 +67,7 @@ const HomePage = () => {
   const [loadingBanners, setLoadingBanners] = useState(true);
   const [brands, setBrands] = useState([]);
   const [loadingBrands, setLoadingBrands] = useState(true);
+  const [searchDateFilterActive, setSearchDateFilterActive] = useState(false); // Track if hero form date search is active
 
   // Slider images - fallback to static images if API fails
   const sliderImages = [AudiS6Img, MaseratiImg, BMW840iImg];
@@ -104,6 +105,7 @@ const HomePage = () => {
 
   const handleSortChange = (value) => {
     setSortBy(value);
+    setSearchDateFilterActive(false); // Reset date filter when manually sorting
     setIsDropdownOpen(false);
   };
 
@@ -482,7 +484,8 @@ const HomePage = () => {
       // Navigate to car detail page
       navigate(`/car/${formData.selectedCar}?${queryParams.toString()}`);
     } else {
-      // No car selected - scroll to cars section to show available cars
+      // No car selected - activate date filter and scroll to cars section
+      setSearchDateFilterActive(true);
       const carsSection = document.getElementById('cars');
       if (carsSection) {
         carsSection.scrollIntoView({ behavior: 'smooth' });
@@ -721,7 +724,8 @@ const HomePage = () => {
 
   // Apply filters
   useEffect(() => {
-    let filtered = [...cars];
+    // If search date filter is active, start with only available cars for selected dates
+    let filtered = searchDateFilterActive ? [...heroFormAvailableCars] : [...cars];
 
     // Car class filter (activeTab)
     if (activeTab !== 'all') {
@@ -838,7 +842,7 @@ const HomePage = () => {
     });
 
     setFilteredCars(filtered);
-  }, [activeTab, selectedBrand, sortBy, cars]);
+  }, [activeTab, selectedBrand, sortBy, cars, searchDateFilterActive, heroFormAvailableCars]);
 
   return (
     <div className="min-h-screen text-white" style={{ backgroundColor: '#000000' }}>
@@ -1337,6 +1341,7 @@ const HomePage = () => {
                     onClick={() => {
                       // Single selection only - clicking same category deselects it
                       setActiveTab(activeTab === carClass.value ? 'all' : carClass.value);
+                      setSearchDateFilterActive(false); // Reset date filter when manually filtering
                     }}
                     className={`flex flex-col items-center p-2 sm:p-3 lg:p-4 transition-all duration-200 transform hover:scale-105 rounded-lg ${activeTab === carClass.value
                         ? 'border-2 border-[rgb(250,146,8)] scale-105'
@@ -1381,6 +1386,7 @@ const HomePage = () => {
                         key={carClass.value}
                         onClick={() => {
                           setActiveTab(activeTab === carClass.value ? 'all' : carClass.value);
+                          setSearchDateFilterActive(false); // Reset date filter when manually filtering
                           setIsCategoryDropdownOpen(false);
                         }}
                         className={`w-full flex items-center space-x-3 p-4 transition-all hover:bg-[rgba(250,146,8,0.1)] ${activeTab === carClass.value ? 'bg-[rgba(250,146,8,0.1)]' : ''
@@ -1419,6 +1425,7 @@ const HomePage = () => {
                       onClick={() => {
                         // Single selection - clicking same brand deselects it
                         setSelectedBrand(selectedBrand === brand.value ? null : brand.value);
+                        setSearchDateFilterActive(false); // Reset date filter when manually filtering
                       }}
                       className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 transform hover:scale-105 ${selectedBrand === brand.value
                           ? 'border-2 border-[rgb(250,146,8)] scale-105'
@@ -1473,6 +1480,7 @@ const HomePage = () => {
                           key={brand.value}
                           onClick={() => {
                             setSelectedBrand(selectedBrand === brand.value ? null : brand.value);
+                            setSearchDateFilterActive(false); // Reset date filter when manually filtering
                             setIsBrandDropdownOpen(false);
                           }}
                           className={`w-full flex items-center space-x-3 p-4 transition-all hover:bg-[rgba(250,146,8,0.1)] ${selectedBrand === brand.value ? 'bg-[rgba(250,146,8,0.1)]' : ''
@@ -1535,6 +1543,7 @@ const HomePage = () => {
                       <button
                         onClick={() => {
                           setSortBy('price-asc');
+                          setSearchDateFilterActive(false); // Reset date filter when manually sorting
                           setIsDropdownOpen(false);
                         }}
                         className={`w-full flex items-center justify-center gap-2 p-3 transition-all hover:bg-[rgba(250,146,8,0.1)] ${sortBy === 'price-asc' ? 'bg-[rgba(250,146,8,0.1)]' : ''
@@ -1546,6 +1555,7 @@ const HomePage = () => {
                       <button
                         onClick={() => {
                           setSortBy('price-desc');
+                          setSearchDateFilterActive(false); // Reset date filter when manually sorting
                           setIsDropdownOpen(false);
                         }}
                         className={`w-full flex items-center justify-center gap-2 p-3 transition-all hover:bg-[rgba(250,146,8,0.1)] ${sortBy === 'price-desc' ? 'bg-[rgba(250,146,8,0.1)]' : ''
@@ -1557,6 +1567,7 @@ const HomePage = () => {
                       <button
                         onClick={() => {
                           setSortBy('power-desc');
+                          setSearchDateFilterActive(false); // Reset date filter when manually sorting
                           setIsDropdownOpen(false);
                         }}
                         className={`w-full flex items-center justify-center gap-2 p-3 transition-all hover:bg-[rgba(250,146,8,0.1)] ${sortBy === 'power-desc' ? 'bg-[rgba(250,146,8,0.1)]' : ''
@@ -1567,6 +1578,7 @@ const HomePage = () => {
                       <button
                         onClick={() => {
                           setSortBy('availability');
+                          setSearchDateFilterActive(false); // Reset date filter when manually sorting
                           setIsDropdownOpen(false);
                         }}
                         className={`w-full flex items-center justify-center gap-2 p-3 transition-all hover:bg-[rgba(250,146,8,0.1)] ${sortBy === 'availability' ? 'bg-[rgba(250,146,8,0.1)]' : ''
