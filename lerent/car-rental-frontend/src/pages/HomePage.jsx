@@ -446,50 +446,48 @@ const HomePage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validate that a car is selected
-    if (!formData.selectedCar) {
-      alert('Prosím vyberte auto');
+    // Validate that dates are selected
+    if (!pickupDate || !returnDate) {
+      alert('Prosím vyberte dátum prevzatia a vrátenia');
       return;
     }
 
-    // Validate minimum 2-day reservation if both dates are selected
-    if (pickupDate && returnDate) {
-      const daysDifference = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
-      if (daysDifference < 2) {
-        alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátumy s minimálnym rozdielom 2 dní.');
-        return;
+    // Validate minimum 2-day reservation
+    const daysDifference = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
+    if (daysDifference < 2) {
+      alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátumy s minimálnym rozdielom 2 dní.');
+      return;
+    }
+
+    // Format dates for URL parameters
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    // If a car is selected, navigate to car detail page with dates
+    if (formData.selectedCar) {
+      const queryParams = new URLSearchParams({
+        pickupDate: formatDate(pickupDate),
+        returnDate: formatDate(returnDate)
+      });
+
+      // Add location if selected
+      if (formData.location) {
+        queryParams.append('pickupLocation', formData.location);
+      }
+
+      // Navigate to car detail page
+      navigate(`/car/${formData.selectedCar}?${queryParams.toString()}`);
+    } else {
+      // No car selected - scroll to cars section to show available cars
+      const carsSection = document.getElementById('cars');
+      if (carsSection) {
+        carsSection.scrollIntoView({ behavior: 'smooth' });
       }
     }
-
-    // Build query parameters for booking page
-    const queryParams = new URLSearchParams({
-      car: formData.selectedCar
-    });
-
-    // Add pickup date if selected (format in local timezone to avoid date shift)
-    if (pickupDate) {
-      const year = pickupDate.getFullYear();
-      const month = String(pickupDate.getMonth() + 1).padStart(2, '0');
-      const day = String(pickupDate.getDate()).padStart(2, '0');
-      queryParams.append('pickupDate', `${year}-${month}-${day}`);
-    }
-
-    // Add return date if selected (format in local timezone to avoid date shift)
-    if (returnDate) {
-      const year = returnDate.getFullYear();
-      const month = String(returnDate.getMonth() + 1).padStart(2, '0');
-      const day = String(returnDate.getDate()).padStart(2, '0');
-      queryParams.append('returnDate', `${year}-${month}-${day}`);
-    }
-
-    // Add location if selected
-    if (formData.location) {
-      queryParams.append('pickupLocation', formData.location);
-      queryParams.append('returnLocation', formData.location);
-    }
-
-    // Navigate to booking page with query parameters
-    navigate(`/booking?${queryParams.toString()}`);
   };
 
   // Load cars from API
@@ -999,21 +997,26 @@ const HomePage = () => {
                   />
                 </div>
 
-                {/* Car Selection - THIRD (filtered by dates) */}
+                {/* Car Selection - THIRD (disabled until dates are selected) */}
                 <select
                   name="selectedCar"
                   value={formData.selectedCar || ''}
                   onChange={handleInputChange}
-                  className="flex-1 text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
+                  className={`flex-1 text-white px-4 py-3 text-sm rounded-lg border focus:outline-none appearance-none ${
+                    !pickupDate || !returnDate
+                      ? 'border-gray-600 opacity-50 cursor-not-allowed'
+                      : 'border-gray-700 focus:border-orange-500'
+                  }`}
                   style={{ backgroundColor: 'rgba(25, 25, 25, 0.8)' }}
-                  disabled={loading || loadingHeroFormCars}
+                  disabled={!pickupDate || !returnDate || loading || loadingHeroFormCars}
                 >
                   <option value="">
-                    {loading ? 'Načítavam autá...' :
-                      loadingHeroFormCars ? 'Kontrolujem dostupnosť...' :
-                        pickupDate && returnDate ? `Vyberte auto (${heroFormAvailableCars.length} dostupných)` : 'Vyberte auto'}
+                    {!pickupDate || !returnDate ? 'Najprv vyberte dátumy' :
+                      loading ? 'Načítavam autá...' :
+                        loadingHeroFormCars ? 'Kontrolujem dostupnosť...' :
+                          `Vozidlo (${heroFormAvailableCars.length} dostupných)`}
                   </option>
-                  {(pickupDate && returnDate ? heroFormAvailableCars : cars).map((car) => (
+                  {pickupDate && returnDate && heroFormAvailableCars.map((car) => (
                     <option key={car._id} value={car._id}>
                       {car.brand} {car.model} - od {car.pricing?.dailyRate || car.dailyRate || 0}€/deň
                     </option>
@@ -1045,7 +1048,7 @@ const HomePage = () => {
                     color: '#191919'
                   }}
                 >
-                  Rezervovať
+                  Vyhľadať
                 </button>
               </form>
             </div>
@@ -1097,21 +1100,26 @@ const HomePage = () => {
                   />
                 </div>
 
-                {/* Car Selection - THIRD (filtered by dates) */}
+                {/* Car Selection - THIRD (disabled until dates are selected) */}
                 <select
                   name="selectedCar"
                   value={formData.selectedCar || ''}
                   onChange={handleInputChange}
-                  className="w-full text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
+                  className={`w-full text-white px-4 py-3 text-sm rounded-lg border focus:outline-none appearance-none ${
+                    !pickupDate || !returnDate
+                      ? 'border-gray-600 opacity-50 cursor-not-allowed'
+                      : 'border-gray-700 focus:border-orange-500'
+                  }`}
                   style={{ backgroundColor: 'rgba(25, 25, 25, 0.8)' }}
-                  disabled={loading || loadingHeroFormCars}
+                  disabled={!pickupDate || !returnDate || loading || loadingHeroFormCars}
                 >
                   <option value="">
-                    {loading ? 'Načítavam autá...' :
-                      loadingHeroFormCars ? 'Kontrolujem dostupnosť...' :
-                        pickupDate && returnDate ? `Vyberte auto (${heroFormAvailableCars.length} dostupných)` : 'Vyberte auto'}
+                    {!pickupDate || !returnDate ? 'Najprv vyberte dátumy' :
+                      loading ? 'Načítavam autá...' :
+                        loadingHeroFormCars ? 'Kontrolujem dostupnosť...' :
+                          `Vozidlo (${heroFormAvailableCars.length} dostupných)`}
                   </option>
-                  {(pickupDate && returnDate ? heroFormAvailableCars : cars).map((car) => (
+                  {pickupDate && returnDate && heroFormAvailableCars.map((car) => (
                     <option key={car._id} value={car._id}>
                       {car.brand} {car.model} - od {car.pricing?.dailyRate || car.dailyRate || 0}€/deň
                     </option>
@@ -1143,7 +1151,7 @@ const HomePage = () => {
                     color: '#191919'
                   }}
                 >
-                  Rezervovať
+                  Vyhľadať
                 </button>
               </form>
             </div>
