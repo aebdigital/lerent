@@ -10,6 +10,7 @@ import Carousel from '../components/Carousel';
 import CustomDatePicker from '../components/CustomDatePicker';
 import DatePicker from '../components/DatePicker';
 import { carsAPI, locationsAPI, bannersAPI } from '../services/api';
+import { generateCarSlug } from '../utils/slugify';
 import config from '../config/config';
 import HeroImg from '../main-page-final1.jpg';
 import VasenImg from '../vasen.webp';
@@ -481,8 +482,10 @@ const HomePage = () => {
         queryParams.append('pickupLocation', formData.location);
       }
 
-      // Navigate to car detail page
-      navigate(`/car/${formData.selectedCar}?${queryParams.toString()}`);
+      // Navigate to car detail page using slug
+      const selectedCarObj = heroFormAvailableCars.find(c => c._id === formData.selectedCar);
+      const carSlug = selectedCarObj ? generateCarSlug(selectedCarObj.brand, selectedCarObj.model) : formData.selectedCar;
+      navigate(`/car/${carSlug}?${queryParams.toString()}`);
     } else {
       // No car selected - activate date filter and scroll to cars section
       setSearchDateFilterActive(true);
@@ -1243,7 +1246,8 @@ const HomePage = () => {
                           if (slide.carData) {
                             console.log('   Car details:', slide.carData.brand, slide.carData.model);
                           }
-                          navigate(`/car/${slide.carId}`);
+                          const bannerSlug = slide.carData ? generateCarSlug(slide.carData.brand, slide.carData.model) : slide.carId;
+                          navigate(`/car/${bannerSlug}`);
                         } else {
                           console.log('⚠️ Banner clicked but no carId associated');
                         }
@@ -1675,7 +1679,7 @@ const HomePage = () => {
                     }}
                   >
                     <div
-                      onClick={() => window.location.href = `/car/${car._id}`}
+                      onClick={() => window.location.href = `/car/${generateCarSlug(car.brand, car.model)}`}
                       className="flex flex-col w-full h-full cursor-pointer rounded-lg overflow-hidden"
                     >
                       {/* Top - Car Image */}

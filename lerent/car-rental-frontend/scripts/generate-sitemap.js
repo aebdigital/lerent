@@ -9,6 +9,18 @@ import fetch from 'cross-fetch';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Generate a URL-friendly slug from car brand and model
+function generateCarSlug(brand, model) {
+  return `${brand} ${model}`
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 const baseUrl = 'https://lerent.sk';
 // Use the tenant email from env if possible, but here we run in node without full vite env loading unless we use dotenv. 
 // Given the user request showed VITE_TENANT_EMAIL=lerent@lerent.sk, we'll hardcode or deduce it.
@@ -61,8 +73,9 @@ async function getDynamicPages() {
       }
 
       cars.forEach(car => {
+        const slug = generateCarSlug(car.brand, car.model);
         pages.push({
-          url: `/car/${car._id}`, // Using _id as ID
+          url: `/car/${slug}`,
           priority: '0.8',
           changefreq: 'weekly'
         });

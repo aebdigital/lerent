@@ -7,6 +7,7 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import CarImage from './CarImage';
+import { generateCarSlug } from '../utils/slugify';
 
 const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false }) => {
   // API data structure mapping
@@ -51,7 +52,8 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
 
   // Build URL with selected dates as query parameters
   const buildCarUrl = () => {
-    const baseUrl = `/car/${id}`;
+    const carSlug = generateCarSlug(brand, model);
+    const baseUrl = `/car/${carSlug}`;
     if (selectedDates?.pickupDate && selectedDates?.returnDate) {
       const params = new URLSearchParams({
         pickupDate: selectedDates.pickupDate.toISOString().split('T')[0],

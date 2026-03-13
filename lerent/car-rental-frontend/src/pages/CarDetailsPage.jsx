@@ -25,6 +25,7 @@ import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
 import BookingFormSection from '../components/BookingFormSection';
 import { carsAPI, locationsAPI } from '../services/api';
+import { generateCarSlug, findCarBySlug } from '../utils/slugify';
 import HeroImg from '../test.webp';
 import AudiA6Img from '../audia6.webp';
 import BMW540iImg from '../bmw540i.webp';
@@ -164,7 +165,7 @@ const getCarDescription = (brand, model) => {
 };
 
 const CarDetailsPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
 
   const [car, setCar] = useState(null);
@@ -386,47 +387,48 @@ const CarDetailsPage = () => {
           setLocationObjects([]);
         }
 
-        // Fetch car details from API
-        const carData = await carsAPI.getCarDetails(id);
+        // Fetch all cars to resolve slug to _id
+        const carsResult = await carsAPI.getAvailableCars();
+        const allCars = Array.isArray(carsResult) ? carsResult : (carsResult?.data || []);
+        const matchedCar = findCarBySlug(allCars, slug);
 
-        if (!carData) {
-          // Fallback to static data if API fails
-          console.warn('API returned no data, using static fallback');
-          const fallbackCar = staticCarsData.find(car => car._id === id) || staticCarsData[0];
-          setCar(fallbackCar);
+        if (matchedCar) {
+          // Fetch full car details using the real _id
+          const carId = matchedCar._id;
+          const carData = await carsAPI.getCarDetails(carId);
+
+          if (!carData) {
+            console.warn('API returned no data for matched car, using list data');
+            setCar(matchedCar);
+          } else {
+            console.log('Car details loaded from API:', carData);
+            setCar(carData);
+          }
+
+          // Load availability
+          const startDate = new Date();
+          const endDate = new Date();
+          endDate.setMonth(endDate.getMonth() + 6);
+
+          try {
+            const availability = await carsAPI.getCarAvailability(carId, startDate, endDate);
+            const dates = availability.unavailableDates || [];
+            setUnavailableDates(dates);
+          } catch (err) {
+            console.warn('Could not load availability:', err);
+            setUnavailableDates([]);
+          }
         } else {
-          console.log('Car details loaded from API:', carData);
-          console.log('Pricing data:', {
-            'pricing.rates': carData.pricing?.rates,
-            'pricing.dailyRate': carData.pricing?.dailyRate,
-            'pricing.deposit': carData.pricing?.deposit,
-            dailyRate: carData.dailyRate,
-            weeklyRate: carData.weeklyRate,
-            monthlyRate: carData.monthlyRate,
-            priceList: carData.priceList,
-            deposit: carData.deposit
-          });
-          setCar(carData);
-        }
-
-        // Load availability
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + 6);
-
-        try {
-          const availability = await carsAPI.getCarAvailability(id, startDate, endDate);
-          const dates = availability.unavailableDates || [];
-          setUnavailableDates(dates);
-        } catch (err) {
-          console.warn('Could not load availability:', err);
-          setUnavailableDates([]);
+          // Fallback to static data if no car matches the slug
+          console.warn('No car found for slug, using static fallback');
+          const fallbackCar = findCarBySlug(staticCarsData, slug) || staticCarsData[0];
+          setCar(fallbackCar);
         }
       } catch (err) {
         console.error('Error loading car details:', err);
         setError('Nepodarilo sa načítať detaily vozidla');
         // Use static fallback on error
-        const fallbackCar = staticCarsData.find(car => car._id === id) || staticCarsData[0];
+        const fallbackCar = findCarBySlug(staticCarsData, slug) || staticCarsData[0];
         if (fallbackCar) {
           setCar(fallbackCar);
           setError(null);
@@ -436,10 +438,10 @@ const CarDetailsPage = () => {
       }
     };
 
-    if (id) {
+    if (slug) {
       loadCarDetails();
     }
-  }, [id]);
+  }, [slug]);
 
   // Force navbar to be black on mobile for car details page
   useEffect(() => {
@@ -756,7 +758,7 @@ const CarDetailsPage = () => {
 
   const scrollToBooking = () => {
     // Navigate directly to booking page with the car ID
-    navigate(`/booking?car=${id}`);
+    navigate(`/booking?car=${car?._id || car?.id}`);
   };
 
   const handleBookNow = () => {
@@ -773,7 +775,7 @@ const CarDetailsPage = () => {
     }
 
     const queryParams = new URLSearchParams({
-      car: id,
+      car: car?._id || car?.id,
       pickupDate: bookingData.pickupDate.toISOString().split('T')[0],
       returnDate: bookingData.returnDate.toISOString().split('T')[0],
       pickupTime: bookingData.pickupTime,
@@ -1127,7 +1129,7 @@ const CarDetailsPage = () => {
                       otherSelectedDate={bookingData.returnDate}
                       isReturnPicker={false}
                       onOtherDateReset={() => handleInputChange('returnDate', null)}
-                      carId={id}
+                      carId={car?._id || car?.id}
                       className="w-full"
                     />
                   </div>
@@ -1139,7 +1141,7 @@ const CarDetailsPage = () => {
                       unavailableDates={unavailableDates}
                       otherSelectedDate={bookingData.pickupDate}
                       isReturnPicker={true}
-                      carId={id}
+                      carId={car?._id || car?.id}
                       className="w-full"
                     />
                   </div>
@@ -1292,7 +1294,7 @@ const CarDetailsPage = () => {
                         otherSelectedDate={bookingData.returnDate}
                         isReturnPicker={false}
                         onOtherDateReset={() => handleInputChange('returnDate', null)}
-                        carId={id}
+                        carId={car?._id || car?.id}
                         className="w-full"
                       />
                     </div>
@@ -1304,7 +1306,7 @@ const CarDetailsPage = () => {
                         unavailableDates={unavailableDates}
                         otherSelectedDate={bookingData.pickupDate}
                         isReturnPicker={true}
-                        carId={id}
+                        carId={car?._id || car?.id}
                         className="w-full"
                       />
                     </div>

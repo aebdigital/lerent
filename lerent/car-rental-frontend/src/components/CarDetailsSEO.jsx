@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { generateCarProductSchema, generateWebPageSchema } from '../utils/seoOptimizations';
+import { generateCarSlug } from '../utils/slugify';
 
 const CarDetailsSEO = ({ car, baseUrl = 'https://lerent.sk' }) => {
   useEffect(() => {
     if (!car) return;
 
     const carName = `${car.brand} ${car.model} ${car.year || ''}`;
+    const carSlug = generateCarSlug(car.brand, car.model);
     const carDescription = car.description || `Prenájom ${carName} - luxusné vozidlo s profesionálnymi službami. Výhodné ceny, plné poistenie, 24/7 podpora.`;
     
     // Update document title
@@ -36,7 +38,7 @@ const CarDetailsSEO = ({ car, baseUrl = 'https://lerent.sk' }) => {
     updateMetaTag('og:title', `${carName} - Prenájom | Lerent autopožičovňa`);
     updateMetaTag('og:description', carDescription);
     updateMetaTag('og:type', 'product');
-    updateMetaTag('og:url', `${baseUrl}/car/${car._id || car.id}`);
+    updateMetaTag('og:url', `${baseUrl}/car/${carSlug}`);
     
     // Car images for social sharing
     if (car.images && car.images.length > 0) {
@@ -56,7 +58,7 @@ const CarDetailsSEO = ({ car, baseUrl = 'https://lerent.sk' }) => {
       canonicalTag.setAttribute('rel', 'canonical');
       document.head.appendChild(canonicalTag);
     }
-    canonicalTag.setAttribute('href', `${baseUrl}/car/${car._id || car.id}`);
+    canonicalTag.setAttribute('href', `${baseUrl}/car/${carSlug}`);
 
     // Structured Data - Car Product Schema
     const carSchema = generateCarProductSchema(car, baseUrl);
@@ -65,11 +67,11 @@ const CarDetailsSEO = ({ car, baseUrl = 'https://lerent.sk' }) => {
     const webPageSchema = generateWebPageSchema({
       title: `${carName} - Prenájom | Lerent autopožičovňa`,
       description: carDescription,
-      url: `/car/${car._id || car.id}`,
+      url: `/car/${carSlug}`,
       breadcrumbs: [
         { name: 'Domov', url: baseUrl },
         { name: 'Autá', url: `${baseUrl}/#cars` },
-        { name: carName, url: `${baseUrl}/car/${car._id || car.id}` }
+        { name: carName, url: `${baseUrl}/car/${carSlug}` }
       ]
     }, baseUrl);
 

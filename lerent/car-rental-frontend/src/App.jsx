@@ -34,7 +34,7 @@ function AnimatedRoutes() {
         <Route path="/" element={<PageTransition><SEOWrapper page="home"><HomePage /></SEOWrapper></PageTransition>} />
         <Route path="/sluzby" element={<PageTransition><SEOWrapper page="sluzby"><SluzbyPage /></SEOWrapper></PageTransition>} />
         <Route path="/faq" element={<PageTransition><SEOWrapper page="faq"><FAQPage /></SEOWrapper></PageTransition>} />
-        <Route path="/car/:id" element={<PageTransition><CarDetailsPage /></PageTransition>} />
+        <Route path="/car/:slug" element={<PageTransition><CarDetailsPage /></PageTransition>} />
         <Route path="/booking" element={<PageTransition><SEOWrapper page="booking"><BookingPage /></SEOWrapper></PageTransition>} />
         <Route path="/payment-success" element={<PageTransition><PaymentSuccess /></PageTransition>} />
         <Route path="/payment-cancelled" element={<PageTransition><PaymentCancelled /></PageTransition>} />
