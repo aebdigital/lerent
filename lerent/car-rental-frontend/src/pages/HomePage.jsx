@@ -485,7 +485,7 @@ const HomePage = () => {
       // Navigate to car detail page using slug
       const selectedCarObj = heroFormAvailableCars.find(c => c._id === formData.selectedCar);
       const carSlug = selectedCarObj ? generateCarSlug(selectedCarObj.brand, selectedCarObj.model) : formData.selectedCar;
-      navigate(`/car/${carSlug}?${queryParams.toString()}`);
+      navigate(`/auto/${carSlug}?${queryParams.toString()}`);
     } else {
       // No car selected - activate date filter and scroll to cars section
       setSearchDateFilterActive(true);
@@ -1247,7 +1247,7 @@ const HomePage = () => {
                             console.log('   Car details:', slide.carData.brand, slide.carData.model);
                           }
                           const bannerSlug = slide.carData ? generateCarSlug(slide.carData.brand, slide.carData.model) : slide.carId;
-                          navigate(`/car/${bannerSlug}`);
+                          navigate(`/auto/${bannerSlug}`);
                         } else {
                           console.log('⚠️ Banner clicked but no carId associated');
                         }
@@ -1679,7 +1679,7 @@ const HomePage = () => {
                     }}
                   >
                     <div
-                      onClick={() => window.location.href = `/car/${generateCarSlug(car.brand, car.model)}`}
+                      onClick={() => window.location.href = `/auto/${generateCarSlug(car.brand, car.model)}`}
                       className="flex flex-col w-full h-full cursor-pointer rounded-lg overflow-hidden"
                     >
                       {/* Top - Car Image */}

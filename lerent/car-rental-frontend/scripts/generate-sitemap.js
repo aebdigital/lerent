@@ -75,7 +75,7 @@ async function getDynamicPages() {
       cars.forEach(car => {
         const slug = generateCarSlug(car.brand, car.model);
         pages.push({
-          url: `/car/${slug}`,
+          url: `/auto/${slug}`,
           priority: '0.8',
           changefreq: 'weekly'
         });

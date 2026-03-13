@@ -38,7 +38,7 @@ const CarDetailsSEO = ({ car, baseUrl = 'https://lerent.sk' }) => {
     updateMetaTag('og:title', `${carName} - Prenájom | Lerent autopožičovňa`);
     updateMetaTag('og:description', carDescription);
     updateMetaTag('og:type', 'product');
-    updateMetaTag('og:url', `${baseUrl}/car/${carSlug}`);
+    updateMetaTag('og:url', `${baseUrl}/auto/${carSlug}`);
     
     // Car images for social sharing
     if (car.images && car.images.length > 0) {
@@ -58,7 +58,7 @@ const CarDetailsSEO = ({ car, baseUrl = 'https://lerent.sk' }) => {
       canonicalTag.setAttribute('rel', 'canonical');
       document.head.appendChild(canonicalTag);
     }
-    canonicalTag.setAttribute('href', `${baseUrl}/car/${carSlug}`);
+    canonicalTag.setAttribute('href', `${baseUrl}/auto/${carSlug}`);
 
     // Structured Data - Car Product Schema
     const carSchema = generateCarProductSchema(car, baseUrl);
@@ -67,11 +67,11 @@ const CarDetailsSEO = ({ car, baseUrl = 'https://lerent.sk' }) => {
     const webPageSchema = generateWebPageSchema({
       title: `${carName} - Prenájom | Lerent autopožičovňa`,
       description: carDescription,
-      url: `/car/${carSlug}`,
+      url: `/auto/${carSlug}`,
       breadcrumbs: [
         { name: 'Domov', url: baseUrl },
         { name: 'Autá', url: `${baseUrl}/#cars` },
-        { name: carName, url: `${baseUrl}/car/${carSlug}` }
+        { name: carName, url: `${baseUrl}/auto/${carSlug}` }
       ]
     }, baseUrl);
 
