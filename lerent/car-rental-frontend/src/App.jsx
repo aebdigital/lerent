@@ -19,6 +19,8 @@ import AutouveryPage from './pages/AutouveryPage';
 import SprostredkovaniePage from './pages/SprostredkovaniePage';
 import SluzbyPage from './pages/SluzbyPage';
 import FAQPage from './pages/FAQPage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancelled from './pages/PaymentCancelled';
 import BankTransferInfoPage from './pages/BankTransferInfoPage';
@@ -34,6 +36,8 @@ function AnimatedRoutes() {
         <Route path="/" element={<PageTransition><SEOWrapper page="home"><HomePage /></SEOWrapper></PageTransition>} />
         <Route path="/sluzby" element={<PageTransition><SEOWrapper page="sluzby"><SluzbyPage /></SEOWrapper></PageTransition>} />
         <Route path="/faq" element={<PageTransition><SEOWrapper page="faq"><FAQPage /></SEOWrapper></PageTransition>} />
+        <Route path="/o-nas" element={<PageTransition><AboutPage /></PageTransition>} />
+        <Route path="/kontakt" element={<PageTransition><ContactPage /></PageTransition>} />
         <Route path="/auto/:slug" element={<PageTransition><CarDetailsPage /></PageTransition>} />
         <Route path="/booking" element={<PageTransition><SEOWrapper page="booking"><BookingPage /></SEOWrapper></PageTransition>} />
         <Route path="/payment-success" element={<PageTransition><PaymentSuccess /></PageTransition>} />

@@ -6,7 +6,7 @@ import SEOHead from '../components/SEOHead';
 // Wait, the file is huge. I should add the import first.
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   BoltIcon,
@@ -15,7 +15,8 @@ import {
   UsersIcon,
   MapPinIcon,
   CalendarIcon,
-  ClockIcon
+  ClockIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import Button from '../components/Button';
@@ -193,6 +194,33 @@ const CarDetailsPage = () => {
   const [calculating, setCalculating] = useState(false);
   const [locations, setLocations] = useState([]);
   const [locationObjects, setLocationObjects] = useState([]);
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
+  const [similarCars, setSimilarCars] = useState([]);
+  const similarCarsRef = React.useRef(null);
+
+  const categoryNames = {
+    sedan: 'Sedan',
+    kombi: 'Kombi',
+    suv: 'SUV',
+    sport: 'Šport',
+    uzitkove: 'Úžitkové',
+    viacmiestne: 'Viacmiestne'
+  };
+
+  const carFaqs = [
+    {
+      question: "Aké sú základné požiadavky na prenájom vozidla?",
+      answer: "Pre prenájom vozidla potrebujete mať minimálne 21 rokov, platný vodičský preukaz (minimálne 1 rok), občiansky preukaz alebo pas. Pre vozidlá luxusnej kategórie môže byť požadovaný vyšší vek a dlhšia doba platnosti vodičského preukazu."
+    },
+    {
+      question: "Aká je výška zábezpeky a kedy sa vráti?",
+      answer: "Výška zábezpeky závisí od kategórie vozidla a je uvedená pri každom aute individuálne. Zábezpeka sa vráti okamžite po vrátení a skontrolovaní vozidla, najneskôr však do 7 pracovných dní od vrátenia vozidla."
+    },
+    {
+      question: "Čo je zahrnuté v cene prenájmu?",
+      answer: "V cene prenájmu je zahrnuté poistenie zodpovednosti a havarijné poistenie, slovenská diaľničná známka, technická podpora 24/7 a základné vybavenie vozidla. Dodatočné služby ako napríklad poskytnutie autosedačky alebo poistenie sú spoplatnené podľa konkrétnej služby, ktorú si môžete vybrať pri rezervácii vozidla."
+    }
+  ];
 
   const generateTimeSlots = () => {
     const slots = [];
@@ -393,6 +421,12 @@ const CarDetailsPage = () => {
         const matchedCar = findCarBySlug(allCars, slug);
 
         if (matchedCar) {
+          // Filter similar cars from same category
+          const sameCategoryCars = allCars.filter(
+            c => c.category === matchedCar.category && c._id !== matchedCar._id && (c.status === 'available' || c.status === 'active')
+          );
+          setSimilarCars(sameCategoryCars);
+
           // Fetch full car details using the real _id
           const carId = matchedCar._id;
           const carData = await carsAPI.getCarDetails(carId);
@@ -999,7 +1033,7 @@ const CarDetailsPage = () => {
                 <BoltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
                 <div>
                   <div className="text-xs font-goldman text-gray-300">Výkon</div>
-                  <div className="font-goldman font-semibold text-xs text-white">{car.engine?.power || car.power || '140'} kW</div>
+                  <div className="font-goldman font-semibold text-xs text-white">{car.engine?.power || car.power || 'N/A'} kW</div>
                 </div>
               </div>
               <div className="flex flex-col items-center text-center">
@@ -1011,15 +1045,9 @@ const CarDetailsPage = () => {
                       car.fuelType === 'diesel' ? 'Nafta' :
                         car.fuelType === 'electric' ? 'Elektro' :
                           car.fuelType === 'hybrid' ? 'Hybrid' :
-                            car.fuelType || 'N/A'}
+                            car.fuelType === 'cvt' ? 'Benzín' :
+                              car.fuelType || 'N/A'}
                   </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <UsersIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
-                <div>
-                  <div className="text-xs font-goldman text-gray-300">Počet miest</div>
-                  <div className="font-goldman font-semibold text-xs text-white">{car.seats || 5}</div>
                 </div>
               </div>
               <div className="flex flex-col items-center text-center">
@@ -1029,28 +1057,60 @@ const CarDetailsPage = () => {
                   <div className="font-semibold text-xs text-white capitalize">
                     {car.transmission === 'automatic' ? 'Automat' :
                       car.transmission === 'manual' ? 'Manuál' :
-                        car.transmission || 'N/A'}
+                        car.transmission === 'cvt' ? 'CVT' :
+                          car.transmission || 'N/A'}
                   </div>
                 </div>
               </div>
-              {car.color && (
+              {car.drivetrain && (
                 <div className="flex flex-col items-center text-center">
-                  <div className="h-4 w-4 flex-shrink-0 mb-1 rounded-full border-2 border-[rgb(250,146,8)]" style={{ backgroundColor: car.color.toLowerCase() }}></div>
+                  <svg className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
                   <div>
-                    <div className="text-xs font-goldman text-gray-300">Farba</div>
-                    <div className="font-semibold text-xs text-white capitalize">{car.color}</div>
+                    <div className="text-xs font-goldman text-gray-300">Pohon</div>
+                    <div className="font-semibold text-xs text-white capitalize">{car.drivetrain}</div>
+                  </div>
+                </div>
+              )}
+              {car.fuelConsumption?.combined && (
+                <div className="flex flex-col items-center text-center">
+                  <svg className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                  </svg>
+                  <div>
+                    <div className="text-xs font-goldman text-gray-300">Spotreba</div>
+                    <div className="font-semibold text-xs text-white">{car.fuelConsumption.combined} l/100km</div>
+                  </div>
+                </div>
+              )}
+              <div className="flex flex-col items-center text-center">
+                <UsersIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
+                <div>
+                  <div className="text-xs font-goldman text-gray-300">Počet miest</div>
+                  <div className="font-goldman font-semibold text-xs text-white">{car.seats || 5}</div>
+                </div>
+              </div>
+              {car.doors && (
+                <div className="flex flex-col items-center text-center">
+                  <svg className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <div>
+                    <div className="text-xs font-goldman text-gray-300">Počet dverí</div>
+                    <div className="font-semibold text-xs text-white">{car.doors}</div>
                   </div>
                 </div>
               )}
             </div>
 
             {/* Desktop Specs - Horizontal Row */}
-            <div className="hidden lg:grid lg:grid-cols-6 lg:gap-4">
+            <div className="hidden lg:flex lg:flex-wrap lg:gap-4">
               <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
                 <BoltIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
                 <div>
                   <div className="text-sm text-gray-300">Výkon</div>
-                  <div className="font-semibold text-base text-white">{car.engine?.power || car.power || '140'} kW</div>
+                  <div className="font-semibold text-base text-white">{car.engine?.power || car.power || 'N/A'} kW</div>
                 </div>
               </div>
               <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
@@ -1062,7 +1122,8 @@ const CarDetailsPage = () => {
                       car.fuelType === 'diesel' ? 'Nafta' :
                         car.fuelType === 'electric' ? 'Elektro' :
                           car.fuelType === 'hybrid' ? 'Hybrid' :
-                            car.fuelType || 'N/A'}
+                            car.fuelType === 'cvt' ? 'Benzín' :
+                              car.fuelType || 'N/A'}
                   </div>
                 </div>
               </div>
@@ -1073,10 +1134,33 @@ const CarDetailsPage = () => {
                   <div className="font-semibold text-base text-white capitalize">
                     {car.transmission === 'automatic' ? 'Automat' :
                       car.transmission === 'manual' ? 'Manuál' :
-                        car.transmission || 'N/A'}
+                        car.transmission === 'cvt' ? 'CVT' :
+                          car.transmission || 'N/A'}
                   </div>
                 </div>
               </div>
+              {car.drivetrain && (
+                <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
+                  <svg className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <div>
+                    <div className="text-sm text-gray-300">Pohon</div>
+                    <div className="font-semibold text-base text-white capitalize">{car.drivetrain}</div>
+                  </div>
+                </div>
+              )}
+              {car.fuelConsumption?.combined && (
+                <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
+                  <svg className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                  </svg>
+                  <div>
+                    <div className="text-sm text-gray-300">Spotreba</div>
+                    <div className="font-semibold text-base text-white">{car.fuelConsumption.combined} l/100km</div>
+                  </div>
+                </div>
+              )}
               <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
                 <UsersIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
                 <div>
@@ -1092,15 +1176,6 @@ const CarDetailsPage = () => {
                   <div>
                     <div className="text-sm text-gray-300">Počet dverí</div>
                     <div className="font-semibold text-base text-white">{car.doors}</div>
-                  </div>
-                </div>
-              )}
-              {car.color && (
-                <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
-                  <div className="h-6 w-6 rounded-full border-2 border-[rgb(250,146,8)] flex-shrink-0" style={{ backgroundColor: car.color.toLowerCase() }}></div>
-                  <div>
-                    <div className="text-sm text-gray-300">Farba</div>
-                    <div className="font-semibold text-base text-white capitalize">{car.color}</div>
                   </div>
                 </div>
               )}
@@ -1239,6 +1314,40 @@ const CarDetailsPage = () => {
               <h2 className="text-2xl font-semibold text-white mb-4">Popis</h2>
               <div className="text-gray-300 leading-relaxed">
                 {car.description || getCarDescription(car.brand, car.model)}
+              </div>
+            </div>
+
+            {/* FAQ Section - Mobile */}
+            <div className="rounded-lg p-6 border border-gray-800 shadow-sm mt-6" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
+              <h2 className="text-2xl font-semibold text-white mb-4">Často kladené otázky</h2>
+              <div className="space-y-3">
+                {carFaqs.map((faq, index) => (
+                  <div key={index} className="border border-gray-800 rounded-lg overflow-hidden" style={{ backgroundColor: '#111111' }}>
+                    <button
+                      onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                      className="w-full p-4 text-left flex items-center justify-between hover:bg-gray-900 transition-colors duration-200"
+                    >
+                      <h3 className="text-base font-bold text-white pr-4">{faq.question}</h3>
+                      <ChevronDownIcon
+                        className={`h-5 w-5 text-[rgb(250,146,8)] transition-transform duration-300 flex-shrink-0 ${
+                          openFaqIndex === index ? 'rotate-180' : 'rotate-0'
+                        }`}
+                      />
+                    </button>
+                    {openFaqIndex === index && (
+                      <div className="px-4 pb-4">
+                        <div className="border-t border-gray-700 pt-3">
+                          <p className="text-gray-300 leading-relaxed text-sm">{faq.answer}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 text-center">
+                <Link to="/faq" className="text-[rgb(250,146,8)] hover:underline font-semibold">
+                  Máte ešte ďalšie otázky? Pozrite si všetky FAQ →
+                </Link>
               </div>
             </div>
           </div>
@@ -1384,6 +1493,107 @@ const CarDetailsPage = () => {
               </div>
             </div>
           </div>
+
+          {/* FAQ Section - Desktop */}
+          <div className="hidden lg:block mt-8">
+            <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
+              <h2 className="text-2xl font-semibold text-white mb-4">Často kladené otázky</h2>
+              <div className="space-y-3">
+                {carFaqs.map((faq, index) => (
+                  <div key={index} className="border border-gray-800 rounded-lg overflow-hidden" style={{ backgroundColor: '#111111' }}>
+                    <button
+                      onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                      className="w-full p-4 text-left flex items-center justify-between hover:bg-gray-900 transition-colors duration-200"
+                    >
+                      <h3 className="text-base font-bold text-white pr-4">{faq.question}</h3>
+                      <ChevronDownIcon
+                        className={`h-5 w-5 text-[rgb(250,146,8)] transition-transform duration-300 flex-shrink-0 ${
+                          openFaqIndex === index ? 'rotate-180' : 'rotate-0'
+                        }`}
+                      />
+                    </button>
+                    {openFaqIndex === index && (
+                      <div className="px-4 pb-4">
+                        <div className="border-t border-gray-700 pt-3">
+                          <p className="text-gray-300 leading-relaxed text-sm">{faq.answer}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 text-center">
+                <Link to="/faq" className="text-[rgb(250,146,8)] hover:underline font-semibold">
+                  Máte ešte ďalšie otázky? Pozrite si všetky FAQ →
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Similar Cars Section */}
+          {similarCars.length > 0 && (
+            <div className="mt-8">
+              <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
+                <h2 className="text-2xl font-semibold text-white mb-4">
+                  Podobné autá v kategórii: {categoryNames[car.category] || car.category}
+                </h2>
+                <div className="relative">
+                  <div
+                    ref={similarCarsRef}
+                    className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
+                    style={{ scrollBehavior: 'smooth', msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+                  >
+                    {similarCars.map((similarCar) => {
+                      const carImage = getCarImages(similarCar)[0];
+                      const carSlug = generateCarSlug(similarCar.brand, similarCar.model);
+                      return (
+                        <Link
+                          key={similarCar._id}
+                          to={`/auto/${carSlug}`}
+                          className="flex-shrink-0 w-48 md:w-56 group"
+                        >
+                          <div className="rounded-lg overflow-hidden border border-gray-800 hover:border-[rgb(250,146,8)] transition-colors duration-200" style={{ backgroundColor: '#111111' }}>
+                            <div className="aspect-[16/10] overflow-hidden">
+                              <img
+                                src={carImage}
+                                alt={`${similarCar.brand} ${similarCar.model}`}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
+                            <div className="p-3">
+                              <p className="text-white font-semibold text-sm truncate">
+                                {similarCar.brand} {similarCar.model}
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                  {similarCars.length > 3 && (
+                    <>
+                      <button
+                        onClick={() => similarCarsRef.current?.scrollBy({ left: -240, behavior: 'smooth' })}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 bg-black bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 transition-all duration-200 hidden md:block"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => similarCarsRef.current?.scrollBy({ left: 240, behavior: 'smooth' })}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 bg-black bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 transition-all duration-200 hidden md:block"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Features Section */}
           {car.features && car.features.length > 0 && (

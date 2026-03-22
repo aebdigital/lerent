@@ -1862,25 +1862,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* O nás Section */}
-      <section id="o-nas" className="py-24" style={{ backgroundColor: '#000000' }}>
-        <div className="max-w-7xl mx-auto px-4">
-          <FadeInUp>
-            <h2 className="text-4xl md:text-5xl font-medium text-white text-center mb-8 font-goldman">
-              O NÁS
-            </h2>
-          </FadeInUp>
-
-          <FadeInUp delay={0.2}>
-            <div className="max-w-4xl mx-auto">
-              <p className="text-lg text-gray-300 leading-relaxed text-center">
-                Sme autopožičovňa zameraná na individuálne potreby klienta. K zákazníkom pristupujeme s cieľom vyhovieť každej ich požiadavke, aby bol zážitok z prenájmu výnimočný. Pre našich klientov zabezpečujeme profesionálne služby, či už ide o krátkodobý alebo dlhodobý prenájom automobilov, pristavenie vozidla na požadované miesto, preberanie a odovzdanie auta mimo otváracích hodín alebo doplnkové služby, ktoré si naši klienti vedia nastaviť podľa svojich požiadaviek. Kladieme dôraz na individualitu, pretože veríme, že naši klienti si zaslúžia len výnimočné služby šité na mieru.
-              </p>
-            </div>
-          </FadeInUp>
-        </div>
-      </section>
-
       <ReviewsSection />
 
 
