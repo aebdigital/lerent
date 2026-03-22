@@ -219,6 +219,22 @@ const Header = () => {
               O nás
             </button>
 
+            {/* Blog Link */}
+            <button
+              onClick={() => handleNavClick('/blog')}
+              className={`font-medium transition-colors duration-200 relative pb-1 ${
+                isActive('/blog')
+                  ? 'text-white'
+                  : 'text-white hover:text-gray-300'
+              }`}
+              style={{
+                fontSize: '19px',
+                borderBottom: isActive('/blog') ? '2px solid #02cdff' : '2px solid transparent'
+              }}
+            >
+              Blog
+            </button>
+
             {/* Kontakt Link */}
             <button
               onClick={() => handleNavClick('/kontakt')}
