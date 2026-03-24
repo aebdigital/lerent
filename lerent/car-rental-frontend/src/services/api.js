@@ -1112,6 +1112,45 @@ export const bannersAPI = {
   }
 };
 
+// Blog API
+export const blogAPI = {
+  // List all published blogs
+  getBlogs: async () => {
+    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/blogs`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const result = await handleResponse(response);
+    return result.data || [];
+  },
+
+  // Get single blog by slug (includes full content)
+  getBlogBySlug: async (slug) => {
+    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/blogs/${slug}`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const result = await handleResponse(response);
+    return result.data || null;
+  },
+
+  // Get blog categories
+  getCategories: async () => {
+    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/blog-categories`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const result = await handleResponse(response);
+    return result.data || [];
+  },
+
+  // Get blog tags
+  getTags: async () => {
+    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/blog-tags`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const result = await handleResponse(response);
+    return result.data || [];
+  }
+};
+
 export default {
   auth: authAPI,
   cars: carsAPI,
@@ -1120,5 +1159,6 @@ export default {
   services: servicesAPI,
   insurance: insuranceAPI,
   locations: locationsAPI,
-  banners: bannersAPI
-}; 
+  banners: bannersAPI,
+  blog: blogAPI
+};

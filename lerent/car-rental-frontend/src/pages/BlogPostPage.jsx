@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
 import {
@@ -10,31 +10,73 @@ import {
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import Logo from '../logoRENT.svg';
-import blogPosts from '../data/blogPosts';
+import { blogAPI } from '../services/api';
 import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
 
 const BlogPostPage = () => {
   const { id } = useParams();
+  const [blogPost, setBlogPost] = useState(null);
+  const [relatedPosts, setRelatedPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  // Find post by slug or by numeric id for backwards compat
-  const blogPost = blogPosts.find(p => p.slug === id) || blogPosts.find(p => String(p.id) === id);
+  useEffect(() => {
+    const fetchBlog = async () => {
+      setLoading(true);
+      setNotFound(false);
+      try {
+        const post = await blogAPI.getBlogBySlug(id);
+        if (!post) {
+          setNotFound(true);
+          return;
+        }
+        setBlogPost(post);
 
-  if (!blogPost) {
+        // Fetch all blogs for related posts
+        try {
+          const allPosts = await blogAPI.getBlogs();
+          setRelatedPosts(allPosts.filter(p => p.slug !== id).slice(0, 3));
+        } catch {
+          // Related posts are optional
+        }
+      } catch (err) {
+        console.error('Failed to fetch blog post:', err);
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBlog();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block w-8 h-8 border-2 border-[#fa9208] border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-gray-400">Načítavam článok...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (notFound || !blogPost) {
     return <Navigate to="/blog" replace />;
   }
 
-  // Related posts (other posts excluding current)
-  const relatedPosts = blogPosts.filter(p => p.id !== blogPost.id).slice(0, 3);
+  const categoryName = blogPost.category?.name || blogPost.category || '';
+  const authorName = blogPost.author?.name || blogPost.author || 'LeRent';
 
   // Schema for SEO
   const blogSchema = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": blogPost.title,
+    ...(blogPost.featuredImage && { "image": blogPost.featuredImage }),
     "author": {
       "@type": "Organization",
-      "name": blogPost.author
+      "name": authorName
     },
     "publisher": {
       "@type": "Organization",
@@ -44,8 +86,8 @@ const BlogPostPage = () => {
         "url": "https://lerent.sk/logoRENT.svg"
       }
     },
-    "datePublished": blogPost.date,
-    "dateModified": blogPost.date,
+    "datePublished": blogPost.publishDate,
+    "dateModified": blogPost.updatedAt || blogPost.publishDate,
     "description": blogPost.excerpt
   };
 
@@ -54,14 +96,24 @@ const BlogPostPage = () => {
       <SEOHead
         title={`${blogPost.title} | LeRent Blog`}
         description={blogPost.excerpt}
-        keywords={`blog, ${blogPost.category}, lerent, autopožičovňa, prenájom áut`}
+        image={blogPost.featuredImage}
+        keywords={`blog, ${categoryName}, lerent, autopožičovňa, prenájom áut`}
         type="article"
         schema={blogSchema}
       />
       <div className="min-h-screen bg-black">
 
         {/* Mini Hero */}
-        <div className="h-[18vh] bg-gradient-to-br from-gray-900 to-black" />
+        {blogPost.featuredImage ? (
+          <div
+            className="h-[25vh] bg-cover bg-center"
+            style={{
+              backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url(${blogPost.featuredImage})`
+            }}
+          />
+        ) : (
+          <div className="h-[18vh] bg-gradient-to-br from-gray-900 to-black" />
+        )}
 
         {/* Article */}
         <article className="bg-black">
@@ -70,14 +122,18 @@ const BlogPostPage = () => {
 
               {/* Category and Meta */}
               <div className="flex items-center gap-4 mb-6">
-                <span className="text-sm font-medium px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(250, 146, 8, 0.15)', color: '#fa9208' }}>
-                  {blogPost.categoryLabel}
-                </span>
+                {categoryName && (
+                  <span className="text-sm font-medium px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(250, 146, 8, 0.15)', color: '#fa9208' }}>
+                    {categoryName}
+                  </span>
+                )}
                 <div className="flex items-center gap-4 text-sm text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <ClockIcon className="h-4 w-4" />
-                    <span>{blogPost.readTime} čítania</span>
-                  </div>
+                  {blogPost.readingTime && (
+                    <div className="flex items-center gap-1">
+                      <ClockIcon className="h-4 w-4" />
+                      <span>{blogPost.readingTime} čítania</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -90,16 +146,16 @@ const BlogPostPage = () => {
               <div className="mb-8 pb-8 border-b border-gray-700">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center text-black font-bold text-lg" style={{ backgroundColor: '#fa9208' }}>
-                    {blogPost.author.charAt(0)}
+                    {authorName.charAt(0)}
                   </div>
                   <div>
                     <div className="flex items-center gap-1 text-white font-medium">
                       <UserIcon className="h-4 w-4" />
-                      <span>{blogPost.author}</span>
+                      <span>{authorName}</span>
                     </div>
                     <div className="flex items-center gap-1 text-gray-400 text-sm">
                       <CalendarIcon className="h-4 w-4" />
-                      <span>{new Date(blogPost.date).toLocaleDateString('sk-SK', {
+                      <span>{new Date(blogPost.publishDate).toLocaleDateString('sk-SK', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -153,17 +209,25 @@ const BlogPostPage = () => {
                 <h2 className="text-2xl font-bold text-white mb-8">Súvisiace články</h2>
                 <div className="grid md:grid-cols-3 gap-6">
                   {relatedPosts.map((post) => (
-                    <Link key={post.id} to={`/blog/${post.slug}`} className="group">
+                    <Link key={post.slug} to={`/blog/${post.slug}`} className="group">
                       <article className="rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 border border-gray-800" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
-                        <div className="h-40 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                          <img src={Logo} alt="LeRent" className="h-14 w-auto opacity-60" />
+                        <div className="h-40 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
+                          {post.featuredImage ? (
+                            <img src={post.featuredImage} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          ) : (
+                            <img src={Logo} alt="LeRent" className="h-14 w-auto opacity-60" />
+                          )}
                         </div>
                         <div className="p-4">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(250, 146, 8, 0.15)', color: '#fa9208' }}>
-                              {post.categoryLabel}
-                            </span>
-                            <span className="text-xs text-gray-400">{post.readTime}</span>
+                            {post.category && (
+                              <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(250, 146, 8, 0.15)', color: '#fa9208' }}>
+                                {post.category.name || post.category}
+                              </span>
+                            )}
+                            {post.readingTime && (
+                              <span className="text-xs text-gray-400">{post.readingTime}</span>
+                            )}
                           </div>
                           <h3 className="font-semibold text-white group-hover:text-[#fa9208] transition-colors line-clamp-2">
                             {post.title}
