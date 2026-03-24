@@ -144,11 +144,10 @@ const Header = () => {
 
           {/* Desktop Navigation - Center */}
           <div className="hidden lg:flex items-center justify-center space-x-10">
-
             {/* Ponuka Link */}
             <button
               onClick={() => handleNavClick('#cars')}
-              className={`font-medium transition-colors duration-200 relative pb-1 ${
+              className={`font-medium transition-colors duration-200 relative pb-1 whitespace-nowrap ${
                 isActive('#cars')
                   ? 'text-white'
                   : 'text-white hover:text-gray-300'
@@ -164,7 +163,7 @@ const Header = () => {
             {/* Služby Link */}
             <button
               onClick={() => handleNavClick('/sluzby')}
-              className={`font-medium transition-colors duration-200 relative pb-1 ${
+              className={`font-medium transition-colors duration-200 relative pb-1 whitespace-nowrap ${
                 isActive('/sluzby')
                   ? 'text-white'
                   : 'text-white hover:text-gray-300'
@@ -190,7 +189,7 @@ const Header = () => {
             {/* FAQ Link */}
             <button
               onClick={() => handleNavClick('/faq')}
-              className={`font-medium transition-colors duration-200 relative pb-1 ${
+              className={`font-medium transition-colors duration-200 relative pb-1 whitespace-nowrap ${
                 isActive('/faq')
                   ? 'text-white'
                   : 'text-white hover:text-gray-300'
@@ -206,7 +205,7 @@ const Header = () => {
             {/* O nás Link */}
             <button
               onClick={() => handleNavClick('/o-nas')}
-              className={`font-medium transition-colors duration-200 relative pb-1 ${
+              className={`font-medium transition-colors duration-200 relative pb-1 whitespace-nowrap ${
                 isActive('/o-nas')
                   ? 'text-white'
                   : 'text-white hover:text-gray-300'
@@ -222,7 +221,7 @@ const Header = () => {
             {/* Blog Link */}
             <button
               onClick={() => handleNavClick('/blog')}
-              className={`font-medium transition-colors duration-200 relative pb-1 ${
+              className={`font-medium transition-colors duration-200 relative pb-1 whitespace-nowrap ${
                 isActive('/blog')
                   ? 'text-white'
                   : 'text-white hover:text-gray-300'
@@ -238,7 +237,7 @@ const Header = () => {
             {/* Kontakt Link */}
             <button
               onClick={() => handleNavClick('/kontakt')}
-              className={`font-medium transition-colors duration-200 relative pb-1 ${
+              className={`font-medium transition-colors duration-200 relative pb-1 whitespace-nowrap ${
                 isActive('/kontakt')
                   ? 'text-white'
                   : 'text-white hover:text-gray-300'
