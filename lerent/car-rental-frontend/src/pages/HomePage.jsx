@@ -1681,7 +1681,7 @@ const HomePage = () => {
                     }}
                   >
                     <div
-                      onClick={() => window.location.href = `/auto/${generateCarSlug(car.brand, car.model)}`}
+                      onClick={() => window.location.href = `/auto/${car.slug || generateCarSlug(car.brand, car.model)}`}
                       className="flex flex-col w-full h-full cursor-pointer rounded-lg overflow-hidden"
                     >
                       {/* Top - Car Image */}
