@@ -77,7 +77,7 @@ const BlogPage = () => {
                     <div className="flex items-center justify-between mb-3">
                       {post.category && (
                         <span className="text-xs font-medium px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(250, 146, 8, 0.15)', color: '#fa9208' }}>
-                          {post.category.name || post.category}
+                          {typeof post.category === 'string' ? post.category : (post.category?.name || '')}
                         </span>
                       )}
                       {post.readingTime && (

@@ -65,8 +65,8 @@ const BlogPostPage = () => {
     return <Navigate to="/blog" replace />;
   }
 
-  const categoryName = blogPost.category?.name || blogPost.category || '';
-  const authorName = blogPost.author?.name || blogPost.author || 'LeRent';
+  const categoryName = typeof blogPost.category === 'string' ? blogPost.category : (blogPost.category?.name || '');
+  const authorName = typeof blogPost.author === 'string' ? blogPost.author : (blogPost.author?.name || 'LeRent');
 
   // Schema for SEO
   const blogSchema = {
@@ -222,7 +222,7 @@ const BlogPostPage = () => {
                           <div className="flex items-center justify-between mb-2">
                             {post.category && (
                               <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(250, 146, 8, 0.15)', color: '#fa9208' }}>
-                                {post.category.name || post.category}
+                                {typeof post.category === 'string' ? post.category : (post.category?.name || '')}
                               </span>
                             )}
                             {post.readingTime && (
