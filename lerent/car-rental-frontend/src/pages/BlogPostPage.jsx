@@ -96,7 +96,7 @@ const BlogPostPage = () => {
       <SEOHead
         title={`${blogPost.title} | LeRent Blog`}
         description={blogPost.excerpt}
-        image={blogPost.featuredImage}
+        image={blogPost.featuredImage || undefined}
         keywords={`blog, ${categoryName}, lerent, autopožičovňa, prenájom áut`}
         type="article"
         schema={blogSchema}
