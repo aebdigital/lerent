@@ -73,20 +73,13 @@ const BlogPage = () => {
                     )}
                   </div>
                   <div className="p-6">
-                    {/* Category + Read time */}
-                    <div className="flex items-center justify-between mb-3">
-                      {post.category && (
-                        <span className="text-xs font-medium px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(250, 146, 8, 0.15)', color: '#fa9208' }}>
-                          {typeof post.category === 'string' ? post.category : (post.category?.name || '')}
-                        </span>
-                      )}
-                      {post.readingTime && (
-                        <div className="flex items-center gap-1 text-xs text-gray-400">
-                          <ClockIcon className="h-3.5 w-3.5" />
-                          <span>{post.readingTime}</span>
-                        </div>
-                      )}
-                    </div>
+                    {/* Read time */}
+                    {post.readingTime && (
+                      <div className="flex items-center gap-1 text-xs text-gray-400 mb-3">
+                        <ClockIcon className="h-3.5 w-3.5" />
+                        <span>{post.readingTime}</span>
+                      </div>
+                    )}
 
                     {/* Title */}
                     <h2 className="text-xl font-bold text-white mb-3 group-hover:text-[#fa9208] transition-colors line-clamp-2">

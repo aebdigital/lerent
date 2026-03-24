@@ -120,22 +120,13 @@ const BlogPostPage = () => {
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12" style={{ maxWidth: '90rem' }}>
             <div className="max-w-4xl mx-auto">
 
-              {/* Category and Meta */}
-              <div className="flex items-center gap-4 mb-6">
-                {categoryName && (
-                  <span className="text-sm font-medium px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(250, 146, 8, 0.15)', color: '#fa9208' }}>
-                    {categoryName}
-                  </span>
-                )}
-                <div className="flex items-center gap-4 text-sm text-gray-400">
-                  {blogPost.readingTime && (
-                    <div className="flex items-center gap-1">
-                      <ClockIcon className="h-4 w-4" />
-                      <span>{blogPost.readingTime} čítania</span>
-                    </div>
-                  )}
+              {/* Meta */}
+              {blogPost.readingTime && (
+                <div className="flex items-center gap-1 text-sm text-gray-400 mb-6">
+                  <ClockIcon className="h-4 w-4" />
+                  <span>{blogPost.readingTime} čítania</span>
                 </div>
-              </div>
+              )}
 
               {/* Title */}
               <h1 className="text-3xl md:text-5xl font-bold text-white mb-6">
@@ -219,16 +210,9 @@ const BlogPostPage = () => {
                           )}
                         </div>
                         <div className="p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            {post.category && (
-                              <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(250, 146, 8, 0.15)', color: '#fa9208' }}>
-                                {typeof post.category === 'string' ? post.category : (post.category?.name || '')}
-                              </span>
-                            )}
-                            {post.readingTime && (
-                              <span className="text-xs text-gray-400">{post.readingTime}</span>
-                            )}
-                          </div>
+                          {post.readingTime && (
+                            <div className="text-xs text-gray-400 mb-2">{post.readingTime}</div>
+                          )}
                           <h3 className="font-semibold text-white group-hover:text-[#fa9208] transition-colors line-clamp-2">
                             {post.title}
                           </h3>

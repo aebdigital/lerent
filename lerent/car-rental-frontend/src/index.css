@@ -241,6 +241,12 @@
 }
 
 /* Blog content styling */
+.blog-content {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+  overflow-x: hidden;
+}
 .blog-content h2 {
   color: #fff;
   font-size: 1.5rem;
