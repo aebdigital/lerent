@@ -10,7 +10,7 @@ import Carousel from '../components/Carousel';
 import CustomDatePicker from '../components/CustomDatePicker';
 import DatePicker from '../components/DatePicker';
 import { carsAPI, locationsAPI, bannersAPI } from '../services/api';
-import { generateCarSlug } from '../utils/slugify';
+import { generateCarSlug, getUniqueCarSlugs } from '../utils/slugify';
 import config from '../config/config';
 import HeroImg from '../main-page-final1.jpg';
 import VasenImg from '../vasen.webp';
@@ -484,7 +484,7 @@ const HomePage = () => {
 
       // Navigate to car detail page using slug
       const selectedCarObj = heroFormAvailableCars.find(c => c._id === formData.selectedCar);
-      const carSlug = selectedCarObj ? generateCarSlug(selectedCarObj.brand, selectedCarObj.model) : formData.selectedCar;
+      const carSlug = selectedCarObj ? (selectedCarObj.slug || generateCarSlug(selectedCarObj.brand, selectedCarObj.model)) : formData.selectedCar;
       navigate(`/auto/${carSlug}?${queryParams.toString()}`);
     } else {
       // No car selected - activate date filter and scroll to cars section
@@ -540,8 +540,9 @@ const HomePage = () => {
             })
           );
 
-          setCars(carsWithAvailability);
-          setFilteredCars(carsWithAvailability);
+          const carsWithSlugs = getUniqueCarSlugs(carsWithAvailability);
+          setCars(carsWithSlugs);
+          setFilteredCars(carsWithSlugs);
         } else {
           console.log('No cars returned from API, using static data');
           // Static data doesn't have unavailableDates, so add empty array
@@ -549,8 +550,9 @@ const HomePage = () => {
             ...car,
             unavailableDates: []
           }));
-          setCars(staticCarsWithAvailability);
-          setFilteredCars(staticCarsWithAvailability);
+          const staticCarsWithSlugs = getUniqueCarSlugs(staticCarsWithAvailability);
+          setCars(staticCarsWithSlugs);
+          setFilteredCars(staticCarsWithSlugs);
         }
       } catch (err) {
         console.error('Failed to load cars from API:', err);
@@ -1246,7 +1248,7 @@ const HomePage = () => {
                           if (slide.carData) {
                             console.log('   Car details:', slide.carData.brand, slide.carData.model);
                           }
-                          const bannerSlug = slide.carData ? generateCarSlug(slide.carData.brand, slide.carData.model) : slide.carId;
+                          const bannerSlug = slide.carData ? (slide.carData.slug || generateCarSlug(slide.carData.brand, slide.carData.model)) : slide.carId;
                           navigate(`/auto/${bannerSlug}`);
                         } else {
                           console.log('⚠️ Banner clicked but no carId associated');

@@ -26,7 +26,7 @@ import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
 import BookingFormSection from '../components/BookingFormSection';
 import { carsAPI, locationsAPI } from '../services/api';
-import { generateCarSlug, findCarBySlug } from '../utils/slugify';
+import { generateCarSlug, findCarBySlug, getUniqueCarSlugs } from '../utils/slugify';
 import HeroImg from '../test.webp';
 import AudiA6Img from '../audia6.webp';
 import BMW540iImg from '../bmw540i.webp';
@@ -417,8 +417,9 @@ const CarDetailsPage = () => {
 
         // Fetch all cars to resolve slug to _id
         const carsResult = await carsAPI.getAvailableCars();
-        const allCars = Array.isArray(carsResult) ? carsResult : (carsResult?.data || []);
-        const matchedCar = findCarBySlug(allCars, slug);
+        const rawCars = Array.isArray(carsResult) ? carsResult : (carsResult?.data || []);
+        const allCars = getUniqueCarSlugs(rawCars);
+        const matchedCar = allCars.find(car => car.slug === slug);
 
         if (matchedCar) {
           // Filter similar cars from same category
@@ -1545,7 +1546,7 @@ const CarDetailsPage = () => {
                   >
                     {similarCars.map((similarCar) => {
                       const carImage = getCarImages(similarCar)[0];
-                      const carSlug = generateCarSlug(similarCar.brand, similarCar.model);
+                      const carSlug = similarCar.slug || generateCarSlug(similarCar.brand, similarCar.model);
                       return (
                         <Link
                           key={similarCar._id}

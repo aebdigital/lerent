@@ -72,15 +72,25 @@ async function getDynamicPages() {
         console.warn('⚠️ Warning: API returned 0 cars. Sitemap will be empty for cars.');
       }
 
+      const slugCounts = {};
       cars.forEach(car => {
-        const slug = generateCarSlug(car.brand, car.model);
+        const baseSlug = generateCarSlug(car.brand, car.model);
+        let finalSlug = baseSlug;
+        
+        if (slugCounts[baseSlug]) {
+          slugCounts[baseSlug]++;
+          finalSlug = `${baseSlug}-${slugCounts[baseSlug]}`;
+        } else {
+          slugCounts[baseSlug] = 1;
+        }
+
         pages.push({
-          url: `/auto/${slug}`,
+          url: `/auto/${finalSlug}`,
           priority: '0.8',
           changefreq: 'weekly'
         });
       });
-      console.log(`✅ Added ${cars.length} cars`);
+      console.log(`✅ Added ${cars.length} cars with unique slugs`);
     } else {
       throw new Error('Unexpected response format: ' + JSON.stringify(response).substring(0, 100));
     }

@@ -7,7 +7,7 @@ const CarDetailsSEO = ({ car, baseUrl = 'https://lerent.sk' }) => {
     if (!car) return;
 
     const carName = `${car.brand} ${car.model} ${car.year || ''}`;
-    const carSlug = generateCarSlug(car.brand, car.model);
+    const carSlug = car.slug || generateCarSlug(car.brand, car.model);
     const carDescription = car.description || `Prenájom ${carName} - luxusné vozidlo s profesionálnymi službami. Výhodné ceny, plné poistenie, 24/7 podpora.`;
     
     // Update document title

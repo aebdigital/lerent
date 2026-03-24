@@ -52,7 +52,7 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
 
   // Build URL with selected dates as query parameters
   const buildCarUrl = () => {
-    const carSlug = generateCarSlug(brand, model);
+    const carSlug = car.slug || generateCarSlug(brand, model);
     const baseUrl = `/auto/${carSlug}`;
     if (selectedDates?.pickupDate && selectedDates?.returnDate) {
       const params = new URLSearchParams({
