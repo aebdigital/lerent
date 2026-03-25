@@ -66,8 +66,8 @@ const BlogPage = () => {
                 <article className="rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-800 hover:border-gray-700" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
                   {/* Card image */}
                   <div className="h-48 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
-                    {post.featuredImage ? (
-                      <img src={post.featuredImage} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    {post.featuredImage?.url ? (
+                      <img src={post.featuredImage.url} alt={post.featuredImage.alt || post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
                       <img src={Logo} alt="LeRent" className="h-16 w-auto opacity-60" />
                     )}

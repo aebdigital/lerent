@@ -73,7 +73,7 @@ const BlogPostPage = () => {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": blogPost.title,
-    ...(blogPost.featuredImage && { "image": blogPost.featuredImage }),
+    ...(blogPost.featuredImage?.url && { "image": blogPost.featuredImage.url }),
     "author": {
       "@type": "Organization",
       "name": authorName
@@ -96,7 +96,7 @@ const BlogPostPage = () => {
       <SEOHead
         title={`${blogPost.title} | LeRent Blog`}
         description={blogPost.excerpt}
-        image={blogPost.featuredImage || undefined}
+        image={blogPost.featuredImage?.url || undefined}
         keywords={`blog, ${categoryName}, lerent, autopožičovňa, prenájom áut`}
         type="article"
         schema={blogSchema}
@@ -104,11 +104,11 @@ const BlogPostPage = () => {
       <div className="min-h-screen bg-black">
 
         {/* Mini Hero */}
-        {blogPost.featuredImage ? (
+        {blogPost.featuredImage?.url ? (
           <div
             className="h-[25vh] bg-cover bg-center"
             style={{
-              backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url(${blogPost.featuredImage})`
+              backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url(${blogPost.featuredImage.url})`
             }}
           />
         ) : (
@@ -203,8 +203,8 @@ const BlogPostPage = () => {
                     <Link key={post.slug} to={`/blog/${post.slug}`} className="group">
                       <article className="rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 border border-gray-800" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
                         <div className="h-40 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
-                          {post.featuredImage ? (
-                            <img src={post.featuredImage} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          {post.featuredImage?.url ? (
+                            <img src={post.featuredImage.url} alt={post.featuredImage.alt || post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                           ) : (
                             <img src={Logo} alt="LeRent" className="h-14 w-auto opacity-60" />
                           )}
