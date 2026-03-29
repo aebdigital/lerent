@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bars3Icon, HomeIcon } from '@heroicons/react/24/outline';
 import Logo from '../logoRENT.svg';
 import Sidebar from './Sidebar';
+import { useLanguage } from '../context/LanguageContext';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Header = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -10,6 +12,7 @@ const Header = () => {
   const [forceBlackMobile, setForceBlackMobile] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -157,7 +160,7 @@ const Header = () => {
                 borderBottom: isActive('#cars') ? '2px solid #02cdff' : '2px solid transparent'
               }}
             >
-              Ponuka
+              {t('nav.offer')}
             </button>
 
             {/* Služby Link */}
@@ -173,7 +176,7 @@ const Header = () => {
                 borderBottom: isActive('/sluzby') ? '2px solid #02cdff' : '2px solid transparent'
               }}
             >
-              Služby
+              {t('nav.services')}
             </button>
 
             {/* HOME Icon */}
@@ -199,7 +202,7 @@ const Header = () => {
                 borderBottom: isActive('/faq') ? '2px solid #02cdff' : '2px solid transparent'
               }}
             >
-              FAQ
+              {t('nav.faq')}
             </button>
 
             {/* O nás Link */}
@@ -215,7 +218,7 @@ const Header = () => {
                 borderBottom: isActive('/o-nas') ? '2px solid #02cdff' : '2px solid transparent'
               }}
             >
-              O nás
+              {t('nav.about')}
             </button>
 
             {/* Blog Link */}
@@ -231,7 +234,7 @@ const Header = () => {
                 borderBottom: isActive('/blog') ? '2px solid #02cdff' : '2px solid transparent'
               }}
             >
-              Blog
+              {t('nav.blog')}
             </button>
 
             {/* Kontakt Link */}
@@ -247,12 +250,13 @@ const Header = () => {
                 borderBottom: isActive('/kontakt') ? '2px solid #02cdff' : '2px solid transparent'
               }}
             >
-              Kontakt
+              {t('nav.contact')}
             </button>
           </div>
 
-          {/* Right section - Phone */}
-          <div className="hidden lg:flex items-center justify-end">
+          {/* Right section - Language Switch & Phone */}
+          <div className="hidden lg:flex items-center justify-end gap-3">
+            <LanguageSwitcher />
             <a
               href="tel:+421905318164"
               className="hover:opacity-90 px-5 py-3 text-base transition-colors duration-200 border border-gray-600 rounded-lg"

@@ -11,11 +11,13 @@ import {
 } from '@heroicons/react/24/outline';
 import Logo from '../logoRENT.svg';
 import { blogAPI } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
 
 const BlogPostPage = () => {
   const { id } = useParams();
+  const { t, tf, locale, language } = useLanguage();
   const [blogPost, setBlogPost] = useState(null);
   const [relatedPosts, setRelatedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +38,7 @@ const BlogPostPage = () => {
         // Fetch all blogs for related posts
         try {
           const allPosts = await blogAPI.getBlogs();
-          setRelatedPosts(allPosts.filter(p => p.slug !== id).slice(0, 3));
+          setRelatedPosts(allPosts.filter(p => p.slug !== id && p.slugEn !== id && p.slugHu !== id).slice(0, 3));
         } catch {
           // Related posts are optional
         }
@@ -55,7 +57,7 @@ const BlogPostPage = () => {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block w-8 h-8 border-2 border-[#fa9208] border-t-transparent rounded-full animate-spin mb-4" />
-          <p className="text-gray-400">Načítavam článok...</p>
+          <p className="text-gray-400">{t('blog.loadingPost')}</p>
         </div>
       </div>
     );
@@ -72,7 +74,7 @@ const BlogPostPage = () => {
   const blogSchema = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": blogPost.title,
+    "headline": tf(blogPost, 'title'),
     ...(blogPost.featuredImage?.url && { "image": blogPost.featuredImage.url }),
     "author": {
       "@type": "Organization",
@@ -88,14 +90,14 @@ const BlogPostPage = () => {
     },
     "datePublished": blogPost.publishDate,
     "dateModified": blogPost.updatedAt || blogPost.publishDate,
-    "description": blogPost.excerpt
+    "description": tf(blogPost, 'excerpt')
   };
 
   return (
     <>
       <SEOHead
-        title={`${blogPost.title} | LeRent Blog`}
-        description={blogPost.excerpt}
+        title={`${tf(blogPost, 'title')} | LeRent Blog`}
+        description={tf(blogPost, 'excerpt')}
         image={blogPost.featuredImage?.url || undefined}
         keywords={`blog, ${categoryName}, lerent, autopožičovňa, prenájom áut`}
         type="article"
@@ -124,13 +126,13 @@ const BlogPostPage = () => {
               {blogPost.readingTime && (
                 <div className="flex items-center gap-1 text-sm text-gray-400 mb-6">
                   <ClockIcon className="h-4 w-4" />
-                  <span>{blogPost.readingTime} čítania</span>
+                  <span>{blogPost.readingTime} {t('blog.readTime')}</span>
                 </div>
               )}
 
               {/* Title */}
               <h1 className="text-3xl md:text-5xl font-bold text-white mb-6">
-                {blogPost.title}
+                {tf(blogPost, 'title')}
               </h1>
 
               {/* Author and Date */}
@@ -146,7 +148,7 @@ const BlogPostPage = () => {
                     </div>
                     <div className="flex items-center gap-1 text-gray-400 text-sm">
                       <CalendarIcon className="h-4 w-4" />
-                      <span>{new Date(blogPost.publishDate).toLocaleDateString('sk-SK', {
+                      <span>{new Date(blogPost.publishDate).toLocaleDateString(locale, {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -159,7 +161,7 @@ const BlogPostPage = () => {
               {/* Article Content */}
               <div
                 className="prose prose-lg max-w-none prose-invert blog-content"
-                dangerouslySetInnerHTML={{ __html: blogPost.content }}
+                dangerouslySetInnerHTML={{ __html: tf(blogPost, 'content') }}
                 style={{
                   lineHeight: '1.8',
                   color: '#d1d5db'
@@ -174,17 +176,17 @@ const BlogPostPage = () => {
                   style={{ color: '#fa9208' }}
                 >
                   <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                  Späť na blog
+                  {t('blog.backToBlog')}
                 </Link>
               </div>
 
               {/* Share Footer */}
               <div className="mt-12 pt-8 border-t border-gray-700">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <span className="text-gray-300">Bol tento článok užitočný?</span>
+                  <span className="text-gray-300">{t('blog.usefulArticle')}</span>
                   <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:opacity-80 transition-colors text-black font-medium" style={{ backgroundColor: '#fa9208' }}>
                     <ShareIcon className="h-4 w-4" />
-                    <span>Zdieľať článok</span>
+                    <span>{t('blog.shareArticle')}</span>
                   </button>
                 </div>
               </div>
@@ -197,14 +199,14 @@ const BlogPostPage = () => {
           <section className="py-12" style={{ backgroundColor: 'rgb(18, 18, 18)' }}>
             <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: '90rem' }}>
               <div className="max-w-4xl mx-auto">
-                <h2 className="text-2xl font-bold text-white mb-8">Súvisiace články</h2>
+                <h2 className="text-2xl font-bold text-white mb-8">{t('blog.relatedArticles')}</h2>
                 <div className="grid md:grid-cols-3 gap-6">
                   {relatedPosts.map((post) => (
                     <Link key={post.slug} to={`/blog/${post.slug}`} className="group">
                       <article className="rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 border border-gray-800" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
                         <div className="h-40 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
                           {post.featuredImage?.url ? (
-                            <img src={post.featuredImage.url} alt={post.featuredImage.alt || post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <img src={post.featuredImage.url} alt={post.featuredImage.alt || tf(post, 'title')} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                           ) : (
                             <img src={Logo} alt="LeRent" className="h-14 w-auto opacity-60" />
                           )}
@@ -214,10 +216,10 @@ const BlogPostPage = () => {
                             <div className="text-xs text-gray-400 mb-2">{post.readingTime}</div>
                           )}
                           <h3 className="font-semibold text-white group-hover:text-[#fa9208] transition-colors line-clamp-2">
-                            {post.title}
+                            {tf(post, 'title')}
                           </h3>
                           <div className="flex items-center justify-end mt-3" style={{ color: '#fa9208' }}>
-                            <span className="text-sm font-medium">Čítať viac</span>
+                            <span className="text-sm font-medium">{t('blog.readMore')}</span>
                             <ChevronRightIcon className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
                           </div>
                         </div>

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { useLanguage } from '../context/LanguageContext';
 
 const DatePicker = ({
   selectedDate,
@@ -7,7 +8,7 @@ const DatePicker = ({
   minDate,
   maxDate,
   unavailableDates = [],
-  placeholder = "Vyberte dátum",
+  placeholder,
   otherSelectedDate = null, // The other date in the range (pickup or return)
   isReturnPicker = false, // Flag to indicate if this is the return date picker
   onOtherDateReset = null, // Callback to reset the other date picker
@@ -15,18 +16,13 @@ const DatePicker = ({
   direction = 'up', // 'up' or 'down'
   offsetY = 0 // New prop for vertical offset (in px)
 }) => {
+  const { t, locale } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const containerRef = useRef(null);
 
-  // Slovak month names
-  const monthNames = [
-    'Január', 'Február', 'Marec', 'Apríl', 'Máj', 'Jún',
-    'Júl', 'August', 'September', 'Október', 'November', 'December'
-  ];
-
-  // Slovak day names
-  const dayNames = ['Po', 'Ut', 'St', 'Št', 'Pi', 'So', 'Ne'];
+  const monthNames = t('datePicker.months');
+  const dayNames = t('datePicker.days');
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -41,7 +37,7 @@ const DatePicker = ({
 
   const formatDate = (date) => {
     if (!date) return '';
-    return date.toLocaleDateString('sk-SK');
+    return date.toLocaleDateString(locale);
   };
 
   // Format date to YYYY-MM-DD in local timezone (avoids timezone shift issues)
@@ -183,12 +179,12 @@ const DatePicker = ({
       // Check for minimum 2-day reservation
       const daysDifference = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
       if (daysDifference < 2) {
-        alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátum vrátenia minimálne 2 dni po dátume prevzatia.');
+        alert(t('datePicker.alerts.minReturn'));
         return;
       }
 
       if (hasUnavailableDatesBetween(pickupDate, returnDate)) {
-        alert('Nemôžete vybrať tento dátum, pretože v rozsahu sú nedostupné dni. Prosím vyberte iný dátum.');
+        alert(t('datePicker.alerts.unavailable'));
         return;
       }
     }
@@ -207,12 +203,12 @@ const DatePicker = ({
         // Check for minimum 2-day reservation
         const daysDifference = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
         if (daysDifference < 2) {
-          alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátum prevzatia minimálne 2 dni pred dátumom vrátenia.');
+          alert(t('datePicker.alerts.minPickup'));
           return;
         }
 
         if (hasUnavailableDatesBetween(pickupDate, returnDate)) {
-          alert('Nemôžete vybrať tento dátum, pretože v rozsahu sú nedostupné dni. Prosím vyberte iný dátum.');
+          alert(t('datePicker.alerts.unavailable'));
           return;
         }
       }
@@ -234,7 +230,7 @@ const DatePicker = ({
       >
         <div className="flex items-center justify-between">
           <span className={selectedDate ? 'text-white' : 'text-gray-400'}>
-            {selectedDate ? formatDate(selectedDate) : placeholder}
+            {selectedDate ? formatDate(selectedDate) : (placeholder || t('datePicker.placeholder'))}
           </span>
           <CalendarIcon className="h-5 w-5" style={{color: '#fa9208'}} />
         </div>

@@ -1,10 +1,13 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Logo from '../logoRENT.svg';
+import { useLanguage } from '../context/LanguageContext';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
 
   const handleNavClick = (href) => {
@@ -107,7 +110,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               isActive('/') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
             }`}
           >
-            Domov
+            {t('nav.home')}
           </button>
 
           {/* Ponuka */}
@@ -117,7 +120,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               isActive('#cars') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
             }`}
           >
-            Ponuka
+            {t('nav.offer')}
           </button>
 
           {/* O nás */}
@@ -127,7 +130,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               isActive('/o-nas') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
             }`}
           >
-            O nás
+            {t('nav.about')}
           </button>
 
           {/* Blog */}
@@ -137,7 +140,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               isActive('/blog') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
             }`}
           >
-            Blog
+            {t('nav.blog')}
           </button>
 
           {/* Kontakt */}
@@ -147,7 +150,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               isActive('/kontakt') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
             }`}
           >
-            Kontakt
+            {t('nav.contact')}
           </button>
 
           {/* Služby */}
@@ -157,7 +160,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               isActive('/sluzby') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
             }`}
           >
-            Služby
+            {t('nav.services')}
           </button>
 
           {/* FAQ */}
@@ -167,9 +170,14 @@ const Sidebar = ({ isOpen, onClose }) => {
               isActive('/faq') ? 'text-[rgb(250,146,8)] bg-gray-900' : 'text-white hover:text-gray-300 hover:bg-gray-900'
             }`}
           >
-            FAQ
+            {t('nav.faq')}
           </button>
 
+
+          {/* Language Switch */}
+          <div className="px-6 py-2">
+            <LanguageSwitcher variant="sidebar" onSelect={onClose} />
+          </div>
 
           {/* Rezervovať Button */}
           <div className="px-6 py-6">
@@ -182,7 +190,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 fontWeight: 700
               }}
             >
-              Rezervovať
+              {t('nav.reserve')}
             </button>
           </div>
         </div>

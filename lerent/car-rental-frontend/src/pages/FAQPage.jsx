@@ -1,51 +1,12 @@
 import React, { useState } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { useLanguage } from '../context/LanguageContext';
 
 const FAQPage = () => {
   const [openQuestion, setOpenQuestion] = useState(null);
+  const { t } = useLanguage();
 
-  const faqs = [
-    {
-      question: "Aké sú základné požiadavky na prenájom vozidla?",
-      answer: "Pre prenájom vozidla potrebujete mať minimálne 21 rokov, platný vodičský preukaz (minimálne 1 rok), občiansky preukaz alebo pas. Pre vozidlá luxusnej kategórie môže byť požadovaný vyšší vek a dlhšia doba platnosti vodičského preukazu."
-    },
-    {
-      question: "Aká je výška zábezpeky a kedy sa vráti?",
-      answer: "Výška zábezpeky závisí od kategórie vozidla a je uvedená pri každom aute individuálne. Zábezpeka sa vráti okamžite po vrátení a skontrolovaní vozidla, najneskôr však do 7 pracovných dní od vrátenia vozidla."
-    },
-    {
-      question: "Je možné predĺžiť prenájom počas trvania?",
-      answer: "Áno, prenájom je možné predĺžiť, ale odporúčame kontaktovať nás aspoň 24 hodín vopred. Predĺženie závisí od dostupnosti vozidla a aktuálnych cien."
-    },
-    {
-      question: "Čo je zahrnuté v cene prenájmu?",
-      answer: "V cene prenájmu je zahrnuté poistenie zodpovednosti a havarijné poistenie, slovenská diaľničná známka, technická podpora 24/7 a základné vybavenie vozidla. Dodatočné služby ako napríklad poskytnutie autosedačky alebo poistenie sú spoplatnené podľa konkrétnej služby, ktorú si môžete vybrať pri rezervácii vozidla."
-    },
-    {
-      question: "Môžem zrušiť rezerváciu a dostať späť platbu?",
-      answer: "Rezervácie zrušené viac ako 24 hodín pred začiatkom prenájmu sú bezplatné. Pri zrušení rezervácie menej ako 24 hodín pred začiatkom prenájmu sa účtuje poplatok 25% z celkovej sumy prenájmu."
-    },
-    {
-      question: "Aké sú podmienky vrátenia vozidla?",
-      answer: "Vozidlo je potrebné vrátiť s plnou nádržou paliva, v čistom stave a bez poškodení (okrem poškodení, ktoré už boli na aute v čase prevzatia vozidla do nájmu). Vrátenie je možné v čase podľa našich otváracích hodín na dohodnutom mieste odovzdania alebo v čase mimo otváracích hodín podľa predošlej dohody."
-    },
-    {
-      question: "Je možné prenajať si vozidlo pre niekoho iného?",
-      answer: "Vozidlo môže riadiť len osoba, ktorá je uvedená v zmluve o prenájme. Dodatočných vodičov je možné pridať za poplatok podľa aktuálneho cenníka po predložení platných dokladov."
-    },
-    {
-      question: "Čo sa stane v prípade nehody alebo poruchy?",
-      answer: "V prípade nehody nás ihneď kontaktujte. Poskytujeme 24/7 asistenčnú službu, ktorá je zahrnutá v cene prenájmu. V prípade poruchy zabezpečíme náhradné vozidlo alebo opravu podľa situácie."
-    },
-    {
-      question: "Môžem cestovať s prenajatým vozidlom do zahraničia?",
-      answer: "Cestovanie do zahraničia je možné po predchádzajúcom súhlase a za dodatočný poplatok. Niektoré vozidlá majú obmedzenia na cestovanie do určitých krajín."
-    },
-    {
-      question: "Aké formy platby prijímate?",
-      answer: "Prijímame platby platobnými kartami, bankovým prevodom a v hotovosti."
-    }
-  ];
+  const faqs = t('faq.questions');
 
   const toggleQuestion = (index) => {
     setOpenQuestion(openQuestion === index ? null : index);
@@ -57,10 +18,10 @@ const FAQPage = () => {
       <section className="pt-32 pb-8" style={{backgroundColor: '#000000'}}>
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-4xl md:text-6xl font-bold text-white text-center mb-8 font-goldman">
-            ČASTO KLADENÉ OTÁZKY
+            {t('faq.title')}
           </h1>
           <p className="text-xl text-gray-300 text-center max-w-3xl mx-auto mb-4">
-            Odpovede na najčastejšie otázky o prenájme vozidiel
+            {t('faq.subtitle')}
           </p>
         </div>
       </section>
@@ -69,8 +30,8 @@ const FAQPage = () => {
       <section className="py-8" style={{backgroundColor: '#000000'}}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <div 
+            {Array.isArray(faqs) && faqs.map((faq, index) => (
+              <div
                 key={index}
                 className="border-2 border-gray-800 rounded-lg overflow-hidden"
                 style={{backgroundColor: '#111111'}}
@@ -82,13 +43,13 @@ const FAQPage = () => {
                   <h3 className="text-lg font-bold text-white pr-4">
                     {faq.question}
                   </h3>
-                  <ChevronDownIcon 
+                  <ChevronDownIcon
                     className={`h-6 w-6 text-[rgb(250,146,8)] transition-transform duration-300 flex-shrink-0 ${
                       openQuestion === index ? 'rotate-180' : 'rotate-0'
                     }`}
                   />
                 </button>
-                
+
                 {openQuestion === index && (
                   <div className="px-6 pb-6">
                     <div className="border-t border-gray-700 pt-4">
@@ -108,7 +69,7 @@ const FAQPage = () => {
       <section className="py-16" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 font-goldman">
-            PODMIENKY PRENÁJMU
+            {t('faq.rentalConditionsTitle')}
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a
@@ -119,7 +80,7 @@ const FAQPage = () => {
                 color: '#191919'
               }}
             >
-              Všeobecné obchodné podmienky
+              {t('faq.termsButton')}
             </a>
             <a
               href="/cennik-poplatkov"
@@ -131,7 +92,7 @@ const FAQPage = () => {
                 fontWeight: 700
               }}
             >
-              Cenník poplatkov
+              {t('faq.feesButton')}
             </a>
           </div>
         </div>
@@ -141,10 +102,10 @@ const FAQPage = () => {
       <section className="py-16" style={{backgroundColor: '#000000'}}>
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 font-goldman">
-            NENAŠLI STE ODPOVEĎ?
+            {t('faq.notFoundTitle')}
           </h2>
           <p className="text-gray-300 text-lg mb-8">
-            Kontaktujte nás a radi vám odpovieme na všetky vaše otázky
+            {t('faq.notFoundText')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a

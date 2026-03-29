@@ -8,8 +8,10 @@ import {
 } from '@heroicons/react/24/outline';
 import CarImage from './CarImage';
 import { generateCarSlug } from '../utils/slugify';
+import { useLanguage } from '../context/LanguageContext';
 
 const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false }) => {
+  const { t } = useLanguage();
   // API data structure mapping
   const {
     _id: id,
@@ -93,21 +95,21 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
   const getFuelDisplay = () => {
     switch(fuelType) {
       case 'petrol':
-      case 'gasoline': return 'benzín';
-      case 'diesel': return 'diesel';
-      case 'electric': return 'elektrické';
-      case 'hybrid': return 'hybrid';
-      default: return fuelType?.toLowerCase() || 'diesel';
+      case 'gasoline': return t('carDetails.fuelTypes.petrol');
+      case 'diesel': return t('carDetails.fuelTypes.diesel');
+      case 'electric': return t('carDetails.fuelTypes.electric');
+      case 'hybrid': return t('carDetails.fuelTypes.hybrid');
+      default: return fuelType?.toLowerCase() || t('carDetails.fuelTypes.diesel');
     }
   };
 
   // Get transmission display
   const getTransmissionDisplay = () => {
     switch(transmission) {
-      case 'manual': return 'manuál';
-      case 'automatic': return 'auto.';
+      case 'manual': return t('carDetails.transmissionTypes.manual');
+      case 'automatic': return t('carDetails.transmissionTypes.automatic');
       case 'cvt': return 'CVT';
-      default: return transmission?.toLowerCase() || 'auto.';
+      default: return transmission?.toLowerCase() || t('carDetails.transmissionTypes.automatic');
     }
   };
 
@@ -134,7 +136,7 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
         {isPromo && (
           <div className="absolute top-0 left-0 z-10">
             <div className="bg-red-600 text-white px-4 py-2 text-sm font-bold transform -rotate-45 -translate-x-3 -translate-y-1 origin-top-left">
-              AKCIA
+              {t('common.promo')}
             </div>
           </div>
         )}
@@ -174,20 +176,7 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
                     color: 'white',
                     border: '1px solid rgba(255, 255, 255, 0.2)'
                   }}>
-                    {category === 'economy' ? 'Ekonomická' :
-                     category === 'ekonomicka' ? 'Ekonomická' :
-                     category === 'stredna' ? 'Stredná' :
-                     category === 'compact' ? 'Kompaktná' :
-                     category === 'midsize' ? 'Stredná' :
-                     category === 'fullsize' ? 'Veľká' :
-                     category === 'luxury' ? 'Luxusná' :
-                     category === 'vyssia' ? 'Vyššia' :
-                     category === 'suv' ? 'SUV' :
-                     category === 'minivan' ? 'Minivan' :
-                     category === 'viacmiestne' ? 'Viacmiestne' :
-                     category === 'convertible' ? 'Kabriolet' :
-                     category === 'sports' ? 'Športové' :
-                     category}
+                    {t(`categories.${category}`) !== `categories.${category}` ? t(`categories.${category}`) : category}
                   </span>
                 </div>
               )}
@@ -258,12 +247,12 @@ const CarCard = ({ car, selectedDates, unavailableDates = [], isPromo = false })
                 onClick={(e) => e.stopPropagation()}
                 className="bg-white text-black px-8 py-3 rounded font-semibold hover:opacity-90 transition-colors duration-200 block mb-4"
               >
-                rezervovat
+                {t('nav.reserve')}
               </Link>
 
               {/* Price */}
               <div className="text-2xl font-bold text-white">
-                od {pricing?.dailyRate || dailyRate || 40} eur
+                {t('common.fromPrice')} {pricing?.dailyRate || dailyRate || 40} {t('common.perDay')}
               </div>
             </div>
           </div>

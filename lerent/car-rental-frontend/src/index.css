@@ -255,7 +255,18 @@
   margin-bottom: 0.75rem;
 }
 .blog-content p {
-  margin-bottom: 1rem;
+  margin-bottom: 1.2em !important;
+  min-height: 1.6em;
+  line-height: 1.8;
+}
+/* Quill empty lines: <p><br></p> — needs height or they collapse */
+.blog-content p:has(> br:only-child) {
+  min-height: 1.4em;
+}
+/* Fallback for browsers without :has() */
+.blog-content br {
+  display: block;
+  content: '';
 }
 .blog-content ul {
   list-style-type: disc;

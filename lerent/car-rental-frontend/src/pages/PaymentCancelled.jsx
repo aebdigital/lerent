@@ -1,8 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 function PaymentCancelled() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#000000'}}>
@@ -15,12 +17,12 @@ function PaymentCancelled() {
           </div>
         </div>
 
-        <h1 className="text-4xl font-bold mb-4">Platba zrušená</h1>
+        <h1 className="text-4xl font-bold mb-4">{t('payment.cancelled.title')}</h1>
         <p className="text-xl text-gray-300 mb-4">
-          Vaša platba bola zrušená. Z vášho účtu nebola stiahnutá žiadna suma.
+          {t('payment.cancelled.text')}
         </p>
         <p className="text-gray-400 mb-8">
-          Môžete skúsiť rezerváciu znova alebo nás kontaktovať, ak potrebujete pomoc.
+          {t('payment.cancelled.helpText')}
         </p>
 
         <div className="flex gap-4 justify-center">
@@ -32,7 +34,7 @@ function PaymentCancelled() {
               color: '#fa9208'
             }}
           >
-            Skúsiť znova
+            {t('payment.cancelled.tryAgain')}
           </button>
           <button
             onClick={() => navigate('/')}
@@ -42,7 +44,7 @@ function PaymentCancelled() {
               color: '#191919'
             }}
           >
-            Späť na domovskú stránku
+            {t('payment.cancelled.backHome')}
           </button>
         </div>
       </div>

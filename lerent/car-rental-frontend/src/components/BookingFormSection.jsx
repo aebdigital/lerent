@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { locationsAPI, carsAPI } from '../services/api';
 import CustomDatePicker from './CustomDatePicker';
+import { useLanguage } from '../context/LanguageContext';
 
 // Fade In Up Animation Component
 const FadeInUp = ({ children, delay = 0 }) => {
@@ -23,6 +24,7 @@ const FadeInUp = ({ children, delay = 0 }) => {
 
 const BookingFormSection = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -62,12 +64,12 @@ const BookingFormSection = () => {
         } else {
           console.warn('⚠️ No locations returned from API, using fallback');
           // Fallback to default options
-          setLocations(['Pobočka Nitra']);
+          setLocations([t('booking.branchNitra')]);
         }
       } catch (err) {
         console.error('❌ Error loading pickup locations:', err);
         // Fallback to default options
-        setLocations(['Pobočka Nitra']);
+        setLocations([t('booking.branchNitra')]);
       }
     };
 
@@ -218,7 +220,7 @@ const BookingFormSection = () => {
     } else {
       // No car selected, just log for now
       console.log('Form submitted without car selection:', formData);
-      alert('Prosím vyberte auto');
+      alert(t('booking.alerts.selectCar'));
     }
   };
 
@@ -227,7 +229,7 @@ const BookingFormSection = () => {
       <div className="max-w-6xl mx-auto px-4">
         <FadeInUp>
           <h2 className="text-4xl md:text-5xl font-medium text-white text-center mb-12 font-goldman">
-            RÝCHLA REZERVÁCIA AUTA
+            {t('booking.quickBooking')}
           </h2>
         </FadeInUp>
 
@@ -235,13 +237,13 @@ const BookingFormSection = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
           {/* Meno - full width */}
           <div>
-            <label className="block text-white text-sm font-medium mb-2">Meno</label>
+            <label className="block text-white text-sm font-medium mb-2">{t('booking.name')}</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              placeholder="Peter Novák"
+              placeholder={t('booking.namePlaceholder')}
               className="w-full text-white px-4 py-3 rounded-lg border border-gray-900 focus:border-orange-500 focus:outline-none"
               style={{backgroundColor: '#191919', borderColor: '#0a0a0a'}}
             />
@@ -250,7 +252,7 @@ const BookingFormSection = () => {
           {/* Telefon and Email on one line */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-white text-sm font-medium mb-2">Váš telefón</label>
+              <label className="block text-white text-sm font-medium mb-2">{t('booking.phone')}</label>
               <input
                 type="tel"
                 name="phone"
@@ -262,13 +264,13 @@ const BookingFormSection = () => {
               />
             </div>
             <div>
-              <label className="block text-white text-sm font-medium mb-2">E-mail</label>
+              <label className="block text-white text-sm font-medium mb-2">{t('booking.email')}</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="meno@gmail.com"
+                placeholder={t('booking.emailPlaceholder')}
                 className="w-full text-white px-4 py-3 rounded-lg border border-gray-900 focus:border-orange-500 focus:outline-none"
                 style={{backgroundColor: '#191919', borderColor: '#0a0a0a'}}
               />
@@ -278,26 +280,26 @@ const BookingFormSection = () => {
           {/* Date pickers - on one line */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-white text-sm font-medium mb-2">Dátum vyzdvihnutia</label>
+              <label className="block text-white text-sm font-medium mb-2">{t('booking.pickupDate')}</label>
               <CustomDatePicker
                 selectedDate={formData.pickupDate}
                 onDateSelect={(date) => handleDateSelect('pickupDate', date)}
                 minDate={new Date()}
                 unavailableDates={unavailableDates}
-                placeholder="Vyberte dátum"
+                placeholder={t('datePicker.placeholder')}
                 otherSelectedDate={formData.returnDate}
                 isReturnPicker={false}
                 onOtherDateReset={() => handleDateSelect('returnDate', null)}
               />
             </div>
             <div>
-              <label className="block text-white text-sm font-medium mb-2">Dátum vrátenia</label>
+              <label className="block text-white text-sm font-medium mb-2">{t('booking.returnDate')}</label>
               <CustomDatePicker
                 selectedDate={formData.returnDate}
                 onDateSelect={(date) => handleDateSelect('returnDate', date)}
                 minDate={formData.pickupDate ? new Date(formData.pickupDate.getTime() + 86400000 * 2) : new Date()}
                 unavailableDates={unavailableDates}
-                placeholder="Vyberte dátum"
+                placeholder={t('datePicker.placeholder')}
                 otherSelectedDate={formData.pickupDate}
                 isReturnPicker={true}
               />
@@ -307,10 +309,10 @@ const BookingFormSection = () => {
           {/* Vyber auta - full width */}
           <div>
             <label className="block text-white text-sm font-medium mb-2">
-              Vyberte auto
+              {t('booking.selectCar')}
               {formData.pickupDate && formData.returnDate && (
                 <span className="ml-2 text-xs text-gray-400">
-                  ({availableCars.length} dostupných)
+                  ({availableCars.length} {t('booking.available')})
                 </span>
               )}
             </label>
@@ -323,11 +325,11 @@ const BookingFormSection = () => {
               style={{backgroundColor: '#191919', borderColor: '#0a0a0a'}}
             >
               <option value="">
-                {loadingCars ? 'Načítavam autá...' : 'Vyberte auto'}
+                {loadingCars ? t('booking.loadingCars') : t('booking.selectCar')}
               </option>
               {availableCars.map((car) => (
                 <option key={car._id} value={car._id}>
-                  {car.brand} {car.model} - od {car.pricing?.dailyRate || car.dailyRate || 0}€/deň
+                  {car.brand} {car.model} - {t('common.fromPrice')} {car.pricing?.dailyRate || car.dailyRate || 0}{t('common.perDay')}
                 </option>
               ))}
             </select>
@@ -335,7 +337,7 @@ const BookingFormSection = () => {
 
           {/* Miesto vyzdvihnutia - full width */}
           <div>
-            <label className="block text-white text-sm font-medium mb-2">Miesto vyzdvihnutia</label>
+            <label className="block text-white text-sm font-medium mb-2">{t('booking.pickupLocation')}</label>
             <select
               name="location"
               value={formData.location}
@@ -343,7 +345,7 @@ const BookingFormSection = () => {
               className="w-full text-white px-4 py-3 rounded-lg border border-gray-900 focus:border-orange-500 focus:outline-none appearance-none"
               style={{backgroundColor: '#191919', borderColor: '#0a0a0a'}}
             >
-              <option value="">Vyberte možnosť</option>
+              <option value="">{t('booking.selectOption')}</option>
               {locations.map((location, index) => (
                 <option key={index} value={location}>
                   {location}
@@ -354,12 +356,12 @@ const BookingFormSection = () => {
           
           {/* Poznamka - full width */}
           <div>
-            <label className="block text-white text-sm font-medium mb-2">Poznámka</label>
+            <label className="block text-white text-sm font-medium mb-2">{t('booking.note')}</label>
             <textarea
               name="notes"
               value={formData.notes}
               onChange={handleInputChange}
-              placeholder="Zadajte tu..."
+              placeholder={t('booking.notePlaceholder')}
               rows={4}
               className="w-full text-white px-4 py-3 rounded-lg border border-gray-900 focus:border-orange-500 focus:outline-none resize-none"
               style={{backgroundColor: '#191919', borderColor: '#0a0a0a'}}
@@ -377,7 +379,7 @@ const BookingFormSection = () => {
                 color: '#191919'
               }}
             >
-              Rezervovať
+              {t('nav.reserve')}
             </button>
           </div>
           </form>

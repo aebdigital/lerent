@@ -1,9 +1,11 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../logoRENT.svg';
+import { useLanguage } from '../context/LanguageContext';
 
 const Footer = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLanguage();
 
   // Check if user is in booking/reservation process
   const isInBookingProcess = location.pathname.includes('/booking');
@@ -71,7 +73,7 @@ const Footer = () => {
                   <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
                   <path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
                 </svg>
-                <span>Po - Pia od 8:00 do 17:00</span>
+                <span>{t('footer.openHours')}</span>
               </div>
 
               {/* Social Media Icons - On mobile only, under opening hours */}
@@ -122,7 +124,7 @@ const Footer = () => {
                   fontWeight: 700
                 }}
               >
-                Rezervovať
+                {t('footer.reserve')}
               </button>
             </div>
           )}
@@ -169,16 +171,16 @@ const Footer = () => {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0">
             {/* Left - Copyright */}
             <p className="text-gray-400 text-sm text-center sm:text-left">
-              © Lerent 2025. Všetky práva vyhradené.
+              {t('footer.copyright')}
             </p>
             
             {/* Right - Links */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 lg:gap-8 text-center sm:text-left">
               <Link to="/terms" className="text-gray-400 hover:text-white transition-colors text-sm">
-                Podmienky Používania
+                {t('footer.terms')}
               </Link>
               <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors text-sm">
-                Zásady ochrany osobných údajov
+                {t('footer.privacy')}
               </Link>
               <a 
                 href="https://aebdigital.sk" 
@@ -186,7 +188,7 @@ const Footer = () => {
                 rel="noopener noreferrer" 
                 className="text-gray-400 hover:text-white transition-colors text-sm underline"
               >
-                Tvorba stránky - AEB Digital
+                {t('footer.madeBy')}
               </a>
             </div>
           </div>

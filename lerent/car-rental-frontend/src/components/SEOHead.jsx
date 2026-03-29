@@ -1,26 +1,33 @@
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
-const SEOHead = ({ 
-  title = 'Lerent autopožičovňa - Prenájom áut Nitra | Luxusné vozidlá',
-  description = 'Prenájom áut v Nitre s Lerent. Luxusné vozidlá, profesionálne služby, konkurenčné ceny. BMW, Audi, Mercedes a ďalšie prémiové značky. Rezervujte si auto už dnes!',
-  keywords = 'prenájom áut Nitra, autopožičovňa Nitra, luxusné vozidlá, BMW prenájom, Audi prenájom, Mercedes prenájom, car rental Nitra',
+const SEOHead = ({
+  title,
+  description,
+  keywords,
   image = '/main-page-final1.jpg',
   url = 'https://lerent.sk',
   type = 'website',
   author = 'Lerent',
-  locale = 'sk_SK',
-  schema = null // New prop for custom schema
+  locale: localeProp,
+  schema = null
 }) => {
   const location = useLocation();
+  const { language, t } = useLanguage();
   const currentUrl = `${url}${location.pathname}`;
-  
+  const resolvedLocale = localeProp || (language === 'en' ? 'en_GB' : 'sk_SK');
+  const resolvedTitle = title || t('seo.home.title');
+  const resolvedDescription = description || t('seo.home.description');
+  const resolvedKeywords = keywords || t('seo.home.keywords');
+  const langLabel = language === 'en' ? 'English' : 'Slovak';
+
   // Default structured data
   const defaultSchema = {
     "@context": "https://schema.org",
     "@type": "CarRental",
     "name": "Lerent",
-    "description": "Prenájom luxusných áut v Nitre. Profesionálne služby, konkurenčné ceny.",
+    "description": language === 'en' ? "Premium car rental in Nitra. Professional services, competitive prices." : "Prenájom luxusných áut v Nitre. Profesionálne služby, konkurenčné ceny.",
     "url": url,
     "logo": `${url}/logoRENT.svg`,
     "image": `${url}${image}`,
@@ -48,27 +55,28 @@ const SEOHead = ({
   return (
     <Helmet>
       {/* Basic Meta Tags */}
-      <title>{title}</title>
-      <meta name="description" content={description} />
-      <meta name="keywords" content={keywords} />
+      <html lang={language} />
+      <title>{resolvedTitle}</title>
+      <meta name="description" content={resolvedDescription} />
+      <meta name="keywords" content={resolvedKeywords} />
       <meta name="author" content={author} />
       <meta name="robots" content="index, follow" />
       <meta name="googlebot" content="index, follow" />
-      <meta name="language" content="Slovak" />
+      <meta name="language" content={langLabel} />
 
       {/* Open Graph */}
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
+      <meta property="og:title" content={resolvedTitle} />
+      <meta property="og:description" content={resolvedDescription} />
       <meta property="og:type" content={type} />
       <meta property="og:url" content={currentUrl} />
       <meta property="og:image" content={image.startsWith('http') ? image : `${url}${image}`} />
       <meta property="og:site_name" content="Lerent" />
-      <meta property="og:locale" content={locale} />
+      <meta property="og:locale" content={resolvedLocale} />
       
       {/* Twitter Cards */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
+      <meta name="twitter:title" content={resolvedTitle} />
+      <meta name="twitter:description" content={resolvedDescription} />
       <meta name="twitter:image" content={image.startsWith('http') ? image : `${url}${image}`} />
 
       {/* Canonical URL */}

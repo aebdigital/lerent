@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { useLanguage } from '../context/LanguageContext';
 
 // Fade In Up Animation Component
 const FadeInUp = ({ children, delay = 0 }) => {
@@ -20,6 +21,7 @@ const FadeInUp = ({ children, delay = 0 }) => {
 };
 
 const ReviewsSection = () => {
+  const { t, isEn, isHu } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
@@ -31,30 +33,40 @@ const ReviewsSection = () => {
     {
       year: 2025,
       text: "Úžasná komunikácia. Keď bol nejaký problém tak ho hneď riešili a komunikovali. Určite si aj v budúcnosti budeme požičiavať auta z tejto požičovne. Férová, ústretová a dole klobúk pred prístupom 👌",
+      textEn: "Amazing communication. Whenever there was an issue, they resolved it immediately. We will definitely rent from them again in the future. Fair, accommodating, and hats off to their approach 👌",
+      textHu: "Csodálatos kommunikáció. Ha bármilyen probléma adódott, azonnal megoldották. A jövőben biztosan ismét tőlük bérelünk autót. Korrekt, rugalmas és elismerésre méltó hozzáállás 👌",
       name: "Dávid Šmotlák",
       rating: 5
     },
     {
       year: 2025,
       text: "Ďakujem za super služby. Príjemné vystupovanie a autíčka v super stave. Problém neexistoval, ale verím, že keby nastal je vyriešený k mojej spokojnosti. Takto by to malo fungovať všade. Určite keď budem potrebovať auto, tak určite sa obráti opäť na LeRent. Ďakujem",
+      textEn: "Thank you for the great service. Pleasant staff and cars in excellent condition. There were no issues, but I'm sure any problem would be resolved to my satisfaction. This is how it should work everywhere. I will definitely turn to LeRent again. Thank you.",
+      textHu: "Köszönöm a kiváló szolgáltatást. Kellemes kiszolgálás és kitűnő állapotú autók. Nem volt semmi probléma, de biztos vagyok benne, hogy ha lett volna, megoldották volna. Így kellene mindenütt működni. Legközelebb is biztosan a LeRent-et választom. Köszönöm.",
       name: "Ladislav Frniak",
       rating: 5
     },
     {
       year: 2025,
       text: "Požičiaval som už 2krát a musím povedať že som vždy na 100% spokojný !! Autá sú rýchle a vždy v dokonalom stave 😃",
+      textEn: "I've rented twice now and I have to say I'm always 100% satisfied!! The cars are fast and always in perfect condition 😃",
+      textHu: "Már kétszer béreltem és mindig 100%-ban elégedett voltam!! Az autók gyorsak és mindig tökéletes állapotban vannak 😃",
       name: "Alexander Hidveghy",
       rating: 5
     },
     {
       year: 2025,
       text: "Spokojnosť, ako narodeninový darček som si to veľmi užil. Komunikáciu musím oceniť, nastal problém, ale všetko sa vyriešilo. Určite odporúčam 🤝",
+      textEn: "As a birthday treat I really enjoyed it. I have to praise the communication — there was an issue, but everything got resolved. Definitely recommend 🤝",
+      textHu: "Születésnapi ajándékként nagyon élveztem. A kommunikációt ki kell emelni — volt egy probléma, de minden megoldódott. Határozottan ajánlom 🤝",
       name: "Radovan Fuňak",
       rating: 5
     },
     {
       year: 2025,
       text: "Parádne autá, super služby aj s pristavením auta a bezproblémová komunikácia, odporúčam",
+      textEn: "Great cars, excellent service including vehicle delivery, and smooth communication. Highly recommend.",
+      textHu: "Remek autók, kiváló szolgáltatás házhozszállítással és gördülékeny kommunikáció. Melegen ajánlom.",
       name: "Peter Bobák",
       rating: 5
     }
@@ -106,7 +118,7 @@ const ReviewsSection = () => {
       <div className="max-w-7xl mx-auto px-4">
         <FadeInUp>
           <h2 className="text-4xl md:text-5xl font-medium text-white text-center mb-4 font-goldman">
-            SKÚSENOSTI, KTORÉ HOVORIA ZA NÁS
+            {t('reviews.title')}
           </h2>
         </FadeInUp>
 
@@ -179,7 +191,7 @@ const ReviewsSection = () => {
 
                       {/* Review text */}
                       <p className="text-white mb-16 text-sm leading-relaxed">
-                        {testimonial.text}
+                        {isEn ? testimonial.textEn : isHu ? testimonial.textHu : testimonial.text}
                       </p>
 
                       {/* Bottom right - Name and Stars */}
@@ -226,7 +238,7 @@ const ReviewsSection = () => {
 
                   {/* Review text */}
                   <p className="text-white mb-16 text-sm leading-relaxed">
-                    {testimonials[currentIndex].text}
+                    {isEn ? testimonials[currentIndex].textEn : isHu ? testimonials[currentIndex].textHu : testimonials[currentIndex].text}
                   </p>
 
                   {/* Bottom right - Name and Stars */}

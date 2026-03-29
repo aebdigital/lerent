@@ -15,10 +15,12 @@ import { carsAPI, bookingAPI, authAPI, servicesAPI, insuranceAPI, locationsAPI }
 import paymentService from '../services/paymentService';
 import { generatePaymentInfo } from '../utils/payBySquare';
 import config from '../config/config';
+import { useLanguage } from '../context/LanguageContext';
 
 const BookingPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t, tf, locale, language } = useLanguage();
   const selectedCarId = searchParams.get('car');
   
   const [currentStep, setCurrentStep] = useState(1);
@@ -133,10 +135,10 @@ const BookingPage = () => {
   });
 
   const steps = [
-    { number: 1, title: 'Poistenie', icon: ShieldCheckIcon },
-    { number: 2, title: 'Doplnkové služby', icon: PlusIcon },
-    { number: 3, title: 'Osobné údaje', icon: UserIcon },
-    { number: 4, title: 'Potvrdenie', icon: DocumentTextIcon }
+    { number: 1, title: t('booking.steps.insurance'), icon: ShieldCheckIcon },
+    { number: 2, title: t('booking.steps.extras'), icon: PlusIcon },
+    { number: 3, title: t('booking.steps.personalInfo'), icon: UserIcon },
+    { number: 4, title: t('booking.steps.confirmation'), icon: DocumentTextIcon }
   ];
 
   // Load selected car, current user, and locations
@@ -294,11 +296,11 @@ const BookingPage = () => {
             setUnavailableDates([]);
           }
         } else {
-          setError('Nebol vybratý žiadny automobil');
+          setError(t('booking.noCarSelected'));
         }
       } catch (err) {
         console.error('Chyba pri načítavaní dát:', err);
-        setError('Chyba pri načítavaní dát');
+        setError(t('booking.loadError'));
       } finally {
         setLoading(false);
       }
@@ -714,7 +716,7 @@ const BookingPage = () => {
       }));
 
       // Check if "Iné miesto" was selected
-      if (selectedLocation.name === 'Iné miesto') {
+      if (selectedLocation.name === 'Iné miesto' || selectedLocation.name === t('booking.customLocation')) {
         if (locationType === 'pickupLocation') {
           setShowCustomPickupInput(true);
         } else {
@@ -784,7 +786,7 @@ const BookingPage = () => {
     e.preventDefault();
 
     if (!selectedCar || !isStep3Valid()) {
-      setError('Prosím vyplňte všetky požadované údaje');
+      setError(t('booking.fillAllFields'));
       return;
     }
 
@@ -792,7 +794,7 @@ const BookingPage = () => {
     if (formData.pickupDate && formData.returnDate) {
       const daysDifference = calculateDays();
       if (daysDifference < 2) {
-        setError('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátumy s minimálnym rozdielom 2 dní.');
+        setError(t('carDetails.alerts.minDays'));
         return;
       }
     }
@@ -972,7 +974,10 @@ const BookingPage = () => {
         paymentType: formData.paymentMethod === 'stripe' ? 'stripe' : formData.paymentMethod === 'hotovost' ? 'hotovost' : 'prevod',
 
         // Important: Mark as pending payment until Stripe payment is confirmed
-        status: 'pending_payment'
+        status: 'pending_payment',
+
+        // Website language at time of booking
+        websiteLanguage: language
       };
 
       // Step 1: Create reservation with pending_payment status
@@ -1019,7 +1024,7 @@ const BookingPage = () => {
         const checkoutResponse = await paymentService.createCheckoutSession({
           amount: totalAmount,
           currency: 'EUR',
-          description: `Prenájom vozidla: ${selectedCar.brand} ${selectedCar.model} (${days} ${days === 1 ? 'deň' : days < 5 ? 'dni' : 'dní'})`,
+          description: `${t('booking.rentalOf')}: ${selectedCar.brand} ${selectedCar.model} (${days} ${days === 1 ? t('booking.day') : days < 5 ? t('booking.days234') : t('booking.days5plus')})`,
           reservationId: reservation._id,
           customerEmail: formData.email
         });
@@ -1036,7 +1041,7 @@ const BookingPage = () => {
           // Redirect to Stripe checkout
           window.location.href = checkoutResponse.data.checkout_url;
         } else {
-          throw new Error('Nepodarilo sa vytvoriť platobnú session');
+          throw new Error(t('booking.paymentSessionFailed'));
         }
       } else if (formData.paymentMethod === 'bank_transfer') {
         // Bank transfer flow - show confirmation with payment details
@@ -1067,7 +1072,7 @@ const BookingPage = () => {
 
     } catch (err) {
       console.error('Booking failed:', err);
-      setError(err.message || 'Rezervácia neúspešná. Skúste to prosím znova.');
+      setError(err.message || t('booking.bookingFailed'));
       setLoading(false);
     }
   };
@@ -1274,7 +1279,7 @@ const BookingPage = () => {
       <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#000000'}}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[rgb(250,146,8)] mx-auto"></div>
-          <p className="mt-4 text-white">Načítavajú sa detaily rezervácie...</p>
+          <p className="mt-4 text-white">{t('booking.loadingDetails')}</p>
         </div>
       </div>
     );
@@ -1289,10 +1294,10 @@ const BookingPage = () => {
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-white mb-2">Chyba rezervácie</h2>
+          <h2 className="text-xl font-semibold text-white mb-2">{t('booking.bookingError')}</h2>
           <p className="text-gray-300 mb-4">{error}</p>
           <Button onClick={() => navigate('/fleet')}>
-            Späť na flotilu
+            {t('carDetails.backToFleet')}
           </Button>
         </div>
       </div>
@@ -1328,7 +1333,7 @@ const BookingPage = () => {
           }}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-white">Rezervácia</h1>
+            <h1 className="text-4xl md:text-6xl font-bold text-white">{t('booking.reservation')}</h1>
           </div>
         </div>
 
@@ -1341,13 +1346,13 @@ const BookingPage = () => {
                 <CheckCircleIcon className="w-12 h-12 text-[rgb(250,146,8)]" />
               </div>
               <h1 className="text-5xl font-bold text-white mb-4">
-                Ďakujeme!
+                {t('booking.thankYou')}
               </h1>
 
               {/* Contact Notification */}
               <div className="mt-6 p-4 border border-gray-600 rounded-lg" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
                 <p className="text-gray-300 text-sm">
-                  <strong>Kontaktujeme Vás na mailovej adrese:</strong><br />
+                  <strong>{t('booking.contactEmail')}:</strong><br />
                   <span className="font-semibold text-[rgb(250,146,8)]">{formData.email}</span>
                 </p>
               </div>
@@ -1355,7 +1360,7 @@ const BookingPage = () => {
               {/* Invoice Notification */}
               <div className="mt-4 p-4 border border-gray-600 rounded-lg" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
                 <p className="text-gray-300 text-sm text-center">
-                  Faktúra Vám bude zaslaná na kontaktný email.
+                  {t('booking.invoiceNotice')}
                 </p>
               </div>
             </div>
@@ -1363,12 +1368,12 @@ const BookingPage = () => {
             {/* Cash Payment Message */}
             {formData.paymentMethod === 'hotovost' && (
               <div className="mt-8 p-4 md:p-6 border border-[rgb(250,146,8)] rounded-lg" style={{backgroundColor: 'rgba(250,146,8,0.1)'}}>
-                <h2 className="text-2xl font-bold text-white mb-4 text-center">Platba v hotovosti</h2>
+                <h2 className="text-2xl font-bold text-white mb-4 text-center">{t('booking.cashPayment')}</h2>
                 <p className="text-gray-300 text-center">
-                  Platbu vo výške <strong className="text-[rgb(250,146,8)]">{calculateTotal()}€</strong> uhradíte pri prevzatí vozidla.
+                  {t('booking.cashPaymentAmount')} <strong className="text-[rgb(250,146,8)]">{calculateTotal()}€</strong> {t('booking.cashPaymentOnPickup')}
                 </p>
                 <p className="text-gray-400 text-sm text-center mt-4">
-                  Budeme Vás kontaktovať na poskytnutej mailovej adrese s ďalšími inštrukciami.
+                  {t('booking.contactInstructions')}
                 </p>
               </div>
             )}
@@ -1376,45 +1381,45 @@ const BookingPage = () => {
             {/* Bank Transfer Payment Details */}
             {paymentInfo && (
               <div className="mt-8 p-4 md:p-6 border border-gray-600 rounded-lg" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
-                <h2 className="text-2xl font-bold text-white mb-6 text-center">Platobné údaje</h2>
+                <h2 className="text-2xl font-bold text-white mb-6 text-center">{t('booking.paymentDetails')}</h2>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Left Column - Payment Details */}
                   <div className="space-y-4">
                     <div>
-                      <p className="text-gray-400 text-sm mb-1">IBAN:</p>
+                      <p className="text-gray-400 text-sm mb-1">{t('bankTransfer.info.iban')}:</p>
                       <p className="text-white font-mono text-lg">{paymentInfo.displayDetails.iban}</p>
                     </div>
 
                     <div>
-                      <p className="text-gray-400 text-sm mb-1">Suma:</p>
+                      <p className="text-gray-400 text-sm mb-1">{t('bankTransfer.info.amount')}:</p>
                       <p className="text-white font-bold text-2xl text-[rgb(250,146,8)]">{paymentInfo.displayDetails.formattedAmount}</p>
                     </div>
 
                     <div>
-                      <p className="text-gray-400 text-sm mb-1">Variabilný symbol:</p>
+                      <p className="text-gray-400 text-sm mb-1">{t('bankTransfer.info.variableSymbol')}:</p>
                       <p className="text-white font-mono text-lg">
                         {paymentInfo.displayDetails.variableSymbol}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-gray-400 text-sm mb-1">Príjemca:</p>
+                      <p className="text-gray-400 text-sm mb-1">{t('bankTransfer.info.recipient')}:</p>
                       <p className="text-white">{paymentInfo.displayDetails.beneficiaryName}</p>
                     </div>
 
                     <div>
-                      <p className="text-gray-400 text-sm mb-1">SWIFT:</p>
+                      <p className="text-gray-400 text-sm mb-1">{t('bankTransfer.info.swift')}:</p>
                       <p className="text-white font-mono">{paymentInfo.displayDetails.swift}</p>
                     </div>
 
                     <div>
-                      <p className="text-gray-400 text-sm mb-1">Splatnosť:</p>
+                      <p className="text-gray-400 text-sm mb-1">{t('booking.dueDate')}:</p>
                       <p className="text-white">{paymentInfo.displayDetails.formattedDueDate}</p>
                     </div>
 
                     <div>
-                      <p className="text-gray-400 text-sm mb-1">Správa pre príjemcu:</p>
+                      <p className="text-gray-400 text-sm mb-1">{t('bankTransfer.info.messageForRecipient')}:</p>
                       <p className="text-white text-sm">{paymentInfo.displayDetails.paymentNote}</p>
                     </div>
                   </div>
@@ -1423,7 +1428,7 @@ const BookingPage = () => {
                   <div className="flex items-center justify-center">
                     {qrLoading ? (
                       <div className="text-center text-gray-400">
-                        <p>Načítavam QR kód...</p>
+                        <p>{t('booking.loadingQR')}</p>
                       </div>
                     ) : qrCodeData ? (
                       <div className="bg-white p-4 rounded-lg">
@@ -1432,11 +1437,11 @@ const BookingPage = () => {
                           alt="PayBySquare QR Code"
                           className="w-full max-w-xs mx-auto"
                         />
-                        <p className="text-center text-black text-xs mt-2">Naskenujte QR kód vo vašej bankovej aplikácii</p>
+                        <p className="text-center text-black text-xs mt-2">{t('booking.scanQR')}</p>
                       </div>
                     ) : (
                       <div className="text-center text-gray-400">
-                        <p className="text-sm">QR kód nie je dostupný</p>
+                        <p className="text-sm">{t('booking.qrNotAvailable')}</p>
                       </div>
                     )}
                   </div>
@@ -1444,8 +1449,8 @@ const BookingPage = () => {
 
                 <div className="mt-6 p-4 bg-[rgba(250,146,8,0.1)] border border-[rgb(250,146,8)] rounded-lg">
                   <p className="text-gray-300 text-sm text-center">
-                    <strong className="text-[rgb(250,146,8)]">Dôležité:</strong> Platbu prosím realizujte do {paymentInfo.displayDetails.formattedDueDate}.
-                    Po prijatí platby Vás budeme kontaktovať na poskytnutej mailovej adrese.
+                    <strong className="text-[rgb(250,146,8)]">{t('booking.important')}:</strong> {t('booking.paymentDeadline')} {paymentInfo.displayDetails.formattedDueDate}.
+                    {t('booking.paymentConfirmNotice')}
                   </p>
                 </div>
               </div>
@@ -1455,7 +1460,7 @@ const BookingPage = () => {
             <div className="mt-8 text-center">
               <Link to="/">
                 <Button variant="primary" size="lg">
-                  Späť na hlavnú stránku
+                  {t('common.backToHome')}
                 </Button>
               </Link>
             </div>
@@ -1476,7 +1481,7 @@ const BookingPage = () => {
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white">Rezervácia</h1>
+          <h1 className="text-4xl md:text-6xl font-bold text-white">{t('booking.reservation')}</h1>
         </div>
       </div>
 
@@ -1557,7 +1562,7 @@ const BookingPage = () => {
                           : 'text-gray-500'
                         }
                       `}>
-                        Krok {step.number}
+                        {t('booking.step')} {step.number}
                       </div>
                     </div>
                   </div>
@@ -1596,9 +1601,9 @@ const BookingPage = () => {
                 {currentStep === 1 && (
                   <div>
                     <h2 className="text-2xl font-goldman font-bold text-white mb-6 text-left">
-                      Vyberte si poistenie (voliteľné)
+                      {t('booking.selectInsurance')}
                     </h2>
-                    <p className="text-gray-400 text-sm mb-4">Môžete vybrať jedno alebo viac poistení, alebo pokračovať bez dodatočného poistenia.</p>
+                    <p className="text-gray-400 text-sm mb-4">{t('booking.insuranceSubtitle')}</p>
 
                     <div className="grid grid-cols-1 gap-4">
                       {/* Render insurance options from API if available, otherwise use hardcoded fallback */}
@@ -1631,22 +1636,22 @@ const BookingPage = () => {
                                 <div className="flex-1">
                                   <div className="flex items-start justify-between">
                                     <div className="flex-1">
-                                      <h3 className="text-lg font-semibold text-white">{insurance.nameSk || insurance.displayName || insurance.name || 'Poistenie'}</h3>
-                                      <p className="text-gray-300 text-sm mt-1">{insurance.descriptionSk || insurance.description || ''}</p>
+                                      <h3 className="text-lg font-semibold text-white">{tf(insurance, 'name') || t('booking.steps.insurance')}</h3>
+                                      <p className="text-gray-300 text-sm mt-1">{tf(insurance, 'description')}</p>
                                     </div>
                                     <div className="text-[rgb(250,146,8)] font-bold text-lg ml-4 whitespace-nowrap">
                                       {insurance.pricing?.type === 'per_day' && typeof insurance.pricing?.amount === 'number'
-                                        ? `+${insurance.pricing.amount}€/deň`
+                                        ? `+${insurance.pricing.amount}${t('booking.perDayShort')}`
                                         : insurance.pricing?.type === 'fixed' && typeof insurance.pricing?.amount === 'number'
                                         ? `+${insurance.pricing.amount}€`
                                         : insurance.pricing?.type === 'percentage' && typeof insurance.pricing?.amount === 'number'
                                         ? `+${insurance.pricing.amount}%`
                                         : typeof insurance.pricePerDay === 'number'
-                                        ? `+${insurance.pricePerDay}€/deň`
+                                        ? `+${insurance.pricePerDay}${t('booking.perDayShort')}`
                                         : typeof insurance.price === 'number'
                                         ? `+${insurance.price}€`
                                         : typeof insurance.dailyRate === 'number'
-                                        ? `+${insurance.dailyRate}€/deň`
+                                        ? `+${insurance.dailyRate}${t('booking.perDayShort')}`
                                         : '0€'}
                                     </div>
                                   </div>
@@ -1657,7 +1662,7 @@ const BookingPage = () => {
                         })
                       ) : (
                         <div className="text-center text-gray-400 py-8">
-                          <p>Žiadne dostupné poistenia</p>
+                          <p>{t('booking.noInsuranceAvailable')}</p>
                         </div>
                       )}
                     </div>
@@ -1670,7 +1675,7 @@ const BookingPage = () => {
                         disabled={!isStep1Valid()}
                         className="bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-goldman font-semibold transition-colors duration-200"
                       >
-                        Pokračovať
+                        {t('booking.continue')}
                       </button>
                     </div>
                   </div>
@@ -1680,7 +1685,7 @@ const BookingPage = () => {
                 {currentStep === 2 && (
                   <div>
                     <h2 className="text-2xl font-goldman font-bold text-white mb-6 text-left">
-                      Doplnkové služby
+                      {t('booking.extraServices')}
                     </h2>
                     
                     <div className="space-y-4">
@@ -1707,24 +1712,24 @@ const BookingPage = () => {
                                   className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
                                 />
                                 <div>
-                                  <h3 className="text-lg font-semibold text-white">{service.nameSk || service.displayName || service.name}</h3>
-                                  <p className="text-gray-300 text-sm">{service.descriptionSk || service.description || ''}</p>
+                                  <h3 className="text-lg font-semibold text-white">{tf(service, 'name')}</h3>
+                                  <p className="text-gray-300 text-sm">{tf(service, 'description')}</p>
                                 </div>
                               </div>
                               <span className="text-[rgb(250,146,8)] font-bold text-lg ml-4 whitespace-nowrap">
                                 {service.pricing?.type === 'per_day' && service.pricing?.amount
-                                  ? `+${service.pricing.amount}€/deň`
+                                  ? `+${service.pricing.amount}${t('booking.perDayShort')}`
                                   : service.pricing?.type === 'fixed' && service.pricing?.amount
                                   ? `+${service.pricing.amount}€`
                                   : service.pricing?.type === 'percentage' && service.pricing?.amount
                                   ? `+${service.pricing.amount}%`
                                   : service.pricePerDay
-                                  ? `+${service.pricePerDay}€/deň`
+                                  ? `+${service.pricePerDay}${t('booking.perDayShort')}`
                                   : service.price
                                   ? `+${service.price}€`
                                   : service.dailyRate
-                                  ? `+${service.dailyRate}€/deň`
-                                  : 'Cena na vyžiadanie'}
+                                  ? `+${service.dailyRate}${t('booking.perDayShort')}`
+                                  : t('booking.priceOnRequest')}
                               </span>
                             </label>
                           );
@@ -1742,11 +1747,11 @@ const BookingPage = () => {
                                 className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
                               />
                               <div>
-                                <h3 className="text-lg font-semibold text-white">GPS Navigácia</h3>
-                                <p className="text-gray-300 text-sm">Moderný GPS systém s mapami Slovenska a Európy</p>
+                                <h3 className="text-lg font-semibold text-white">{t('booking.gpsNavigation')}</h3>
+                                <p className="text-gray-300 text-sm">{t('booking.gpsDescription')}</p>
                               </div>
                             </div>
-                            <span className="text-[rgb(250,146,8)] font-semibold">+5€/deň</span>
+                            <span className="text-[rgb(250,146,8)] font-semibold">+5{t('booking.perDayShort')}</span>
                           </label>
 
                           <label className="rounded-lg p-4 md:p-6 cursor-pointer transition-all duration-200 hover:bg-gray-700 flex items-center justify-between border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
@@ -1759,27 +1764,27 @@ const BookingPage = () => {
                                 className="w-5 h-5 text-[rgb(250,146,8)] border-gray-700 rounded focus:ring-[rgb(250,146,8)]"
                               />
                               <div>
-                                <h3 className="text-lg font-semibold text-white">Detská sedačka</h3>
-                                <p className="text-gray-300 text-sm">Bezpečnostná detská sedačka pre deti 9-36 kg</p>
+                                <h3 className="text-lg font-semibold text-white">{t('booking.childSeat')}</h3>
+                                <p className="text-gray-300 text-sm">{t('booking.childSeatDescription')}</p>
                               </div>
                             </div>
-                            <span className="text-[rgb(250,146,8)] font-semibold">+3€/deň</span>
+                            <span className="text-[rgb(250,146,8)] font-semibold">+3{t('booking.perDayShort')}</span>
                           </label>
                         </>
                       )}
                       
                       <div className="rounded-lg p-4 md:p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
                         <label className="block text-sm font-medium text-white mb-2">
-                          Špeciálne požiadavky
+                          {t('booking.specialRequirements')}
                         </label>
                         <textarea
                           name="specialRequests"
                           value={formData.specialRequests}
                           onChange={handleInputChange}
                           rows={3}
-                          className="w-full border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" 
-                          style={{backgroundColor: '#191919', border: '1px solid #555'}} 
-                          placeholder="Napíšte nám vaše špeciálne požiadavky..."
+                          className="w-full border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]"
+                          style={{backgroundColor: '#191919', border: '1px solid #555'}}
+                          placeholder={t('booking.specialRequirementsPlaceholder')}
                         ></textarea>
                       </div>
                     </div>
@@ -1790,14 +1795,14 @@ const BookingPage = () => {
                         onClick={prevStep}
                         className="border border-gray-700 text-white px-6 py-3 rounded-lg font-goldman font-semibold transition-colors duration-200 hover:bg-gray-700"
                       >
-                        Späť
+                        {t('booking.back')}
                       </button>
                       <button
                         type="button"
                         onClick={nextStep}
                         className="bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200"
                       >
-                        Pokračovať
+                        {t('booking.continue')}
                       </button>
                     </div>
                   </div>
@@ -1807,12 +1812,12 @@ const BookingPage = () => {
                 {currentStep === 3 && (
                   <div>
                     <h2 className="text-2xl font-goldman font-bold text-white mb-6 text-left">
-                      Osobné údaje
+                      {t('booking.personalData')}
                     </h2>
 
                     {currentUser && (
                       <div className="border border-green-400 rounded-md p-4 mb-6" style={{backgroundColor: 'rgba(34, 197, 94, 0.1)'}}>
-                        <p className="text-green-300">Vitajte späť, {currentUser.firstName}! Vaše údaje sú predvyplnené nižšie.</p>
+                        <p className="text-green-300">{t('booking.welcomeBack')}, {currentUser.firstName}! {t('booking.prefilled')}</p>
                       </div>
                     )}
                     
@@ -1823,7 +1828,7 @@ const BookingPage = () => {
                           name="firstName"
                           value={formData.firstName}
                           onChange={handleInputChange}
-                          placeholder="Meno*"
+                          placeholder={`${t('booking.name')}*`}
                           className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
@@ -1835,7 +1840,7 @@ const BookingPage = () => {
                           name="lastName"
                           value={formData.lastName}
                           onChange={handleInputChange}
-                          placeholder="Priezvisko*"
+                          placeholder={`${t('booking.lastName')}*`}
                           className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
@@ -1847,7 +1852,7 @@ const BookingPage = () => {
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          placeholder="Telefónne číslo*"
+                          placeholder={t('booking.phonePlaceholder')}
                           className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
@@ -1859,7 +1864,7 @@ const BookingPage = () => {
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
-                          placeholder="E-mail*"
+                          placeholder={`${t('booking.email')}*`}
                           className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
@@ -1867,7 +1872,7 @@ const BookingPage = () => {
                       </div>
                       <div>
                         <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-300 mb-2">
-                          Dátum narodenia*
+                          {t('booking.dateOfBirth')}
                         </label>
                         <DatePicker
                           selectedDate={formData.dateOfBirth}
@@ -1888,7 +1893,7 @@ const BookingPage = () => {
                           name="licenseNumber"
                           value={formData.licenseNumber}
                           onChange={handleInputChange}
-                          placeholder="Číslo občianskeho preukazu*"
+                          placeholder={t('booking.idCardNumber')}
                           className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
@@ -1900,7 +1905,7 @@ const BookingPage = () => {
                           name="birthNumber"
                           value={formData.birthNumber || ''}
                           onChange={handleInputChange}
-                          placeholder="Rodné číslo (bez lomítka)"
+                          placeholder={t('booking.birthNumber')}
                           className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           disabled={!!currentUser}
                         />
@@ -1911,7 +1916,7 @@ const BookingPage = () => {
                           name="driverLicenseNumber"
                           value={formData.driverLicenseNumber || ''}
                           onChange={handleInputChange}
-                          placeholder="Číslo vodičského preukazu*"
+                          placeholder={t('booking.driverLicenseNumber')}
                           className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                           required
                           disabled={!!currentUser}
@@ -1921,7 +1926,7 @@ const BookingPage = () => {
 
                     {/* Address Section */}
                     <div className="mt-8">
-                      <h3 className="text-lg font-semibold text-white mb-4 text-left">Kontaktné údaje *</h3>
+                      <h3 className="text-lg font-semibold text-white mb-4 text-left">{t('booking.contactDetails')}</h3>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <input
@@ -1929,7 +1934,7 @@ const BookingPage = () => {
                             name="address.street"
                             value={formData.address.street}
                             onChange={handleInputChange}
-                            placeholder="Adresa*"
+                            placeholder={t('booking.address')}
                             className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                             required
                             disabled={!!currentUser}
@@ -1941,7 +1946,7 @@ const BookingPage = () => {
                             name="address.postalCode"
                             value={formData.address.postalCode}
                             onChange={handleInputChange}
-                            placeholder="PSČ*"
+                            placeholder={t('booking.postalCode')}
                             className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                             required
                             disabled={!!currentUser}
@@ -1953,7 +1958,7 @@ const BookingPage = () => {
                             name="address.city"
                             value={formData.address.city}
                             onChange={handleInputChange}
-                            placeholder="Mesto*"
+                            placeholder={t('booking.city')}
                             className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                             required
                             disabled={!!currentUser}
@@ -1965,7 +1970,7 @@ const BookingPage = () => {
                             name="address.state"
                             value={formData.address.state}
                             onChange={handleInputChange}
-                            placeholder="Krajina*"
+                            placeholder={t('booking.country')}
                             className="w-full border border-gray-700 rounded-md px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)] focus:border-[rgb(250,146,8)]" style={{backgroundColor: '#191919', border: '1px solid #555'}}
                             required
                             disabled={!!currentUser}
@@ -1976,7 +1981,7 @@ const BookingPage = () => {
 
                     {/* Payment Method Section */}
                     <div className="mt-8">
-                      <h3 className="text-lg font-semibold text-white mb-4 text-left">Spôsob platby *</h3>
+                      <h3 className="text-lg font-semibold text-white mb-4 text-left">{t('booking.paymentMethodDisplay')} *</h3>
                       <div className="space-y-3">
                         <label className="border border-gray-700 rounded-lg p-3 md:p-4 flex items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors" style={{backgroundColor: formData.paymentMethod === 'stripe' ? 'rgba(250,146,8,0.1)' : 'transparent', borderColor: formData.paymentMethod === 'stripe' ? 'rgb(250,146,8)' : '#555'}}>
                           <input
@@ -1998,7 +2003,7 @@ const BookingPage = () => {
                           </div>
                           <div className="ml-3 text-left">
                             <p className="text-white font-goldman font-medium">Stripe</p>
-                            <p className="text-gray-400 text-sm">Platba kartou online</p>
+                            <p className="text-gray-400 text-sm">{t('booking.paymentCard')}</p>
                           </div>
                         </label>
 
@@ -2021,8 +2026,8 @@ const BookingPage = () => {
                             )}
                           </div>
                           <div className="ml-3 text-left">
-                            <p className="text-white font-goldman font-medium">Bankový prevod</p>
-                            <p className="text-gray-400 text-sm">Platba bankovým prevodom</p>
+                            <p className="text-white font-goldman font-medium">{t('booking.bankTransferMethod')}</p>
+                            <p className="text-gray-400 text-sm">{t('booking.bankTransferDescription')}</p>
                           </div>
                         </label>
 
@@ -2045,8 +2050,8 @@ const BookingPage = () => {
                             )}
                           </div>
                           <div className="ml-3 text-left">
-                            <p className="text-white font-goldman font-medium">Hotovosť</p>
-                            <p className="text-gray-400 text-sm">Platba v hotovosti pri prevzatí</p>
+                            <p className="text-white font-goldman font-medium">{t('booking.cashMethod')}</p>
+                            <p className="text-gray-400 text-sm">{t('booking.cashDescription')}</p>
                           </div>
                         </label>
                       </div>
@@ -2054,17 +2059,17 @@ const BookingPage = () => {
 
                     {/* Document Upload Section */}
                     <div className="mt-8">
-                      <h3 className="text-lg font-semibold text-white mb-4 text-left">Identifikačné údaje</h3>
+                      <h3 className="text-lg font-semibold text-white mb-4 text-left">{t('booking.identificationDocs')}</h3>
                       {/* TEMPORARILY HIDDEN - File upload fields (will be re-enabled later) */}
                       <div className="space-y-3 hidden">
                         <label className="border border-gray-700 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors border border-gray-800">
                           <div className="text-left">
-                            <p className="text-gray-300 text-sm">Občiansky preukaz - predná strana</p>
+                            <p className="text-gray-300 text-sm">{t('booking.idCardFront')}</p>
                             <p className="text-gray-500 text-xs">
-                              {formData.idCardFront ? formData.idCardFront.name : 'Súbor nebol nahratý'}
+                              {formData.idCardFront ? formData.idCardFront.name : t('booking.fileNotUploaded')}
                             </p>
                           </div>
-                          <span className="text-[rgb(250,146,8)] text-sm hover:text-[rgb(230,126,0)]">Choose file</span>
+                          <span className="text-[rgb(250,146,8)] text-sm hover:text-[rgb(230,126,0)]">{t('booking.chooseFile')}</span>
                           <input
                             type="file"
                             name="idCardFront"
@@ -2075,12 +2080,12 @@ const BookingPage = () => {
                         </label>
                         <label className="border border-gray-700 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors border border-gray-800">
                           <div className="text-left">
-                            <p className="text-gray-300 text-sm">Občiansky preukaz - zadná strana</p>
+                            <p className="text-gray-300 text-sm">{t('booking.idCardBack')}</p>
                             <p className="text-gray-500 text-xs">
-                              {formData.idCardBack ? formData.idCardBack.name : 'Súbor nebol nahratý'}
+                              {formData.idCardBack ? formData.idCardBack.name : t('booking.fileNotUploaded')}
                             </p>
                           </div>
-                          <span className="text-[rgb(250,146,8)] text-sm hover:text-[rgb(230,126,0)]">Choose file</span>
+                          <span className="text-[rgb(250,146,8)] text-sm hover:text-[rgb(230,126,0)]">{t('booking.chooseFile')}</span>
                           <input
                             type="file"
                             name="idCardBack"
@@ -2091,12 +2096,12 @@ const BookingPage = () => {
                         </label>
                         <label className="border border-gray-700 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors border border-gray-800">
                           <div className="text-left">
-                            <p className="text-gray-300 text-sm">Vodičský preukaz - predná strana</p>
+                            <p className="text-gray-300 text-sm">{t('booking.driverLicenseFront')}</p>
                             <p className="text-gray-500 text-xs">
-                              {formData.driverLicenseFront ? formData.driverLicenseFront.name : 'Súbor nebol nahratý'}
+                              {formData.driverLicenseFront ? formData.driverLicenseFront.name : t('booking.fileNotUploaded')}
                             </p>
                           </div>
-                          <span className="text-[rgb(250,146,8)] text-sm hover:text-[rgb(230,126,0)]">Choose file</span>
+                          <span className="text-[rgb(250,146,8)] text-sm hover:text-[rgb(230,126,0)]">{t('booking.chooseFile')}</span>
                           <input
                             type="file"
                             name="driverLicenseFront"
@@ -2107,12 +2112,12 @@ const BookingPage = () => {
                         </label>
                         <label className="border border-gray-700 rounded-lg p-2 flex justify-between items-center cursor-pointer hover:border-[rgb(250,146,8)] transition-colors border border-gray-800">
                           <div className="text-left">
-                            <p className="text-gray-300 text-sm">Vodičský preukaz - zadná strana</p>
+                            <p className="text-gray-300 text-sm">{t('booking.driverLicenseBack')}</p>
                             <p className="text-gray-500 text-xs">
-                              {formData.driverLicenseBack ? formData.driverLicenseBack.name : 'Súbor nebol nahratý'}
+                              {formData.driverLicenseBack ? formData.driverLicenseBack.name : t('booking.fileNotUploaded')}
                             </p>
                           </div>
-                          <span className="text-[rgb(250,146,8)] text-sm hover:text-[rgb(230,126,0)]">Choose file</span>
+                          <span className="text-[rgb(250,146,8)] text-sm hover:text-[rgb(230,126,0)]">{t('booking.chooseFile')}</span>
                           <input
                             type="file"
                             name="driverLicenseBack"
@@ -2137,7 +2142,7 @@ const BookingPage = () => {
                           required
                         />
                         <label htmlFor="businessTerms" className="text-white text-sm text-left cursor-pointer">
-                          Súhlasím so <Link to="/terms" className="text-[rgb(250,146,8)] underline hover:text-[rgb(230,126,0)]">všeobecnými obchodnými podmienkami</Link> *
+                          {t('booking.agreeTerms')} <Link to="/terms" className="text-[rgb(250,146,8)] underline hover:text-[rgb(230,126,0)]">{t('booking.termsLink')}</Link> *
                         </label>
                       </div>
                       <div className="mt-4">
@@ -2152,7 +2157,7 @@ const BookingPage = () => {
                             required
                           />
                           <label htmlFor="dataProcessing" className="text-white text-sm text-left cursor-pointer">
-                            Súhlasím so <Link to="/privacy" className="text-[rgb(250,146,8)] underline hover:text-[rgb(230,126,0)]">spracovaním osobných údajov</Link> *
+                            {t('booking.agreePrivacy')} <Link to="/privacy" className="text-[rgb(250,146,8)] underline hover:text-[rgb(230,126,0)]">{t('booking.privacyLink')}</Link> *
                           </label>
                         </div>
                       </div>
@@ -2164,7 +2169,7 @@ const BookingPage = () => {
                         onClick={prevStep}
                         className="border border-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 hover:bg-gray-700"
                       >
-                        Späť
+                        {t('booking.back')}
                       </button>
                       <button
                         type="button"
@@ -2172,7 +2177,7 @@ const BookingPage = () => {
                         disabled={!isStep3Valid()}
                         className="bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-goldman font-semibold transition-colors duration-200"
                       >
-                        Pokračovať
+                        {t('booking.continue')}
                       </button>
                     </div>
                   </div>
@@ -2182,89 +2187,89 @@ const BookingPage = () => {
                 {currentStep === 4 && (
                   <div>
                     <h2 className="text-2xl font-goldman font-bold text-white mb-6 text-left">
-                      Potvrdenie rezervácie
+                      {t('booking.confirmationTitle')}
                     </h2>
 
                     <div className="space-y-6">
                       {/* Summary Information */}
                       <div className="rounded-lg p-4 md:p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                        <h3 className="text-lg font-semibold text-white mb-4">Osobné údaje</h3>
+                        <h3 className="text-lg font-semibold text-white mb-4">{t('booking.personalData')}</h3>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
-                            <p className="text-gray-400">Meno a priezvisko:</p>
+                            <p className="text-gray-400">{t('booking.fullName')}</p>
                             <p className="text-white font-goldman font-medium">{formData.firstName} {formData.lastName}</p>
                           </div>
                           <div>
-                            <p className="text-gray-400">Email:</p>
+                            <p className="text-gray-400">{t('booking.emailLabel')}</p>
                             <p className="text-white font-goldman font-medium">{formData.email}</p>
                           </div>
                           <div>
-                            <p className="text-gray-400">Telefón:</p>
+                            <p className="text-gray-400">{t('booking.phoneLabel')}</p>
                             <p className="text-white font-goldman font-medium">{formData.phone}</p>
                           </div>
                           <div>
-                            <p className="text-gray-400">Adresa:</p>
+                            <p className="text-gray-400">{t('booking.addressLabel')}</p>
                             <p className="text-white font-goldman font-medium">{formData.address.street}, {formData.address.postalCode} {formData.address.city}</p>
                           </div>
                         </div>
                       </div>
 
                       <div className="rounded-lg p-4 md:p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                        <h3 className="text-lg font-semibold text-white mb-4">Detaily rezervácie</h3>
+                        <h3 className="text-lg font-semibold text-white mb-4">{t('booking.reservationDetails')}</h3>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
-                            <p className="text-gray-400">Vozidlo:</p>
+                            <p className="text-gray-400">{t('booking.vehicleLabel')}</p>
                             <p className="text-white font-goldman font-medium">{selectedCar?.brand} {selectedCar?.model}</p>
                           </div>
                           <div>
-                            <p className="text-gray-400">Poistenie:</p>
+                            <p className="text-gray-400">{t('booking.insuranceLabel')}</p>
                             {formData.selectedInsurance && formData.selectedInsurance.length > 0 ? (
                               <div className="space-y-1">
                                 {formData.selectedInsurance.map((ins, idx) => {
                                   let priceDisplay = '';
                                   if (ins.pricing?.type === 'per_day' && ins.pricing?.amount) {
-                                    priceDisplay = ` (+${ins.pricing.amount}€/deň)`;
+                                    priceDisplay = ` (+${ins.pricing.amount}${t('booking.perDayShort')})`;
                                   } else if (ins.pricing?.type === 'fixed' && ins.pricing?.amount) {
                                     priceDisplay = ` (+${ins.pricing.amount}€)`;
                                   } else if (ins.pricing?.type === 'percentage' && ins.pricing?.amount) {
                                     priceDisplay = ` (+${ins.pricing.amount}%)`;
                                   } else if (ins.pricePerDay) {
-                                    priceDisplay = ` (+${ins.pricePerDay}€/deň)`;
+                                    priceDisplay = ` (+${ins.pricePerDay}${t('booking.perDayShort')})`;
                                   } else if (ins.price) {
                                     priceDisplay = ` (+${ins.price}€)`;
                                   } else if (ins.dailyRate) {
-                                    priceDisplay = ` (+${ins.dailyRate}€/deň)`;
+                                    priceDisplay = ` (+${ins.dailyRate}${t('booking.perDayShort')})`;
                                   }
 
                                   return (
                                     <p key={idx} className="text-white font-medium">
-                                      {ins.nameSk || ins.displayName || ins.name}{priceDisplay}
+                                      {tf(ins, 'name')}{priceDisplay}
                                     </p>
                                   );
                                 })}
                               </div>
                             ) : (
-                              <p className="text-white font-goldman font-medium">Žiadne dodatočné poistenie</p>
+                              <p className="text-white font-goldman font-medium">{t('booking.noAdditionalInsurance')}</p>
                             )}
                           </div>
                           <div>
-                            <p className="text-gray-400">Prevzatie:</p>
+                            <p className="text-gray-400">{t('booking.pickupDateLabel')}</p>
                             <p className="text-white font-goldman font-medium">
-                              {formData.pickupDate?.toLocaleDateString('sk-SK')} {formData.pickupTime}
+                              {formData.pickupDate?.toLocaleDateString(locale)} {formData.pickupTime}
                             </p>
                             <p className="text-gray-400 text-xs">{formData.pickupLocation.name}</p>
                           </div>
                           <div>
-                            <p className="text-gray-400">Vrátenie:</p>
+                            <p className="text-gray-400">{t('booking.returnLabel')}</p>
                             <p className="text-white font-goldman font-medium">
-                              {formData.returnDate?.toLocaleDateString('sk-SK')} {formData.returnTime}
+                              {formData.returnDate?.toLocaleDateString(locale)} {formData.returnTime}
                             </p>
                             <p className="text-gray-400 text-xs">{formData.returnLocation.name}</p>
                           </div>
                           <div>
-                            <p className="text-gray-400">Spôsob platby:</p>
+                            <p className="text-gray-400">{t('booking.paymentMethodDisplay')}</p>
                             <p className="text-white font-goldman font-medium">
-                              {formData.paymentMethod === 'stripe' ? 'Stripe (Karta online)' : formData.paymentMethod === 'hotovost' ? 'Hotovosť' : 'Bankový prevod'}
+                              {formData.paymentMethod === 'stripe' ? t('booking.stripeCard') : formData.paymentMethod === 'hotovost' ? t('booking.cashMethod') : t('booking.bankTransferMethod')}
                             </p>
                           </div>
                         </div>
@@ -2272,7 +2277,7 @@ const BookingPage = () => {
 
                       {formData.specialRequests && (
                         <div className="rounded-lg p-4 md:p-6 border border-gray-800" style={{backgroundColor: 'rgb(25, 25, 25)'}}>
-                          <h3 className="text-lg font-semibold text-white mb-2">Špeciálne požiadavky</h3>
+                          <h3 className="text-lg font-semibold text-white mb-2">{t('booking.specialRequirements')}</h3>
                           <p className="text-gray-300 text-sm">{formData.specialRequests}</p>
                         </div>
                       )}
@@ -2280,8 +2285,8 @@ const BookingPage = () => {
                       <div className="rounded-lg p-6 border border-[rgb(250,146,8)]" style={{backgroundColor: 'rgba(250, 146, 8, 0.1)'}}>
                         <p className="text-white text-sm">
                           {formData.paymentMethod === 'stripe'
-                            ? 'Po kliknutí na tlačidlo "Rezervovať" budete presmerovaní na platobnú bránu Stripe, kde dokončíte platbu.'
-                            : 'Po kliknutí na tlačidlo "Rezervovať" Vám zobraziť údaje na bankový prevod.'}
+                            ? t('booking.cardRedirect')
+                            : t('booking.transferRedirect')}
                         </p>
                       </div>
                     </div>
@@ -2292,14 +2297,14 @@ const BookingPage = () => {
                         onClick={prevStep}
                         className="border border-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 hover:bg-gray-700"
                       >
-                        Späť
+                        {t('booking.back')}
                       </button>
                       <button
                         type="submit"
                         disabled={loading}
                         className="bg-[rgb(250,146,8)] hover:bg-[rgb(230,126,0)] disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-200"
                       >
-                        {loading ? 'Spracováva sa...' : 'Rezervovať'}
+                        {loading ? t('booking.processing') : t('booking.reserve')}
                       </button>
                     </div>
                   </div>
@@ -2343,7 +2348,7 @@ const BookingPage = () => {
                       }}
                     required
                   >
-                    <option value="">Vyberte miesto prevzatia</option>
+                    <option value="">{t('booking.pickupLocation')}</option>
                     {locations.map((location, index) => (
                       <option key={index} value={index}>
                         {location.name}
@@ -2363,7 +2368,7 @@ const BookingPage = () => {
                       }}
                     required
                   >
-                    <option value="">Vyberte miesto vrátenia</option>
+                    <option value="">{t('booking.selectReturnLocation')}</option>
                     {locations.map((location, index) => (
                       <option key={index} value={index}>
                         {location.name}
@@ -2382,13 +2387,13 @@ const BookingPage = () => {
                           id="custom-pickup-location"
                           value={customPickupLocation}
                           onChange={(e) => handleCustomLocationChange(e.target.value, 'pickup')}
-                          placeholder="Zadajte adresu prevzatia"
+                          placeholder={t('booking.enterPickupAddress')}
                           autoComplete="off"
                           className="w-full border border-gray-700 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)]"
                           style={{ backgroundColor: '#191919', border: '1px solid #555' }}
                         />
                         {calculatingPickup && (
-                          <p className="text-xs text-gray-400 mt-1">Počítam vzdialenosť...</p>
+                          <p className="text-xs text-gray-400 mt-1">{t('booking.calculatingDistance')}</p>
                         )}
                         {pickupDistance !== null && !calculatingPickup && (
                           <p className="text-xs text-[rgb(250,146,8)] mt-1">
@@ -2405,13 +2410,13 @@ const BookingPage = () => {
                           id="custom-return-location"
                           value={customReturnLocation}
                           onChange={(e) => handleCustomLocationChange(e.target.value, 'return')}
-                          placeholder="Zadajte adresu vrátenia"
+                          placeholder={t('booking.enterReturnAddress')}
                           autoComplete="off"
                           className="w-full border border-gray-700 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[rgb(250,146,8)]"
                           style={{ backgroundColor: '#191919', border: '1px solid #555' }}
                         />
                         {calculatingReturn && (
-                          <p className="text-xs text-gray-400 mt-1">Počítam vzdialenosť...</p>
+                          <p className="text-xs text-gray-400 mt-1">{t('booking.calculatingDistance')}</p>
                         )}
                         {returnDistance !== null && !calculatingReturn && (
                           <p className="text-xs text-[rgb(250,146,8)] mt-1">
@@ -2490,22 +2495,22 @@ const BookingPage = () => {
                 <div className="px-6 pt-4 pb-6" style={{borderTop: '0.5px solid #d1d5db'}}>
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-300">Počet dní:</span>
+                      <span className="text-gray-300">{t('booking.numberOfDays')}</span>
                       <span className="font-medium text-white">{calculateDays()}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-300">Cena za deň:</span>
+                      <span className="text-gray-300">{t('booking.pricePerDay')}</span>
                       <span className="font-medium text-white">{getPricePerDay(calculateDays()).toFixed(2)}€</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-300">Cena prenájmu:</span>
+                      <span className="text-gray-300">{t('booking.rentalPrice')}</span>
                       <span className="font-medium text-white">{(getPricePerDay(calculateDays()) * calculateDays()).toFixed(2)}€</span>
                     </div>
 
                     {/* Insurance breakdown */}
                     {formData.selectedInsurance && formData.selectedInsurance.length > 0 && (
                       <div className="space-y-2 pt-2" style={{borderTop: '0.5px solid #444'}}>
-                        <div className="text-sm text-gray-300 font-semibold">Poistenie:</div>
+                        <div className="text-sm text-gray-300 font-semibold">{t('booking.insuranceLabel')}</div>
                         {formData.selectedInsurance.map((insurance, idx) => {
                           const days = calculateDays();
                           let cost = 0;
@@ -2513,10 +2518,10 @@ const BookingPage = () => {
 
                           if (insurance.pricing?.type === 'per_day' && insurance.pricing?.amount) {
                             cost = insurance.pricing.amount * days;
-                            priceText = `${insurance.pricing.amount}€ × ${days} dní`;
+                            priceText = `${insurance.pricing.amount}€ × ${days} ${t('booking.timesDay')}`;
                           } else if (insurance.pricing?.type === 'fixed' && insurance.pricing?.amount) {
                             cost = insurance.pricing.amount;
-                            priceText = 'jednorazový poplatok';
+                            priceText = t('booking.oneTimeFee');
                           } else if (insurance.pricing?.type === 'percentage' && insurance.pricing?.amount) {
                             const rentalCost = getPricePerDay(days) * days;
                             cost = (rentalCost * insurance.pricing.amount) / 100;
@@ -2526,7 +2531,7 @@ const BookingPage = () => {
                           return (
                             <div key={idx} className="flex justify-between text-sm">
                               <span className="text-gray-300">
-                                {insurance.nameSk || insurance.name}
+                                {tf(insurance, 'name')}
                                 <span className="text-gray-400 ml-1">({priceText})</span>
                               </span>
                               <span className="font-medium text-white">{cost.toFixed(2)}€</span>
@@ -2534,7 +2539,7 @@ const BookingPage = () => {
                           );
                         })}
                         <div className="flex justify-between text-sm font-semibold pt-1">
-                          <span className="text-gray-300">Celkom poistenie:</span>
+                          <span className="text-gray-300">{t('booking.totalInsurance')}</span>
                           <span className="text-white">{calculateInsuranceCost().toFixed(2)}€</span>
                         </div>
                       </div>
@@ -2543,7 +2548,7 @@ const BookingPage = () => {
                     {/* Additional Services breakdown */}
                     {additionalServices && additionalServices.length > 0 && additionalServices.some(service => formData[service.name]) && (
                       <div className="space-y-2 pt-2" style={{borderTop: '0.5px solid #444'}}>
-                        <div className="text-sm text-gray-300 font-semibold">Doplnkové služby:</div>
+                        <div className="text-sm text-gray-300 font-semibold">{t('booking.additionalServices')}</div>
                         {additionalServices.filter(service => formData[service.name]).map((service, idx) => {
                           const days = calculateDays();
                           let cost = 0;
@@ -2551,29 +2556,29 @@ const BookingPage = () => {
 
                           if (service.pricing?.type === 'per_day' && service.pricing?.amount) {
                             cost = service.pricing.amount * days;
-                            priceText = `${service.pricing.amount}€ × ${days} dní`;
+                            priceText = `${service.pricing.amount}€ × ${days} ${t('booking.timesDay')}`;
                           } else if (service.pricing?.type === 'fixed' && service.pricing?.amount) {
                             cost = service.pricing.amount;
-                            priceText = 'jednorazový poplatok';
+                            priceText = t('booking.oneTimeFee');
                           } else if (service.pricing?.type === 'percentage' && service.pricing?.amount) {
                             const rentalCost = getPricePerDay(days) * days;
                             cost = (rentalCost * service.pricing.amount) / 100;
                             priceText = `${service.pricing.amount}%`;
                           } else if (service.pricePerDay) {
                             cost = service.pricePerDay * days;
-                            priceText = `${service.pricePerDay}€ × ${days} dní`;
+                            priceText = `${service.pricePerDay}€ × ${days} ${t('booking.timesDay')}`;
                           } else if (service.price) {
                             cost = service.price;
-                            priceText = 'jednorazový poplatok';
+                            priceText = t('booking.oneTimeFee');
                           } else if (service.dailyRate) {
                             cost = service.dailyRate * days;
-                            priceText = `${service.dailyRate}€ × ${days} dní`;
+                            priceText = `${service.dailyRate}€ × ${days} ${t('booking.timesDay')}`;
                           }
 
                           return (
                             <div key={idx} className="flex justify-between text-sm">
                               <span className="text-gray-300">
-                                {service.nameSk || service.displayName || service.name}
+                                {tf(service, 'name')}
                                 <span className="text-gray-400 ml-1">({priceText})</span>
                               </span>
                               <span className="font-medium text-white">{cost.toFixed(2)}€</span>
@@ -2581,7 +2586,7 @@ const BookingPage = () => {
                           );
                         })}
                         <div className="flex justify-between text-sm font-semibold pt-1">
-                          <span className="text-gray-300">Celkom služby:</span>
+                          <span className="text-gray-300">{t('booking.totalServices')}</span>
                           <span className="text-white">{calculateAdditionalServicesCost().toFixed(2)}€</span>
                         </div>
                       </div>
@@ -2590,12 +2595,12 @@ const BookingPage = () => {
                     {/* Late Fees breakdown */}
                     {(calculateLatePickupFee() > 0 || calculateLateDropoffFee() > 0) && (
                       <div className="space-y-2 pt-2" style={{borderTop: '0.5px solid #444'}}>
-                        <div className="text-sm text-gray-300 font-semibold">Poplatky za čas mimo hodín:</div>
+                        <div className="text-sm text-gray-300 font-semibold">{t('booking.afterHoursFees')}</div>
 
                         {calculateLatePickupFee() > 0 && (
                           <div className="flex justify-between text-sm">
                             <span className="text-gray-300">
-                              Prevzatie od 17:30
+                              {t('booking.pickupFrom1730')}
                               <span className="text-gray-400 ml-1">({formData.pickupTime})</span>
                             </span>
                             <span className="font-medium text-white">{calculateLatePickupFee().toFixed(2)}€</span>
@@ -2605,7 +2610,7 @@ const BookingPage = () => {
                         {calculateLateDropoffFee() > 0 && (
                           <div className="flex justify-between text-sm">
                             <span className="text-gray-300">
-                              Vrátenie od 17:30
+                              {t('booking.returnFrom1730')}
                               <span className="text-gray-400 ml-1">({formData.returnTime})</span>
                             </span>
                             <span className="font-medium text-white">{calculateLateDropoffFee().toFixed(2)}€</span>
@@ -2613,7 +2618,7 @@ const BookingPage = () => {
                         )}
 
                         <div className="flex justify-between text-sm font-semibold pt-1">
-                          <span className="text-gray-300">Celkom poplatky:</span>
+                          <span className="text-gray-300">{t('booking.totalFees')}</span>
                           <span className="text-white">{(calculateLatePickupFee() + calculateLateDropoffFee()).toFixed(2)}€</span>
                         </div>
                       </div>
@@ -2626,12 +2631,12 @@ const BookingPage = () => {
 
                       return (
                         <div className="space-y-2 pt-2" style={{borderTop: '0.5px solid #444'}}>
-                          <div className="text-sm text-gray-300 font-semibold">Príplatok za lokalitu:</div>
+                          <div className="text-sm text-gray-300 font-semibold">{t('booking.locationSurcharge')}</div>
 
                           {pickupDetails && (
                             <div className="flex justify-between text-sm">
                               <span className="text-gray-300">
-                                Prevzatie v meste {pickupDetails.displayName}
+                                {t('booking.pickupLabel')} {pickupDetails.displayName}
                                 <span className="text-gray-400 ml-1">({formData.pickupLocation.name})</span>
                               </span>
                               <span className="font-medium text-white">{pickupDetails.fee.toFixed(2)}€</span>
@@ -2641,7 +2646,7 @@ const BookingPage = () => {
                           {dropoffDetails && (
                             <div className="flex justify-between text-sm">
                               <span className="text-gray-300">
-                                Vrátenie v meste {dropoffDetails.displayName}
+                                {t('booking.returnInCity')} {dropoffDetails.displayName}
                                 <span className="text-gray-400 ml-1">({formData.returnLocation.name})</span>
                               </span>
                               <span className="font-medium text-white">{dropoffDetails.fee.toFixed(2)}€</span>
@@ -2649,7 +2654,7 @@ const BookingPage = () => {
                           )}
 
                           <div className="flex justify-between text-sm font-semibold pt-1">
-                            <span className="text-gray-300">Celkom príplatok:</span>
+                            <span className="text-gray-300">{t('booking.totalSurcharge')}</span>
                             <span className="text-white">{calculateBratislavaLocationFee().toFixed(2)}€</span>
                           </div>
                         </div>
@@ -2659,12 +2664,12 @@ const BookingPage = () => {
                     {/* Custom Location Delivery Fee breakdown */}
                     {(pickupDeliveryPrice > 0 || returnDeliveryPrice > 0) && (
                       <div className="space-y-2 pt-2" style={{borderTop: '0.5px solid #444'}}>
-                        <div className="text-sm text-gray-300 font-semibold">Príplatok za pristavenie:</div>
+                        <div className="text-sm text-gray-300 font-semibold">{t('booking.deliverySurcharge')}</div>
 
                         {pickupDeliveryPrice > 0 && (
                           <div className="flex justify-between text-sm">
                             <span className="text-gray-300">
-                              Prevzatie - {customPickupLocation}
+                              {t('booking.pickupLabel')} {customPickupLocation}
                               <span className="text-gray-400 ml-1">({pickupDistance?.toFixed(1)} km × {PRICE_PER_KM.toFixed(2)}€)</span>
                             </span>
                             <span className="font-medium text-white">{pickupDeliveryPrice.toFixed(2)}€</span>
@@ -2674,7 +2679,7 @@ const BookingPage = () => {
                         {returnDeliveryPrice > 0 && (
                           <div className="flex justify-between text-sm">
                             <span className="text-gray-300">
-                              Vrátenie - {customReturnLocation}
+                              {t('booking.returnAt')} {customReturnLocation}
                               <span className="text-gray-400 ml-1">({returnDistance?.toFixed(1)} km × {PRICE_PER_KM.toFixed(2)}€)</span>
                             </span>
                             <span className="font-medium text-white">{returnDeliveryPrice.toFixed(2)}€</span>
@@ -2682,7 +2687,7 @@ const BookingPage = () => {
                         )}
 
                         <div className="flex justify-between text-sm font-semibold pt-1">
-                          <span className="text-gray-300">Celkom pristavenie:</span>
+                          <span className="text-gray-300">{t('booking.deliverySurcharge')}</span>
                           <span className="text-white">{(pickupDeliveryPrice + returnDeliveryPrice).toFixed(2)}€</span>
                         </div>
                       </div>
@@ -2690,12 +2695,12 @@ const BookingPage = () => {
 
                     <div className="pt-3" style={{borderTop: '0.5px solid #d1d5db'}}>
                       <div className="flex justify-between text-lg font-bold">
-                        <span className="text-white">Celková cena:</span>
+                        <span className="text-white">{t('booking.totalPrice')}</span>
                         <span className="text-[rgb(250,146,8)]">{calculateTotal().toFixed(2)}€</span>
                       </div>
                     </div>
                     <div className="flex justify-between text-sm mt-2">
-                      <span className="text-gray-300">Depozit:</span>
+                      <span className="text-gray-300">{t('booking.deposit')}</span>
                       <span className="font-medium text-white">{(selectedCar.pricing?.deposit || selectedCar.deposit || 0).toFixed(2)}€</span>
                     </div>
                   </div>

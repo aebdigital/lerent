@@ -12,6 +12,7 @@ import DatePicker from '../components/DatePicker';
 import { carsAPI, locationsAPI, bannersAPI } from '../services/api';
 import { generateCarSlug, getUniqueCarSlugs } from '../utils/slugify';
 import config from '../config/config';
+import { useLanguage } from '../context/LanguageContext';
 import HeroImg from '../main-page-final1.jpg';
 import VasenImg from '../vasen.webp';
 import CarClassImg from '../testfilter2.png';
@@ -54,6 +55,7 @@ const FadeInUp = ({ children, delay = 0 }) => {
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('all');
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [cars, setCars] = useState([]);
@@ -75,14 +77,14 @@ const HomePage = () => {
 
   // Car classes for filtering
   const carClasses = [
-    { name: 'Sedan', value: 'sedan', icon: SedanIconImg },
-    { name: 'Kombi', value: 'kombi', icon: KombiIconImg },
-    { name: 'Sport', value: 'sport', icon: SportIconImg },
-    { name: 'SUV', value: 'suv', icon: SUVIconImg },
-    { name: 'Premium', value: 'premium', icon: CoupeIconImg },
-    { name: 'Viacmiestne', value: 'viacmiestne', icon: ViacmiestneIconImg },
-    { name: 'Elektro', value: 'elektro', icon: ElektroIconImg },
-    { name: 'Úžitkové', value: 'uzitkove', icon: UzitkovePng }
+    { name: t('home.categories.sedan'), value: 'sedan', icon: SedanIconImg },
+    { name: t('home.categories.kombi'), value: 'kombi', icon: KombiIconImg },
+    { name: t('home.categories.sport'), value: 'sport', icon: SportIconImg },
+    { name: t('home.categories.suv'), value: 'suv', icon: SUVIconImg },
+    { name: t('home.categories.premium'), value: 'premium', icon: CoupeIconImg },
+    { name: t('home.categories.viacmiestne'), value: 'viacmiestne', icon: ViacmiestneIconImg },
+    { name: t('home.categories.elektro'), value: 'elektro', icon: ElektroIconImg },
+    { name: t('home.categories.uzitkove'), value: 'uzitkove', icon: UzitkovePng }
   ];
 
   // Filters
@@ -98,10 +100,10 @@ const HomePage = () => {
 
   // Sort options for dropdown
   const sortOptions = [
-    { value: 'price-asc', label: 'Od najlacnejšieho' },
-    { value: 'price-desc', label: 'Od najdrahšieho' },
-    { value: 'power-desc', label: 'Výkon (kW) - od najvyššieho' },
-    { value: 'availability', label: 'Podľa dostupnosti' }
+    { value: 'price-asc', label: t('home.sort.cheapest') },
+    { value: 'price-desc', label: t('home.sort.expensive') },
+    { value: 'power-desc', label: t('home.sort.power') },
+    { value: 'availability', label: t('home.sort.availability') }
   ];
 
   const handleSortChange = (value) => {
@@ -124,8 +126,8 @@ const HomePage = () => {
 
             const slide = {
               imageUrl: image.url,
-              title: image.title || banner.title || 'Prémiová flotila\nvozidiel',
-              subtitle: image.description || banner.subtitle || 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.',
+              title: image.title || banner.title || t('home.slider.defaultTitle'),
+              subtitle: image.description || banner.subtitle || t('home.slider.defaultSubtitle'),
               alt: image.alt || image.title || banner.title || 'Premium car',
               carId: carIdValue, // Store carId (string) for click-through
               carData: typeof image.carId === 'object' ? image.carId : null // Store full car object if available
@@ -451,14 +453,14 @@ const HomePage = () => {
 
     // Validate that dates are selected
     if (!pickupDate || !returnDate) {
-      alert('Prosím vyberte dátum prevzatia a vrátenia');
+      alert(t('home.alerts.selectDates'));
       return;
     }
 
     // Validate minimum 2-day reservation
     const daysDifference = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
     if (daysDifference < 2) {
-      alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátumy s minimálnym rozdielom 2 dní.');
+      alert(t('home.alerts.minDays'));
       return;
     }
 
@@ -556,7 +558,7 @@ const HomePage = () => {
         }
       } catch (err) {
         console.error('Failed to load cars from API:', err);
-        setError('Nepodarilo sa načítať autá. Používame statické dáta.');
+        setError(t('home.errors.loadFailed'));
         // Fallback to static data
         const staticCarsWithAvailability = allCars.map(car => ({
           ...car,
@@ -952,8 +954,8 @@ const HomePage = () => {
           {/* Top - Heading */}
           <div className="text-white ml-2 sm:ml-8 max-[480px]:ml-2 max-[480px]:mr-2 max-[480px]:relative max-[480px]:w-[90%] max-[480px]:mb-0" style={{ width: '40%', maxWidth: '40%' }}>
             <h1 className="text-3xl md:text-4xl lg:text-6xl font-goldman font-medium leading-tight max-[480px]:text-4xl max-[480px]:leading-tight">
-              <span className="hidden max-[480px]:inline">Autopožičovňa&nbsp;s<br />individuálnym prístupom</span>
-              <span className="max-[480px]:hidden">Autopožičovňa s individuálnym prístupom</span>
+              <span className="hidden max-[480px]:inline">{t('home.hero.titleMobileLine1')}<br />{t('home.hero.titleMobileLine2')}</span>
+              <span className="max-[480px]:hidden">{t('home.hero.title')}</span>
             </h1>
           </div>
 
@@ -973,7 +975,9 @@ const HomePage = () => {
               {/* Title on Left */}
               <div className="flex-shrink-0">
                 <h2 className="text-2xl font-goldman font-bold text-white whitespace-nowrap">
-                  Rýchla<br />rezervácia
+                  {t('home.quickReservation').split('\n').map((line, idx) => (
+                    <span key={idx}>{line}{idx === 0 && <br />}</span>
+                  ))}
                 </h2>
               </div>
 
@@ -986,7 +990,7 @@ const HomePage = () => {
                     onDateSelect={setPickupDate}
                     minDate={new Date()}
                     unavailableDates={heroFormUnavailableDates}
-                    placeholder="Dátum prevzatia"
+                    placeholder={t('home.form.pickupDate')}
                     otherSelectedDate={returnDate}
                     isReturnPicker={false}
                     onOtherDateReset={() => setReturnDate(null)}
@@ -1000,7 +1004,7 @@ const HomePage = () => {
                     onDateSelect={setReturnDate}
                     minDate={pickupDate || new Date()}
                     unavailableDates={heroFormUnavailableDates}
-                    placeholder="Dátum vrátenia"
+                    placeholder={t('home.form.returnDate')}
                     otherSelectedDate={pickupDate}
                     isReturnPicker={true}
                   />
@@ -1020,14 +1024,14 @@ const HomePage = () => {
                   disabled={!pickupDate || !returnDate || loading || loadingHeroFormCars}
                 >
                   <option value="">
-                    {!pickupDate || !returnDate ? 'Najprv vyberte dátumy' :
-                      loading ? 'Načítavam autá...' :
-                        loadingHeroFormCars ? 'Kontrolujem dostupnosť...' :
-                          `Vozidlo (${heroFormAvailableCars.length} dostupných)`}
+                    {!pickupDate || !returnDate ? t('home.form.selectDatesFirst') :
+                      loading ? t('home.form.loadingCars') :
+                        loadingHeroFormCars ? t('home.form.checkingAvailability') :
+                          t('home.form.vehicleCount').replace('{count}', heroFormAvailableCars.length)}
                   </option>
                   {pickupDate && returnDate && heroFormAvailableCars.map((car) => (
                     <option key={car._id} value={car._id}>
-                      {car.brand} {car.model} - od {car.pricing?.dailyRate || car.dailyRate || 0}€/deň
+                      {car.brand} {car.model} - {t('common.fromPrice')} {car.pricing?.dailyRate || car.dailyRate || 0}{t('common.perDay')}
                     </option>
                   ))}
                 </select>
@@ -1040,7 +1044,7 @@ const HomePage = () => {
                   className="flex-1 text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
                   style={{ backgroundColor: 'rgba(25, 25, 25, 0.8)' }}
                 >
-                  <option value="">Miesto vyzdvihnutia</option>
+                  <option value="">{t('home.form.pickupLocation')}</option>
                   {heroFormLocations.map((location) => (
                     <option key={location.id} value={location.name}>
                       {location.name}
@@ -1057,7 +1061,7 @@ const HomePage = () => {
                     color: '#191919'
                   }}
                 >
-                  Vyhľadať
+                  {t('home.form.search')}
                 </button>
               </form>
             </div>
@@ -1076,7 +1080,7 @@ const HomePage = () => {
             >
               {/* Title */}
               <h2 className="text-xl font-goldman font-bold text-white text-center">
-                Rýchla rezervácia
+                {t('home.quickReservationMobile')}
               </h2>
 
               {/* Form inputs in vertical rows */}
@@ -1088,7 +1092,7 @@ const HomePage = () => {
                     onDateSelect={setPickupDate}
                     minDate={new Date()}
                     unavailableDates={heroFormUnavailableDates}
-                    placeholder="Dátum prevzatia"
+                    placeholder={t('home.form.pickupDate')}
                     otherSelectedDate={returnDate}
                     isReturnPicker={false}
                     onOtherDateReset={() => setReturnDate(null)}
@@ -1103,7 +1107,7 @@ const HomePage = () => {
                     onDateSelect={setReturnDate}
                     minDate={pickupDate || new Date()}
                     unavailableDates={heroFormUnavailableDates}
-                    placeholder="Dátum vrátenia"
+                    placeholder={t('home.form.returnDate')}
                     otherSelectedDate={pickupDate}
                     isReturnPicker={true}
                   />
@@ -1123,14 +1127,14 @@ const HomePage = () => {
                   disabled={!pickupDate || !returnDate || loading || loadingHeroFormCars}
                 >
                   <option value="">
-                    {!pickupDate || !returnDate ? 'Najprv vyberte dátumy' :
-                      loading ? 'Načítavam autá...' :
-                        loadingHeroFormCars ? 'Kontrolujem dostupnosť...' :
-                          `Vozidlo (${heroFormAvailableCars.length} dostupných)`}
+                    {!pickupDate || !returnDate ? t('home.form.selectDatesFirst') :
+                      loading ? t('home.form.loadingCars') :
+                        loadingHeroFormCars ? t('home.form.checkingAvailability') :
+                          t('home.form.vehicleCount').replace('{count}', heroFormAvailableCars.length)}
                   </option>
                   {pickupDate && returnDate && heroFormAvailableCars.map((car) => (
                     <option key={car._id} value={car._id}>
-                      {car.brand} {car.model} - od {car.pricing?.dailyRate || car.dailyRate || 0}€/deň
+                      {car.brand} {car.model} - {t('common.fromPrice')} {car.pricing?.dailyRate || car.dailyRate || 0}{t('common.perDay')}
                     </option>
                   ))}
                 </select>
@@ -1143,7 +1147,7 @@ const HomePage = () => {
                   className="w-full text-white px-4 py-3 text-sm rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none"
                   style={{ backgroundColor: 'rgba(25, 25, 25, 0.8)' }}
                 >
-                  <option value="">Miesto vyzdvihnutia</option>
+                  <option value="">{t('home.form.pickupLocation')}</option>
                   {heroFormLocations.map((location) => (
                     <option key={location.id} value={location.name}>
                       {location.name}
@@ -1160,7 +1164,7 @@ const HomePage = () => {
                     color: '#191919'
                   }}
                 >
-                  Vyhľadať
+                  {t('home.form.search')}
                 </button>
               </form>
             </div>
@@ -1206,14 +1210,14 @@ const HomePage = () => {
                       ))
                     ) : (
                       <>
-                        <div>Prémiová flotila</div>
-                        <div>vozidiel</div>
+                        <div>{t('home.slider.fallbackTitleLine1')}</div>
+                        <div>{t('home.slider.fallbackTitleLine2')}</div>
                       </>
                     )}
                   </h2>
                   <p className="text-gray-300 text-xs sm:text-sm lg:text-base max-w-md max-[480px]:text-left max-[480px]:mb-0 leading-relaxed" style={{ maxHeight: '140px', overflow: 'hidden' }}>
                     {/* Use current slide subtitle */}
-                    {allSlides[currentSlide]?.subtitle || 'Luxusné vozidlá pre náročných klientov. Zažite komfort a štýl na každej ceste.'}
+                    {allSlides[currentSlide]?.subtitle || t('home.slider.defaultSubtitle')}
                   </p>
                 </div>
               </FadeInUp>
@@ -1380,7 +1384,7 @@ const HomePage = () => {
                   style={{ backgroundColor: 'rgb(25, 25, 25)' }}
                 >
                   <span className="font-goldman font-medium">
-                    Kategória: {carClasses.find(c => c.value === activeTab)?.name || 'Všetky'}
+                    {t('home.filter.categoryLabel')}: {carClasses.find(c => c.value === activeTab)?.name || t('home.filter.all')}
                   </span>
                   <ChevronDownIcon className={`w-5 h-5 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -1421,9 +1425,9 @@ const HomePage = () => {
               {/* Brand Filter - Desktop View */}
               <div className="hidden sm:flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3 lg:gap-4 p-4 rounded-lg" style={{ backgroundColor: 'rgb(35, 35, 35)' }}>
                 {loadingBrands ? (
-                  <div className="text-gray-400 text-sm">Loading brands...</div>
+                  <div className="text-gray-400 text-sm">{t('common.loading')}</div>
                 ) : brands.length === 0 ? (
-                  <div className="text-gray-400 text-sm">No brands available</div>
+                  <div className="text-gray-400 text-sm">{t('common.error')}</div>
                 ) : (
                   brands.map((brand) => (
                     <button
@@ -1474,7 +1478,7 @@ const HomePage = () => {
                     disabled={loadingBrands}
                   >
                     <span className="font-goldman font-medium">
-                      {loadingBrands ? 'Loading...' : `Značka: ${brands.find(b => b.value === selectedBrand)?.name || 'Všetky'}`}
+                      {loadingBrands ? t('common.loading') : `${t('home.filter.brandLabel')}: ${brands.find(b => b.value === selectedBrand)?.name || t('home.filter.all')}`}
                     </span>
                     <ChevronDownIcon className={`w-5 h-5 transition-transform ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -1718,10 +1722,10 @@ const HomePage = () => {
                               {/* Show Fuel Type (moved to second position) */}
                               {(car.fuelType || car.fuel) && (
                                 <span className="font-medium capitalize">
-                                  {car.fuelType === 'gasoline' ? 'Benzín' :
-                                    car.fuelType === 'diesel' ? 'Nafta' :
-                                      car.fuelType === 'electric' ? 'Elektro' :
-                                        car.fuelType === 'hybrid' ? 'Hybrid' :
+                                  {car.fuelType === 'gasoline' ? t('home.carCard.fuelTypes.gasoline') :
+                                    car.fuelType === 'diesel' ? t('home.carCard.fuelTypes.diesel') :
+                                      car.fuelType === 'electric' ? t('home.carCard.fuelTypes.electric') :
+                                        car.fuelType === 'hybrid' ? t('home.carCard.fuelTypes.hybrid') :
                                           car.fuelType || car.fuel}
                                 </span>
                               )}
@@ -1730,7 +1734,7 @@ const HomePage = () => {
                               {car.transmission && <span className="font-medium capitalize">{car.transmission}</span>}
 
                               {/* Show Seats if available */}
-                              {car.seats && <span className="font-medium">{car.seats} miest</span>}
+                              {car.seats && <span className="font-medium">{car.seats} {t('home.carCard.seats')}</span>}
                             </div>
                           </div>
 
@@ -1747,10 +1751,10 @@ const HomePage = () => {
                                 color: '#191919'
                               }}
                             >
-                              Rezervovať
+                              {t('home.carCard.reserve')}
                             </button>
                             <div className="text-sm font-goldman font-bold text-white text-center">
-                              od {car.pricing?.dailyRate || car.dailyRate || 0}€
+                              {t('common.fromPrice')} {car.pricing?.dailyRate || car.dailyRate || 0}€
                             </div>
                           </div>
                         </div>
@@ -1790,12 +1794,12 @@ const HomePage = () => {
           <div className="lg:hidden mb-8">
             <FadeInUp>
               <h2 className="text-3xl sm:text-4xl font-medium text-white mb-6 font-goldman text-center">
-                VÁŠEŇ PRE AUTÁ, ZÁVÄZOK VOČI ZÁKAZNÍKOM.
+                {t('home.stats.title')}
               </h2>
             </FadeInUp>
 
             <p className="text-gray-300 mb-8 text-center px-4">
-              Individuálny, férový a ústretový prístup k našim zákazníkom. Dôraz na starostlivosť o náš vozový park. Čísla, ktoré hovoria za nás:
+              {t('home.stats.subtitle')}
             </p>
 
             {/* Mobile Image */}
@@ -1811,17 +1815,17 @@ const HomePage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 px-4">
               <div className="text-center">
                 <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">{statsData.carsCount}</div>
-                <div className="text-white font-goldman font-bold text-sm sm:text-base">Áut v našej flotile</div>
+                <div className="text-white font-goldman font-bold text-sm sm:text-base">{t('home.stats.carsInFleet')}</div>
               </div>
               <div className="text-center">
                 <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">
-                  {550 + statsData.kmBonus}<span className="text-2xl sm:text-3xl">tisíc+</span>
+                  400<span className="text-2xl sm:text-3xl">{t('home.stats.thousandPlus')}</span>
                 </div>
-                <div className="text-white font-goldman font-bold text-sm sm:text-base">Kilometrov najazdených šťastnými klientmi</div>
+                <div className="text-white font-goldman font-bold text-sm sm:text-base">{t('home.stats.kmDriven')}</div>
               </div>
               <div className="text-center">
                 <div className="text-4xl sm:text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">{120 + statsData.customersBonus}+</div>
-                <div className="text-white font-goldman font-bold text-sm sm:text-base">Zákazníkov</div>
+                <div className="text-white font-goldman font-bold text-sm sm:text-base">{t('home.stats.customers')}</div>
               </div>
             </div>
           </div>
@@ -1831,13 +1835,13 @@ const HomePage = () => {
             <div className="w-2/3 pl-12">
               <FadeInUp>
                 <h2 className="text-4xl md:text-5xl font-medium text-white mb-8 font-goldman">
-                  VÁŠEŇ PRE AUTÁ, ZÁVÄZOK VOČI ZÁKAZNÍKOM.
+                  {t('home.stats.title')}
                 </h2>
               </FadeInUp>
 
               <FadeInUp delay={0.2}>
                 <p className="text-gray-300 font-goldman mb-12 max-w-2xl">
-                  Individuálny, férový a ústretový prístup k našim zákazníkom. Dôraz na starostlivosť o náš vozový park. Čísla, ktoré hovoria za nás:
+                  {t('home.stats.subtitle')}
                 </p>
               </FadeInUp>
 
@@ -1845,17 +1849,17 @@ const HomePage = () => {
                 <div className="grid grid-cols-3 gap-8">
                   <div className="text-left">
                     <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">{statsData.carsCount}</div>
-                    <div className="text-white font-goldman font-bold">Áut v našej flotile</div>
+                    <div className="text-white font-goldman font-bold">{t('home.stats.carsInFleet')}</div>
                   </div>
                   <div className="text-left">
                     <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">
-                      {550 + statsData.kmBonus}<span className="text-3xl">tisíc+</span>
+                      400<span className="text-3xl">{t('home.stats.thousandPlus')}</span>
                     </div>
-                    <div className="text-white font-goldman font-bold">Kilometrov najazdených šťastnými klientmi</div>
+                    <div className="text-white font-goldman font-bold">{t('home.stats.kmDriven')}</div>
                   </div>
                   <div className="text-left">
                     <div className="text-5xl font-goldman font-bold text-[rgb(250,146,8)] mb-2">{120 + statsData.customersBonus}+</div>
-                    <div className="text-white font-goldman font-bold">Zákazníkov</div>
+                    <div className="text-white font-goldman font-bold">{t('home.stats.customers')}</div>
                   </div>
                 </div>
               </FadeInUp>

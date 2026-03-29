@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 const CustomDatePicker = ({ value, onChange, placeholder, minDate, otherSelectedDate, isReturnPicker, onOtherDateReset }) => {
+  const { t, locale } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const containerRef = useRef(null);
@@ -17,12 +19,8 @@ const CustomDatePicker = ({ value, onChange, placeholder, minDate, otherSelected
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const monthNames = [
-    'Január', 'Február', 'Marec', 'Apríl', 'Máj', 'Jún',
-    'Júl', 'August', 'September', 'Október', 'November', 'December'
-  ];
-
-  const dayNames = ['Po', 'Ut', 'St', 'Št', 'Pi', 'So', 'Ne'];
+  const monthNames = t('datePicker.months');
+  const dayNames = t('datePicker.days');
 
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
@@ -63,7 +61,7 @@ const CustomDatePicker = ({ value, onChange, placeholder, minDate, otherSelected
         // Check for minimum 2-day reservation
         const daysDifference = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
         if (daysDifference < 2) {
-          alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátum vrátenia minimálne 2 dni po dátume prevzatia.');
+          alert(t('datePicker.alerts.minReturn'));
           return;
         }
       } else {
@@ -79,7 +77,7 @@ const CustomDatePicker = ({ value, onChange, placeholder, minDate, otherSelected
           // Check for minimum 2-day reservation
           const daysDifference = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
           if (daysDifference < 2) {
-            alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátum prevzatia minimálne 2 dni pred dátumom vrátenia.');
+            alert(t('datePicker.alerts.minPickup'));
             return;
           }
         }
@@ -125,7 +123,7 @@ const CustomDatePicker = ({ value, onChange, placeholder, minDate, otherSelected
   const formatDisplayDate = (dateString) => {
     if (!dateString) return null;
     const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('sk-SK', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    return date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   // Generate calendar days
@@ -165,7 +163,7 @@ const CustomDatePicker = ({ value, onChange, placeholder, minDate, otherSelected
       >
         <div className="flex items-center justify-between h-full">
           <span className={`text-sm ${value ? 'text-white' : 'text-gray-400'}`}>
-            {value ? formatDisplayDate(value) : placeholder}
+            {value ? formatDisplayDate(value) : (placeholder || t('datePicker.placeholder'))}
           </span>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="h-5 w-5 text-gray-400">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />

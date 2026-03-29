@@ -27,6 +27,7 @@ import ContactMapSection from '../components/ContactMapSection';
 import BookingFormSection from '../components/BookingFormSection';
 import { carsAPI, locationsAPI } from '../services/api';
 import { generateCarSlug, findCarBySlug, getUniqueCarSlugs } from '../utils/slugify';
+import { useLanguage } from '../context/LanguageContext';
 import HeroImg from '../test.webp';
 import AudiA6Img from '../audia6.webp';
 import BMW540iImg from '../bmw540i.webp';
@@ -87,63 +88,51 @@ const getCarImage = (car) => {
   return images[0];
 };
 
-// Function to format duration text with proper Slovak plurals
-const formatDurationText = (duration) => {
-  // Handle specific API duration formats
-  if (duration.includes('2-3days')) return '2-3 dni';
-  if (duration.includes('4-10days')) return '4-10 dni';
-  if (duration.includes('11-20days')) return '11-20 dni';
-  if (duration.includes('21-29days')) return '21-29 dni';
-  if (duration.includes('30-60days')) return '30-60 dni';
-  if (duration.includes('60plus')) return '60+ dni';
+// Function to format duration text using translations
+const formatDurationText = (duration, t) => {
+  if (duration.includes('2-3days')) return t('carDetails.duration.2-3days');
+  if (duration.includes('4-10days')) return t('carDetails.duration.4-10days');
+  if (duration.includes('11-20days')) return t('carDetails.duration.11-20days');
+  if (duration.includes('21-29days')) return t('carDetails.duration.21-29days');
+  if (duration.includes('30-60days')) return t('carDetails.duration.30-60days');
+  if (duration.includes('60plus')) return t('carDetails.duration.60plus');
 
-  // Generic replacements
   return duration
-    .replace('day', ' deň')
-    .replace('days', ' dni')
-    .replace('plus', '+')
-    .replace(/(\d+)\s*dens/g, (match, number) => {
-      const num = parseInt(number);
-      return num === 1 ? `${num} deň` : `${num} dni`;
-    });
+    .replace('days', ` ${t('carDetails.duration.days')}`)
+    .replace('day', ` ${t('carDetails.duration.day')}`)
+    .replace('plus', '+');
 };
 
-// Function to filter and format pricing data - only show specific duration tiers
-const getValidPricingEntries = (car) => {
+// Function to filter and format pricing data
+const getValidPricingEntries = (car, t) => {
   const entries = [];
-
-  // Define allowed duration keys and their display order (excluding 60plus - we add it manually)
   const allowedDurations = ['2-3days', '4-10days', '11-20days', '21-29days', '30-60days'];
 
-  // Only use pricing.rates from API
   if (car.pricing?.rates && Object.keys(car.pricing.rates).length > 0) {
     allowedDurations.forEach((duration) => {
       const price = car.pricing.rates[duration];
-      // Only include entries where price is valid (number > 0 or truthy string)
       if (price && ((typeof price === 'number' && price > 0) || (typeof price === 'string' && price.trim()))) {
         entries.push({
-          label: formatDurationText(duration),
+          label: formatDurationText(duration, t),
           price: typeof price === 'number' ? `${price}€` : price
         });
       }
     });
   } else if (car.priceList && car.priceList.length > 0) {
-    // Fallback to priceList from API if available
     car.priceList.forEach((priceItem) => {
       const price = priceItem.price || priceItem.rate;
       if ((typeof price === 'number' && price > 0) || (typeof price === 'string' && price.trim())) {
         entries.push({
-          label: priceItem.duration || priceItem.label || 'Prenájom',
+          label: priceItem.duration || priceItem.label || t('carDetails.rental'),
           price: `${price}€`
         });
       }
     });
   }
 
-  // Always add 60+ dni entry at the end
   entries.push({
-    label: '60+ dni',
-    price: 'dohoda - volať/písať mail'
+    label: t('carDetails.duration.60plus'),
+    price: t('carDetails.negotiable')
   });
 
   return entries;
@@ -168,6 +157,7 @@ const getCarDescription = (brand, model) => {
 const CarDetailsPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { t, tf, language } = useLanguage();
 
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -199,28 +189,15 @@ const CarDetailsPage = () => {
   const similarCarsRef = React.useRef(null);
 
   const categoryNames = {
-    sedan: 'Sedan',
-    kombi: 'Kombi',
-    suv: 'SUV',
-    sport: 'Šport',
-    uzitkove: 'Úžitkové',
-    viacmiestne: 'Viacmiestne'
+    sedan: t('carDetails.categories.sedan'),
+    kombi: t('carDetails.categories.kombi'),
+    suv: t('carDetails.categories.suv'),
+    sport: t('carDetails.categories.sport'),
+    uzitkove: t('carDetails.categories.utility'),
+    viacmiestne: t('carDetails.categories.multiSeat')
   };
 
-  const carFaqs = [
-    {
-      question: "Aké sú základné požiadavky na prenájom vozidla?",
-      answer: "Pre prenájom vozidla potrebujete mať minimálne 21 rokov, platný vodičský preukaz (minimálne 1 rok), občiansky preukaz alebo pas. Pre vozidlá luxusnej kategórie môže byť požadovaný vyšší vek a dlhšia doba platnosti vodičského preukazu."
-    },
-    {
-      question: "Aká je výška zábezpeky a kedy sa vráti?",
-      answer: "Výška zábezpeky závisí od kategórie vozidla a je uvedená pri každom aute individuálne. Zábezpeka sa vráti okamžite po vrátení a skontrolovaní vozidla, najneskôr však do 7 pracovných dní od vrátenia vozidla."
-    },
-    {
-      question: "Čo je zahrnuté v cene prenájmu?",
-      answer: "V cene prenájmu je zahrnuté poistenie zodpovednosti a havarijné poistenie, slovenská diaľničná známka, technická podpora 24/7 a základné vybavenie vozidla. Dodatočné služby ako napríklad poskytnutie autosedačky alebo poistenie sú spoplatnené podľa konkrétnej služby, ktorú si môžete vybrať pri rezervácii vozidla."
-    }
-  ];
+  const carFaqs = t('carDetails.faqs') || [];
 
   const generateTimeSlots = () => {
     const slots = [];
@@ -798,14 +775,14 @@ const CarDetailsPage = () => {
 
   const handleBookNow = () => {
     if (!bookingData.pickupDate || !bookingData.returnDate) {
-      alert('Prosím vyberte dátum prevzatia a vrátenia vozidla');
+      alert(t('carDetails.alerts.selectDates'));
       return;
     }
 
     // Validate minimum 2-day reservation
     const daysDifference = calculateDaysWithTime();
     if (daysDifference < 2) {
-      alert('Minimálna dĺžka rezervácie sú 2 dni. Prosím vyberte dátumy s minimálnym rozdielom 2 dní.');
+      alert(t('carDetails.alerts.minDays'));
       return;
     }
 
@@ -825,7 +802,7 @@ const CarDetailsPage = () => {
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#000000' }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[rgb(250,146,8)] mx-auto"></div>
-          <p className="mt-4 text-white font-goldman">Načítavajú sa detaily vozidla...</p>
+          <p className="mt-4 text-white font-goldman">{t('carDetails.loading')}</p>
         </div>
       </div>
     );
@@ -840,10 +817,10 @@ const CarDetailsPage = () => {
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="text-xl font-goldman font-semibold text-white mb-2">Vozidlo sa nenašlo</h2>
+          <h2 className="text-xl font-goldman font-semibold text-white mb-2">{t('carDetails.notFound')}</h2>
           <p className="text-gray-300 font-goldman mb-4">{error}</p>
           <Button onClick={() => navigate('/fleet')}>
-            Späť na flotilu
+            {t('carDetails.backToFleet')}
           </Button>
         </div>
       </div>
@@ -1017,7 +994,7 @@ const CarDetailsPage = () => {
                     <div className="text-2xl font-semibold">
                       {getCarImages(car).length > 6 ? `+${getCarImages(car).length - 5}` : 'Všetky'}
                     </div>
-                    <div className="text-sm">Zobraziť všetky</div>
+                    <div className="text-sm">{t('carDetails.showAll')}</div>
                   </div>
                 </div>
               </div>
@@ -1033,20 +1010,20 @@ const CarDetailsPage = () => {
               <div className="flex flex-col items-center text-center">
                 <BoltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
                 <div>
-                  <div className="text-xs font-goldman text-gray-300">Výkon</div>
+                  <div className="text-xs font-goldman text-gray-300">{t('carDetails.specs.power')}</div>
                   <div className="font-goldman font-semibold text-xs text-white">{car.engine?.power || car.power || 'N/A'} kW</div>
                 </div>
               </div>
               <div className="flex flex-col items-center text-center">
                 <GlobeAltIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
                 <div>
-                  <div className="text-xs font-goldman text-gray-300">Palivo</div>
+                  <div className="text-xs font-goldman text-gray-300">{t('carDetails.specs.fuel')}</div>
                   <div className="font-goldman font-semibold text-xs text-white capitalize">
-                    {car.fuelType === 'gasoline' ? 'Benzín' :
-                      car.fuelType === 'diesel' ? 'Nafta' :
-                        car.fuelType === 'electric' ? 'Elektro' :
-                          car.fuelType === 'hybrid' ? 'Hybrid' :
-                            car.fuelType === 'cvt' ? 'Benzín' :
+                    {car.fuelType === 'gasoline' ? t('carDetails.fuelTypes.petrol') :
+                      car.fuelType === 'diesel' ? t('carDetails.fuelTypes.diesel') :
+                        car.fuelType === 'electric' ? t('carDetails.fuelTypes.electric') :
+                          car.fuelType === 'hybrid' ? t('carDetails.fuelTypes.hybrid') :
+                            car.fuelType === 'cvt' ? t('carDetails.fuelTypes.petrol') :
                               car.fuelType || 'N/A'}
                   </div>
                 </div>
@@ -1054,10 +1031,10 @@ const CarDetailsPage = () => {
               <div className="flex flex-col items-center text-center">
                 <CogIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
                 <div>
-                  <div className="text-xs font-goldman text-gray-300">Prevodovka</div>
+                  <div className="text-xs font-goldman text-gray-300">{t('carDetails.specs.transmission')}</div>
                   <div className="font-semibold text-xs text-white capitalize">
-                    {car.transmission === 'automatic' ? 'Automat' :
-                      car.transmission === 'manual' ? 'Manuál' :
+                    {car.transmission === 'automatic' ? t('carDetails.transmissionTypes.automatic') :
+                      car.transmission === 'manual' ? t('carDetails.transmissionTypes.manual') :
                         car.transmission === 'cvt' ? 'CVT' :
                           car.transmission || 'N/A'}
                   </div>
@@ -1069,7 +1046,7 @@ const CarDetailsPage = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                   <div>
-                    <div className="text-xs font-goldman text-gray-300">Pohon</div>
+                    <div className="text-xs font-goldman text-gray-300">{t('carDetails.specs.drivetrain')}</div>
                     <div className="font-semibold text-xs text-white capitalize">{car.drivetrain}</div>
                   </div>
                 </div>
@@ -1080,7 +1057,7 @@ const CarDetailsPage = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                   </svg>
                   <div>
-                    <div className="text-xs font-goldman text-gray-300">Spotreba</div>
+                    <div className="text-xs font-goldman text-gray-300">{t('carDetails.specs.consumption')}</div>
                     <div className="font-semibold text-xs text-white">{car.fuelConsumption.combined} l/100km</div>
                   </div>
                 </div>
@@ -1088,7 +1065,7 @@ const CarDetailsPage = () => {
               <div className="flex flex-col items-center text-center">
                 <UsersIcon className="h-4 w-4 text-[rgb(250,146,8)] flex-shrink-0 mb-1" />
                 <div>
-                  <div className="text-xs font-goldman text-gray-300">Počet miest</div>
+                  <div className="text-xs font-goldman text-gray-300">{t('carDetails.specs.seats')}</div>
                   <div className="font-goldman font-semibold text-xs text-white">{car.seats || 5}</div>
                 </div>
               </div>
@@ -1110,20 +1087,20 @@ const CarDetailsPage = () => {
               <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
                 <BoltIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
                 <div>
-                  <div className="text-sm text-gray-300">Výkon</div>
+                  <div className="text-sm text-gray-300">{t('carDetails.specs.power')}</div>
                   <div className="font-semibold text-base text-white">{car.engine?.power || car.power || 'N/A'} kW</div>
                 </div>
               </div>
               <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
                 <GlobeAltIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
                 <div>
-                  <div className="text-sm text-gray-300">Palivo</div>
+                  <div className="text-sm text-gray-300">{t('carDetails.specs.fuel')}</div>
                   <div className="font-semibold text-base text-white capitalize">
-                    {car.fuelType === 'gasoline' ? 'Benzín' :
-                      car.fuelType === 'diesel' ? 'Nafta' :
-                        car.fuelType === 'electric' ? 'Elektro' :
-                          car.fuelType === 'hybrid' ? 'Hybrid' :
-                            car.fuelType === 'cvt' ? 'Benzín' :
+                    {car.fuelType === 'gasoline' ? t('carDetails.fuelTypes.petrol') :
+                      car.fuelType === 'diesel' ? t('carDetails.fuelTypes.diesel') :
+                        car.fuelType === 'electric' ? t('carDetails.fuelTypes.electric') :
+                          car.fuelType === 'hybrid' ? t('carDetails.fuelTypes.hybrid') :
+                            car.fuelType === 'cvt' ? t('carDetails.fuelTypes.petrol') :
                               car.fuelType || 'N/A'}
                   </div>
                 </div>
@@ -1131,10 +1108,10 @@ const CarDetailsPage = () => {
               <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
                 <CogIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
                 <div>
-                  <div className="text-sm text-gray-300">Prevodovka</div>
+                  <div className="text-sm text-gray-300">{t('carDetails.specs.transmission')}</div>
                   <div className="font-semibold text-base text-white capitalize">
-                    {car.transmission === 'automatic' ? 'Automat' :
-                      car.transmission === 'manual' ? 'Manuál' :
+                    {car.transmission === 'automatic' ? t('carDetails.transmissionTypes.automatic') :
+                      car.transmission === 'manual' ? t('carDetails.transmissionTypes.manual') :
                         car.transmission === 'cvt' ? 'CVT' :
                           car.transmission || 'N/A'}
                   </div>
@@ -1146,7 +1123,7 @@ const CarDetailsPage = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                   <div>
-                    <div className="text-sm text-gray-300">Pohon</div>
+                    <div className="text-sm text-gray-300">{t('carDetails.specs.drivetrain')}</div>
                     <div className="font-semibold text-base text-white capitalize">{car.drivetrain}</div>
                   </div>
                 </div>
@@ -1157,7 +1134,7 @@ const CarDetailsPage = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                   </svg>
                   <div>
-                    <div className="text-sm text-gray-300">Spotreba</div>
+                    <div className="text-sm text-gray-300">{t('carDetails.specs.consumption')}</div>
                     <div className="font-semibold text-base text-white">{car.fuelConsumption.combined} l/100km</div>
                   </div>
                 </div>
@@ -1165,7 +1142,7 @@ const CarDetailsPage = () => {
               <div className="flex flex-row items-center space-x-3 p-4 rounded-lg shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
                 <UsersIcon className="h-6 w-6 text-[rgb(250,146,8)] flex-shrink-0" />
                 <div>
-                  <div className="text-sm text-gray-300">Počet miest</div>
+                  <div className="text-sm text-gray-300">{t('carDetails.specs.seats')}</div>
                   <div className="font-semibold text-base text-white">{car.seats || 5}</div>
                 </div>
               </div>
@@ -1191,7 +1168,7 @@ const CarDetailsPage = () => {
           <div className="lg:hidden space-y-8">
             {/* Mobile Booking Form */}
             <div id="booking-section" className="rounded-lg p-6 shadow-lg border border-gray-800" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
-              <h2 className="text-2xl font-semibold text-white mb-6">Prenájom</h2>
+              <h2 className="text-2xl font-semibold text-white mb-6">{t('carDetails.rental')}</h2>
 
               <div className="space-y-4">
                 {/* Dates */}
@@ -1285,11 +1262,11 @@ const CarDetailsPage = () => {
 
             {/* Mobile Pricing Table */}
             <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
-              <h3 className="text-xl font-semibold text-white mb-4">Cenník prenájmu</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">{t('carDetails.priceList')}</h3>
 
               <div className="divide-y divide-gray-800">
                 {/* Display all valid pricing entries */}
-                {getValidPricingEntries(car).map((entry, index) => (
+                {getValidPricingEntries(car, t).map((entry, index) => (
                   <div key={index} className="py-3">
                     <div className="grid grid-cols-2 gap-4">
                       <span className="text-white">{entry.label}</span>
@@ -1312,15 +1289,15 @@ const CarDetailsPage = () => {
 
             {/* Mobile Car Description */}
             <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
-              <h2 className="text-2xl font-semibold text-white mb-4">Popis</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">{t('carDetails.description')}</h2>
               <div className="text-gray-300 leading-relaxed">
-                {car.description || getCarDescription(car.brand, car.model)}
+                {tf(car, 'description') || getCarDescription(car.brand, car.model)}
               </div>
             </div>
 
             {/* FAQ Section - Mobile */}
             <div className="rounded-lg p-6 border border-gray-800 shadow-sm mt-6" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
-              <h2 className="text-2xl font-semibold text-white mb-4">Často kladené otázky</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">{t('carDetails.faqTitle')}</h2>
               <div className="space-y-3">
                 {carFaqs.map((faq, index) => (
                   <div key={index} className="border border-gray-800 rounded-lg overflow-hidden" style={{ backgroundColor: '#111111' }}>
@@ -1347,7 +1324,7 @@ const CarDetailsPage = () => {
               </div>
               <div className="mt-4 text-center">
                 <Link to="/faq" className="text-[rgb(250,146,8)] hover:underline font-semibold">
-                  Máte ešte ďalšie otázky? Pozrite si všetky FAQ →
+                  {t('carDetails.moreQuestions')} {t('carDetails.faqLink')} →
                 </Link>
               </div>
             </div>
@@ -1359,11 +1336,11 @@ const CarDetailsPage = () => {
             <div className="lg:col-span-1 space-y-6">
               {/* Pricing Table */}
               <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
-                <h3 className="text-xl font-semibold text-white mb-4">Cenník prenájmu</h3>
+                <h3 className="text-xl font-semibold text-white mb-4">{t('carDetails.priceList')}</h3>
 
                 <div className="divide-y divide-gray-800">
                   {/* Display all valid pricing entries */}
-                  {getValidPricingEntries(car).map((entry, index) => (
+                  {getValidPricingEntries(car, t).map((entry, index) => (
                     <div key={index} className="py-3">
                       <div className="grid grid-cols-2 gap-4">
                         <span className="text-white">{entry.label}</span>
@@ -1390,7 +1367,7 @@ const CarDetailsPage = () => {
             <div className="lg:col-span-1 space-y-6">
               {/* Desktop Booking Form */}
               <div id="booking-section-desktop" className="rounded-lg p-6 shadow-lg border border-gray-800" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
-                <h2 className="text-2xl font-goldman font-semibold text-white mb-6">Rezervovať</h2>
+                <h2 className="text-2xl font-goldman font-semibold text-white mb-6">{t('carDetails.reserve')}</h2>
 
                 <div className="space-y-4">
                   {/* Dates */}
@@ -1488,9 +1465,9 @@ const CarDetailsPage = () => {
           {/* Car Description - Full Width */}
           <div className="hidden lg:block mt-8">
             <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
-              <h2 className="text-2xl font-semibold text-white mb-4">Popis</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">{t('carDetails.description')}</h2>
               <div className="text-gray-300 leading-relaxed">
-                {car.description || getCarDescription(car.brand, car.model)}
+                {tf(car, 'description') || getCarDescription(car.brand, car.model)}
               </div>
             </div>
           </div>
@@ -1498,7 +1475,7 @@ const CarDetailsPage = () => {
           {/* FAQ Section - Desktop */}
           <div className="hidden lg:block mt-8">
             <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
-              <h2 className="text-2xl font-semibold text-white mb-4">Často kladené otázky</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">{t('carDetails.faqTitle')}</h2>
               <div className="space-y-3">
                 {carFaqs.map((faq, index) => (
                   <div key={index} className="border border-gray-800 rounded-lg overflow-hidden" style={{ backgroundColor: '#111111' }}>
@@ -1525,7 +1502,7 @@ const CarDetailsPage = () => {
               </div>
               <div className="mt-4 text-center">
                 <Link to="/faq" className="text-[rgb(250,146,8)] hover:underline font-semibold">
-                  Máte ešte ďalšie otázky? Pozrite si všetky FAQ →
+                  {t('carDetails.moreQuestions')} {t('carDetails.faqLink')} →
                 </Link>
               </div>
             </div>
@@ -1536,7 +1513,7 @@ const CarDetailsPage = () => {
             <div className="mt-8">
               <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
                 <h2 className="text-2xl font-semibold text-white mb-4">
-                  Podobné autá v kategórii: {categoryNames[car.category] || car.category}
+                  {t('carDetails.similarCars')}: {categoryNames[car.category] || car.category}
                 </h2>
                 <div className="relative">
                   <div

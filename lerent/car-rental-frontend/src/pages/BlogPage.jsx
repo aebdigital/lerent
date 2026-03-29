@@ -3,10 +3,17 @@ import { Link } from 'react-router-dom';
 import { CalendarIcon, ClockIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import Logo from '../logoRENT.svg';
 import { blogAPI } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 import ReviewsSection from '../components/ReviewsSection';
 import ContactMapSection from '../components/ContactMapSection';
 
+const stripHtml = (html) => {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').trim();
+};
+
 const BlogPage = () => {
+  const { t, tf, locale, language } = useLanguage();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,7 +25,7 @@ const BlogPage = () => {
         setPosts(data);
       } catch (err) {
         console.error('Failed to fetch blogs:', err);
-        setError('Nepodarilo sa načítať články.');
+        setError(t('blog.loadError'));
       } finally {
         setLoading(false);
       }
@@ -34,7 +41,7 @@ const BlogPage = () => {
           BLOG
         </h1>
         <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-          Tipy, rady a novinky zo sveta prenájmu vozidiel
+          {t('blog.subtitle')}
         </p>
       </div>
 
@@ -43,7 +50,7 @@ const BlogPage = () => {
         {loading && (
           <div className="text-center py-20">
             <div className="inline-block w-8 h-8 border-2 border-[#fa9208] border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-gray-400">Načítavam články...</p>
+            <p className="text-gray-400">{t('blog.loading')}</p>
           </div>
         )}
 
@@ -55,7 +62,7 @@ const BlogPage = () => {
 
         {!loading && !error && posts.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-xl text-gray-300">Obsah sa pripravuje</p>
+            <p className="text-xl text-gray-300">{t('blog.empty')}</p>
           </div>
         )}
 
@@ -67,7 +74,7 @@ const BlogPage = () => {
                   {/* Card image */}
                   <div className="h-48 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
                     {post.featuredImage?.url ? (
-                      <img src={post.featuredImage.url} alt={post.featuredImage.alt || post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <img src={post.featuredImage.url} alt={post.featuredImage.alt || tf(post, 'title')} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
                       <img src={Logo} alt="LeRent" className="h-16 w-auto opacity-60" />
                     )}
@@ -83,26 +90,28 @@ const BlogPage = () => {
 
                     {/* Title */}
                     <h2 className="text-xl font-bold text-white mb-3 group-hover:text-[#fa9208] transition-colors line-clamp-2">
-                      {post.title}
+                      {tf(post, 'title')}
                     </h2>
 
                     {/* Excerpt */}
-                    <p className="text-gray-400 text-sm mb-4 line-clamp-3">
-                      {post.excerpt}
-                    </p>
+                    {(post.excerpt || post.excerptEn) && (
+                      <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                        {stripHtml(tf(post, 'excerpt'))}
+                      </p>
+                    )}
 
                     {/* Footer */}
                     <div className="flex items-center justify-between pt-4 border-t border-gray-800">
                       <div className="flex items-center gap-1 text-xs text-gray-500">
                         <CalendarIcon className="h-3.5 w-3.5" />
-                        <span>{new Date(post.publishDate).toLocaleDateString('sk-SK', {
+                        <span>{new Date(post.publishDate).toLocaleDateString(locale, {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric'
                         })}</span>
                       </div>
                       <div className="flex items-center text-[#fa9208] group-hover:translate-x-1 transition-transform">
-                        <span className="text-sm font-medium">Čítať</span>
+                        <span className="text-sm font-medium">{t('blog.read')}</span>
                         <ChevronRightIcon className="h-4 w-4 ml-1" />
                       </div>
                     </div>

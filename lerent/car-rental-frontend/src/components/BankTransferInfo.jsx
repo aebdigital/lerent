@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { ClipboardDocumentIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { useLanguage } from '../context/LanguageContext';
 
 const BankTransferInfo = ({ reservationId, totalAmount }) => {
   const [copiedField, setCopiedField] = useState(null);
+  const { t } = useLanguage();
 
   const bankDetails = {
     bankName: 'Tatra banka, a.s.',
@@ -13,7 +15,7 @@ const BankTransferInfo = ({ reservationId, totalAmount }) => {
     amount: totalAmount,
     currency: 'EUR',
     variableSymbol: reservationId || '000000',
-    message: `Rezervácia ${reservationId || '000000'}`
+    message: `${t('bankTransfer.info.reservationMessage')} ${reservationId || '000000'}`
   };
 
   const copyToClipboard = (text, field) => {
@@ -30,7 +32,7 @@ const BankTransferInfo = ({ reservationId, totalAmount }) => {
         <button
           onClick={() => copyToClipboard(value, field)}
           className="p-1 hover:bg-gray-700 rounded transition-colors"
-          title="Kopírovať"
+          title={t('bankTransfer.info.copy')}
         >
           {copiedField === field ? (
             <CheckIcon className="w-4 h-4 text-green-500" />
@@ -45,45 +47,45 @@ const BankTransferInfo = ({ reservationId, totalAmount }) => {
   return (
     <div className="rounded-lg border border-gray-700 overflow-hidden" style={{ backgroundColor: '#191919' }}>
       <div className="bg-[rgb(250,146,8)] px-6 py-4">
-        <h2 className="text-xl font-bold text-white">Údaje na platbu</h2>
+        <h2 className="text-xl font-bold text-white">{t('bankTransfer.info.title')}</h2>
         <p className="text-sm text-white/90 mt-1">
-          Prosím, vykonajte platbu na nižšie uvedený účet
+          {t('bankTransfer.info.subtitle')}
         </p>
       </div>
 
       <div className="p-6 space-y-1">
         <InfoRow
-          label="Banka"
+          label={t('bankTransfer.info.bank')}
           value={bankDetails.bankName}
           field="bank"
         />
         <InfoRow
-          label="IBAN"
+          label={t('bankTransfer.info.iban')}
           value={bankDetails.iban}
           field="iban"
         />
         <InfoRow
-          label="SWIFT/BIC"
+          label={t('bankTransfer.info.swift')}
           value={bankDetails.swift}
           field="swift"
         />
         <InfoRow
-          label="Prijímateľ"
+          label={t('bankTransfer.info.recipient')}
           value={bankDetails.beneficiary}
           field="beneficiary"
         />
         <InfoRow
-          label="Suma"
+          label={t('bankTransfer.info.amount')}
           value={`${bankDetails.amount.toFixed(2)} ${bankDetails.currency}`}
           field="amount"
         />
         <InfoRow
-          label="Variabilný symbol"
+          label={t('bankTransfer.info.variableSymbol')}
           value={bankDetails.variableSymbol}
           field="vs"
         />
         <InfoRow
-          label="Správa pre príjemcu"
+          label={t('bankTransfer.info.messageForRecipient')}
           value={bankDetails.message}
           field="message"
         />
@@ -95,11 +97,11 @@ const BankTransferInfo = ({ reservationId, totalAmount }) => {
             <span className="text-white text-xs font-bold">!</span>
           </div>
           <div className="text-sm text-gray-300">
-            <p className="font-medium text-white mb-1">Dôležité informácie:</p>
+            <p className="font-medium text-white mb-1">{t('bankTransfer.info.importantInfo')}</p>
             <ul className="space-y-1 text-gray-400">
-              <li>• Uveďte prosím správny variabilný symbol pre identifikáciu platby</li>
-              <li>• Rezervácia bude potvrdená po prijatí platby na účet</li>
-              <li>• Platbu prosím vykonajte do 24 hodín</li>
+              <li>• {t('bankTransfer.info.info1')}</li>
+              <li>• {t('bankTransfer.info.info2')}</li>
+              <li>• {t('bankTransfer.info.info3')}</li>
             </ul>
           </div>
         </div>

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import paymentService from '../services/paymentService';
+import { useLanguage } from '../context/LanguageContext';
 
 function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [status, setStatus] = useState('verifying'); // verifying, success, failed
   const [paymentData, setPaymentData] = useState(null);
 
@@ -72,8 +74,8 @@ function PaymentSuccess() {
           <div className="mb-6">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[rgb(250,146,8)] mx-auto"></div>
           </div>
-          <h2 className="text-2xl font-bold mb-4">Overovanie platby...</h2>
-          <p className="text-gray-300">Prosím počkajte, kým potvrdíme vašu platbu.</p>
+          <h2 className="text-2xl font-bold mb-4">{t('payment.success.verifying')}</h2>
+          <p className="text-gray-300">{t('payment.success.verifyingText')}</p>
         </div>
       </div>
     );
@@ -91,8 +93,8 @@ function PaymentSuccess() {
             </div>
           </div>
 
-          <h1 className="text-4xl font-bold mb-4">Platba úspešná!</h1>
-          <p className="text-xl text-gray-300 mb-8">Vaša rezervácia bola potvrdená.</p>
+          <h1 className="text-4xl font-bold mb-4">{t('payment.success.title')}</h1>
+          <p className="text-xl text-gray-300 mb-8">{t('payment.success.subtitle')}</p>
 
           {paymentData && (
             <div
@@ -104,26 +106,26 @@ function PaymentSuccess() {
                 border: '1px solid rgba(255, 255, 255, 0.18)'
               }}
             >
-              <h3 className="text-xl font-bold mb-4 text-[rgb(250,146,8)]">Detaily rezervácie</h3>
+              <h3 className="text-xl font-bold mb-4 text-[rgb(250,146,8)]">{t('payment.success.details')}</h3>
               <div className="space-y-2 text-left">
                 <p className="flex justify-between">
-                  <span className="text-gray-400">Zaplatená suma:</span>
+                  <span className="text-gray-400">{t('payment.success.amountPaid')}</span>
                   <span className="font-bold">€{paymentData.amount?.toFixed(2)}</span>
                 </p>
                 <p className="flex justify-between">
-                  <span className="text-gray-400">ID platby:</span>
+                  <span className="text-gray-400">{t('payment.success.paymentId')}</span>
                   <span className="font-mono text-sm">{paymentData._id}</span>
                 </p>
                 <p className="flex justify-between">
-                  <span className="text-gray-400">Stav:</span>
-                  <span className="text-green-500 font-bold">Potvrdené</span>
+                  <span className="text-gray-400">{t('payment.success.status')}</span>
+                  <span className="text-green-500 font-bold">{t('payment.success.confirmed')}</span>
                 </p>
               </div>
             </div>
           )}
 
           <p className="text-gray-300 mb-8">
-            Na váš email vám príde potvrdzovací email so všetkými detailmi.
+            {t('payment.success.emailNotice')}
           </p>
 
           <button
@@ -134,7 +136,7 @@ function PaymentSuccess() {
               color: '#191919'
             }}
           >
-            Späť na domovskú stránku
+            {t('payment.success.backHome')}
           </button>
         </div>
       </div>
@@ -152,9 +154,9 @@ function PaymentSuccess() {
           </div>
         </div>
 
-        <h1 className="text-4xl font-bold mb-4">Overenie platby zlyhalo</h1>
+        <h1 className="text-4xl font-bold mb-4">{t('payment.success.verifyFailed')}</h1>
         <p className="text-xl text-gray-300 mb-8">
-          Nepodarilo sa overiť vašu platbu. Ak bola suma stiahnutá z účtu, kontaktujte nás prosím.
+          {t('payment.success.verifyFailedText')}
         </p>
 
         <button
@@ -165,7 +167,7 @@ function PaymentSuccess() {
             color: '#191919'
           }}
         >
-          Späť na domovskú stránku
+          {t('payment.success.backHome')}
         </button>
       </div>
     </div>
