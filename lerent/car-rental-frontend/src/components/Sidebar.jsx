@@ -2,7 +2,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Logo from '../logoRENT.svg';
 import { useLanguage } from '../context/LanguageContext';
-import LanguageSwitcher from './LanguageSwitcher';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
@@ -173,11 +172,6 @@ const Sidebar = ({ isOpen, onClose }) => {
             {t('nav.faq')}
           </button>
 
-
-          {/* Language Switch */}
-          <div className="px-6 py-2">
-            <LanguageSwitcher variant="sidebar" onSelect={onClose} />
-          </div>
 
           {/* Rezervovať Button */}
           <div className="px-6 py-6">

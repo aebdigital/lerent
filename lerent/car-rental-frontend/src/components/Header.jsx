@@ -270,8 +270,9 @@ const Header = () => {
             </a>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="lg:hidden max-[390px]:mr-0">
+          {/* Mobile menu button + language switcher */}
+          <div className="lg:hidden flex items-center gap-2 max-[390px]:mr-0">
+            <LanguageSwitcher />
             <button
               type="button"
               className="text-white hover:text-gray-300 p-2"
