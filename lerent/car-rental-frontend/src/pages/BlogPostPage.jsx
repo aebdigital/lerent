@@ -7,7 +7,8 @@ import {
   ClockIcon,
   ArrowLeftIcon,
   ShareIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline';
 import Logo from '../logoRENT.svg';
 import { blogAPI } from '../services/api';
@@ -123,10 +124,20 @@ const BlogPostPage = () => {
             <div className="max-w-4xl mx-auto">
 
               {/* Meta */}
-              {blogPost.readingTime && (
-                <div className="flex items-center gap-1 text-sm text-gray-400 mb-6">
-                  <ClockIcon className="h-4 w-4" />
-                  <span>{blogPost.readingTime} {t('blog.readTime')}</span>
+              {(blogPost.readingTime || typeof blogPost.views === 'number') && (
+                <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
+                  {blogPost.readingTime && (
+                    <div className="flex items-center gap-1">
+                      <ClockIcon className="h-4 w-4" />
+                      <span>{blogPost.readingTime} {t('blog.readTime')}</span>
+                    </div>
+                  )}
+                  {typeof blogPost.views === 'number' && (
+                    <div className="flex items-center gap-1">
+                      <EyeIcon className="h-4 w-4" />
+                      <span>{blogPost.views}</span>
+                    </div>
+                  )}
                 </div>
               )}
 

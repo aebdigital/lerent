@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarIcon, ClockIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, ClockIcon, ChevronRightIcon, EyeIcon } from '@heroicons/react/24/outline';
 import Logo from '../logoRENT.svg';
 import { blogAPI } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
@@ -80,11 +80,21 @@ const BlogPage = () => {
                     )}
                   </div>
                   <div className="p-6">
-                    {/* Read time */}
-                    {post.readingTime && (
-                      <div className="flex items-center gap-1 text-xs text-gray-400 mb-3">
-                        <ClockIcon className="h-3.5 w-3.5" />
-                        <span>{post.readingTime}</span>
+                    {/* Read time + views */}
+                    {(post.readingTime || typeof post.views === 'number') && (
+                      <div className="flex items-center gap-3 text-xs text-gray-400 mb-3">
+                        {post.readingTime && (
+                          <div className="flex items-center gap-1">
+                            <ClockIcon className="h-3.5 w-3.5" />
+                            <span>{post.readingTime}</span>
+                          </div>
+                        )}
+                        {typeof post.views === 'number' && (
+                          <div className="flex items-center gap-1">
+                            <EyeIcon className="h-3.5 w-3.5" />
+                            <span>{post.views}</span>
+                          </div>
+                        )}
                       </div>
                     )}
 
