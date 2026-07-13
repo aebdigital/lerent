@@ -7,10 +7,10 @@ const BankTransferInfo = ({ reservationId, totalAmount }) => {
   const { t } = useLanguage();
 
   const bankDetails = {
-    bankName: 'Tatra banka, a.s.',
-    accountNumber: 'SK31 1100 0000 0029 4103 7541',
-    iban: 'SK31 1100 0000 0029 4103 7541',
-    swift: 'TATRSKBX',
+    bankName: 'Všeobecná úverová banka, a.s.',
+    accountNumber: 'SK60 0200 0000 0072 2192 4153',
+    iban: 'SK60 0200 0000 0072 2192 4153',
+    swift: 'SUBASKBX',
     beneficiary: 'LERENT s.r.o.',
     amount: totalAmount,
     currency: 'EUR',

@@ -125,8 +125,8 @@ export const generatePaymentInfo = (reservationData) => {
 
   // Company bank details
   const bankDetails = {
-    iban: 'SK73 1100 0000 0029 4315 7379',
-    swift: 'TATRSKBX',
+    iban: 'SK60 0200 0000 0072 2192 4153',
+    swift: 'SUBASKBX',
     beneficiaryName: 'LeRent s. r. o.',
     amount: totalAmount,
     variableSymbol,
