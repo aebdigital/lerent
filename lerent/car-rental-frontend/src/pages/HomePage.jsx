@@ -607,9 +607,30 @@ const HomePage = () => {
         const revenueResponse = await fetch(`${config.API_BASE_URL}/api/lerent-stats/rental-revenue`);
         const revenueData = await revenueResponse.json();
 
-        // Fetch unique customers
-        const customersResponse = await fetch(`${config.API_BASE_URL}/api/lerent-stats/unique-customers`);
-        const customersData = await customersResponse.json();
+        // Count customers by number of reservations across all cars.
+        // Admin-blocked dates count as reservations too, unlike the old
+        // unique-customers endpoint which missed offline bookings.
+        let reservationsCount = 0;
+        try {
+          const allCarsResponse = await carsAPI.getAvailableCars();
+          const allCarsData = allCarsResponse.data || allCarsResponse || [];
+          const rangeStart = new Date('2020-01-01');
+          const rangeEnd = new Date();
+          rangeEnd.setFullYear(rangeEnd.getFullYear() + 1);
+          const reservationCounts = await Promise.all(
+            allCarsData.map(async (car) => {
+              try {
+                const availability = await carsAPI.getCarAvailability(car._id || car.id, rangeStart, rangeEnd);
+                return availability?.conflictingReservations || 0;
+              } catch {
+                return 0;
+              }
+            })
+          );
+          reservationsCount = reservationCounts.reduce((sum, n) => sum + n, 0);
+        } catch (err) {
+          console.warn('Failed to count reservations for stats:', err);
+        }
 
         // Calculate km bonus: totalDays * multiplier (200) = estimated km driven
         // For every 1000km, add +1 to 550 (cap at 999 bonus)
@@ -624,13 +645,13 @@ const HomePage = () => {
         setStatsData({
           carsCount: carsData.success ? carsData.data.carsCount : 19,
           kmBonus: kmBonus,
-          customersBonus: customersData.success ? customersData.data.uniqueCustomersCount : 0
+          customersBonus: reservationsCount
         });
 
         console.log('📊 Stats loaded:', {
           carsCount: carsData.success ? carsData.data.carsCount : 19,
           kmBonus,
-          customersBonus: customersData.success ? customersData.data.uniqueCustomersCount : 0
+          customersBonus: reservationsCount
         });
       } catch (err) {
         console.error('❌ Error fetching stats:', err);
