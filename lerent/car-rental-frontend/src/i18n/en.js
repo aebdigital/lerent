@@ -220,6 +220,7 @@ const en = {
   carDetails: {
     rental: 'Rental',
     priceList: 'Rental price list',
+    kmAllowanceTitle: 'Mileage allowance',
     reserve: 'Book Now',
     description: 'Description',
     specs: {

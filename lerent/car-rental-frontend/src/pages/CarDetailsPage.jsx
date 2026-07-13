@@ -138,6 +138,15 @@ const getValidPricingEntries = (car, t) => {
   return entries;
 };
 
+// Daily km allowance tiers (same for all cars)
+const KM_ALLOWANCE_TIERS = [
+  { duration: '2-3days', km: 250 },
+  { duration: '4-10days', km: 210 },
+  { duration: '11-20days', km: 180 },
+  { duration: '21-29days', km: 150 },
+  { duration: '30-60days', km: 125 }
+];
+
 // Function to get car descriptions
 const getCarDescription = (brand, model) => {
   const carDescriptions = {
@@ -1287,6 +1296,21 @@ const CarDetailsPage = () => {
               </div>
             </div>
 
+            {/* Mobile Km Allowance Table */}
+            <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
+              <h3 className="text-xl font-semibold text-white mb-4">{t('carDetails.kmAllowanceTitle')}</h3>
+              <div className="divide-y divide-gray-800">
+                {KM_ALLOWANCE_TIERS.map((tier) => (
+                  <div key={tier.duration} className="py-3">
+                    <div className="grid grid-cols-2 gap-4">
+                      <span className="text-white">{t(`carDetails.duration.${tier.duration}`)}</span>
+                      <span className="text-[rgb(250,146,8)] font-semibold text-right">{tier.km} km/{t('carDetails.duration.day')}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Mobile Car Description */}
             <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
               <h2 className="text-2xl font-semibold text-white mb-4">{t('carDetails.description')}</h2>
@@ -1358,6 +1382,21 @@ const CarDetailsPage = () => {
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Km Allowance Table */}
+              <div className="rounded-lg p-6 border border-gray-800 shadow-sm" style={{ backgroundColor: 'rgb(25, 25, 25)' }}>
+                <h3 className="text-xl font-semibold text-white mb-4">{t('carDetails.kmAllowanceTitle')}</h3>
+                <div className="divide-y divide-gray-800">
+                  {KM_ALLOWANCE_TIERS.map((tier) => (
+                    <div key={tier.duration} className="py-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <span className="text-white">{t(`carDetails.duration.${tier.duration}`)}</span>
+                        <span className="text-[rgb(250,146,8)] font-semibold text-right">{tier.km} km/{t('carDetails.duration.day')}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

@@ -220,6 +220,7 @@ const sk = {
   carDetails: {
     rental: 'Prenájom',
     priceList: 'Cenník prenájmu',
+    kmAllowanceTitle: 'Nájazd kilometrov',
     reserve: 'Rezervovať',
     description: 'Popis',
     loading: 'Načítavajú sa detaily vozidla...',

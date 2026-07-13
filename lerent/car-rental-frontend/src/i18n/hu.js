@@ -220,6 +220,7 @@ const hu = {
   carDetails: {
     rental: 'Bérlés',
     priceList: 'Bérleti díjszabás',
+    kmAllowanceTitle: 'Kilométer-keret',
     reserve: 'Foglalás',
     description: 'Leírás',
     loading: 'Jármű adatainak betöltése...',
