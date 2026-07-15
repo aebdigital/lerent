@@ -514,33 +514,44 @@ const HomePage = () => {
 
         // If API returns no cars, fall back to static data
         if (carsData && carsData.length > 0) {
-          // Fetch availability data for all cars for the next month (30 days)
+          // Fetch availability for all cars in one bulk request (next 30 days)
           const startDate = new Date();
           const endDate = new Date();
           endDate.setDate(startDate.getDate() + 30); // Next month
 
-          const carsWithAvailability = await Promise.all(
-            carsData.map(async (car) => {
-              try {
-                const availability = await carsAPI.getCarAvailability(
-                  car._id,
-                  startDate,
-                  endDate
-                );
-
-                return {
-                  ...car,
-                  unavailableDates: availability?.unavailableDates || []
-                };
-              } catch (err) {
-                console.warn(`Failed to load availability for car ${car._id}:`, err);
-                return {
-                  ...car,
-                  unavailableDates: [] // Default to empty if API fails
-                };
+          // Expand each reservation range into flat YYYY-MM-DD strings (UTC,
+          // same format the hero-form date filter compares against)
+          const expandReservationsToDates = (reservations) => {
+            const dates = new Set();
+            (reservations || []).forEach((reservation) => {
+              const current = new Date(Math.max(new Date(reservation.startDate), startDate));
+              const last = new Date(Math.min(new Date(reservation.endDate), endDate));
+              while (current <= last) {
+                dates.add(current.toISOString().split('T')[0]);
+                current.setDate(current.getDate() + 1);
               }
-            })
-          );
+            });
+            return [...dates];
+          };
+
+          const unavailableDatesByCar = {};
+          try {
+            const reserved = await carsAPI.getReservedDates(
+              carsData.map((car) => car._id || car.id),
+              startDate,
+              endDate
+            );
+            (reserved?.cars || []).forEach((entry) => {
+              unavailableDatesByCar[entry.car.id] = expandReservationsToDates(entry.reservations);
+            });
+          } catch (err) {
+            console.warn('Failed to load bulk availability, dates default to available:', err);
+          }
+
+          const carsWithAvailability = carsData.map((car) => ({
+            ...car,
+            unavailableDates: unavailableDatesByCar[car._id || car.id] || []
+          }));
 
           const carsWithSlugs = getUniqueCarSlugs(carsWithAvailability);
           setCars(carsWithSlugs);
@@ -598,6 +609,18 @@ const HomePage = () => {
   // Fetch stats for the "VÁŠEŇ PRE AUTÁ" section
   useEffect(() => {
     const fetchStats = async () => {
+      // Stats change rarely but cost ~25 API requests to compute, so serve
+      // them from sessionStorage after the first load of a visitor's session
+      const cachedStats = sessionStorage.getItem('lerentStatsCache');
+      if (cachedStats) {
+        try {
+          setStatsData(JSON.parse(cachedStats));
+          return;
+        } catch {
+          sessionStorage.removeItem('lerentStatsCache');
+        }
+      }
+
       try {
         // Fetch cars count
         const carsResponse = await fetch(`${config.API_BASE_URL}/api/lerent-stats/cars-count`);
@@ -617,17 +640,12 @@ const HomePage = () => {
           const rangeStart = new Date('2020-01-01');
           const rangeEnd = new Date();
           rangeEnd.setFullYear(rangeEnd.getFullYear() + 1);
-          const reservationCounts = await Promise.all(
-            allCarsData.map(async (car) => {
-              try {
-                const availability = await carsAPI.getCarAvailability(car._id || car.id, rangeStart, rangeEnd);
-                return availability?.conflictingReservations || 0;
-              } catch {
-                return 0;
-              }
-            })
+          const reserved = await carsAPI.getReservedDates(
+            allCarsData.map((car) => car._id || car.id),
+            rangeStart,
+            rangeEnd
           );
-          reservationsCount = reservationCounts.reduce((sum, n) => sum + n, 0);
+          reservationsCount = reserved?.summary?.totalReservations || 0;
         } catch (err) {
           console.warn('Failed to count reservations for stats:', err);
         }
@@ -642,17 +660,15 @@ const HomePage = () => {
           kmBonus = Math.min(Math.floor(estimatedKm / 1000), 999);
         }
 
-        setStatsData({
+        const newStats = {
           carsCount: carsData.success ? carsData.data.carsCount : 19,
           kmBonus: kmBonus,
           customersBonus: reservationsCount
-        });
+        };
+        setStatsData(newStats);
+        sessionStorage.setItem('lerentStatsCache', JSON.stringify(newStats));
 
-        console.log('📊 Stats loaded:', {
-          carsCount: carsData.success ? carsData.data.carsCount : 19,
-          kmBonus,
-          customersBonus: reservationsCount
-        });
+        console.log('📊 Stats loaded:', newStats);
       } catch (err) {
         console.error('❌ Error fetching stats:', err);
         // Keep default values on error

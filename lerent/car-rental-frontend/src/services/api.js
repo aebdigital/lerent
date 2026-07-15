@@ -423,11 +423,7 @@ export const carsAPI = {
     // Try tenant-specific endpoint first
     if (API_CONFIG.useTenantEndpoints) {
       try {
-        const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars?${queryParams}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
+        const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars?${queryParams}`);
 
         if (response.ok) {
           const result = await handleResponse(response);
@@ -447,11 +443,7 @@ export const carsAPI = {
     // Fallback to general endpoint or mock data
     if (API_CONFIG.enableFallback) {
       try {
-        const response = await fetch(`${API_BASE}/public/cars?${queryParams}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
+        const response = await fetch(`${API_BASE}/public/cars?${queryParams}`);
 
         const result = await handleResponse(response);
         console.log('Cars returned from fallback API:', result.data?.length || 0, 'cars');
@@ -477,11 +469,7 @@ export const carsAPI = {
     // Try tenant-specific endpoint first
     if (API_CONFIG.useTenantEndpoints) {
       try {
-        const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars/${carId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
+        const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars/${carId}`);
 
         if (response.ok) {
           const result = await handleResponse(response);
@@ -495,11 +483,7 @@ export const carsAPI = {
     // Fallback to general endpoint or mock data
     if (API_CONFIG.enableFallback) {
       try {
-        const response = await fetch(`${API_BASE}/public/cars/${carId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
+        const response = await fetch(`${API_BASE}/public/cars/${carId}`);
 
         const result = await handleResponse(response);
         return result.data;
@@ -529,11 +513,7 @@ export const carsAPI = {
     // Try tenant-specific endpoint first
     if (API_CONFIG.useTenantEndpoints) {
       try {
-        const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars/${carId}/availability?${queryParams}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
+        const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars/${carId}/availability?${queryParams}`);
 
         if (response.ok) {
           const result = await handleResponse(response);
@@ -548,13 +528,7 @@ export const carsAPI = {
             try {
               // Fetch calendar for this car using the correct endpoint
               const calendarResponse = await fetch(
-                `${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars/${carId}/calendar?startDate=${queryParams.get('startDate')}&endDate=${queryParams.get('endDate')}`,
-                {
-                  headers: {
-                    'Content-Type': 'application/json',
-                  }
-                }
-              );
+                `${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars/${carId}/calendar?startDate=${queryParams.get('startDate')}&endDate=${queryParams.get('endDate')}`);
 
               if (calendarResponse.ok) {
                 const calendarResult = await handleResponse(calendarResponse);
@@ -597,11 +571,7 @@ export const carsAPI = {
     // Fallback to general endpoint or assume available
     if (API_CONFIG.enableFallback) {
       try {
-        const response = await fetch(`${API_BASE}/public/cars/${carId}/availability?${queryParams}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
+        const response = await fetch(`${API_BASE}/public/cars/${carId}/availability?${queryParams}`);
 
         const result = await handleResponse(response);
         return result.data || { isAvailable: true, status: 'available' };
@@ -614,13 +584,20 @@ export const carsAPI = {
     return { isAvailable: true, status: 'available' };
   },
 
+  // Get reservations for many cars in one bulk request
+  getReservedDates: async (carIds, startDate, endDate) => {
+    const queryParams = new URLSearchParams({ carIds: carIds.join(',') });
+    if (startDate) queryParams.set('startDate', startDate.toISOString().split('T')[0]);
+    if (endDate) queryParams.set('endDate', endDate.toISOString().split('T')[0]);
+
+    const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars/reserved-dates?${queryParams}`);
+    const result = await handleResponse(response);
+    return result.data || null;
+  },
+
   // Get cars by category for RIVAL tenant
   getCarsByCategory: async (category) => {
-    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/cars/category/${category}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
+    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/cars/category/${category}`);
 
     const result = await handleResponse(response);
     return result.data || [];
@@ -628,11 +605,7 @@ export const carsAPI = {
 
   // Get available features for RIVAL tenant
   getFeatures: async () => {
-    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/features`, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
+    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/features`);
 
     const result = await handleResponse(response);
     return result.data || [];
@@ -650,11 +623,7 @@ export const servicesAPI = {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/services`, {
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/services`);
 
       if (response.ok) {
         const result = await handleResponse(response);
@@ -678,11 +647,7 @@ export const servicesAPI = {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/services/vehicle/${vehicleId}`, {
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/services/vehicle/${vehicleId}`);
 
       if (response.ok) {
         const result = await handleResponse(response);
@@ -739,11 +704,7 @@ export const insuranceAPI = {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars/${carId}/extended-insurance`, {
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/cars/${carId}/extended-insurance`);
 
       if (response.ok) {
         const result = await handleResponse(response);
@@ -1005,14 +966,7 @@ export const locationsAPI = {
       console.log('📍 Fetching pickup locations from API...');
 
       const response = await fetch(
-        `${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/pickup-locations`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        }
-      );
+        `${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/pickup-locations`);
 
       const result = await handleResponse(response);
 
@@ -1062,12 +1016,7 @@ export const bannersAPI = {
     try {
       console.log('🎨 Fetching banners from API...');
 
-      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/banners`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/banners`);
 
       if (!response.ok) {
         console.warn('⚠️ Failed to fetch banners from API');
@@ -1089,12 +1038,7 @@ export const bannersAPI = {
     try {
       console.log(`🎨 Fetching banners for position "${position}" from API...`);
 
-      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/banners?position=${position}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await fetch(`${API_BASE}/public/users/${encodeURIComponent(TENANT_EMAIL)}/banners?position=${position}`);
 
       if (!response.ok) {
         console.warn(`⚠️ Failed to fetch banners for position "${position}"`);
@@ -1116,36 +1060,28 @@ export const bannersAPI = {
 export const blogAPI = {
   // List all published blogs
   getBlogs: async () => {
-    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/blogs`, {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/blogs`);
     const result = await handleResponse(response);
     return result.data || [];
   },
 
   // Get single blog by slug (includes full content)
   getBlogBySlug: async (slug) => {
-    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/blogs/${slug}`, {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/blogs/${slug}`);
     const result = await handleResponse(response);
     return result.data || null;
   },
 
   // Get blog categories
   getCategories: async () => {
-    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/blog-categories`, {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/blog-categories`);
     const result = await handleResponse(response);
     return result.data || [];
   },
 
   // Get blog tags
   getTags: async () => {
-    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/blog-tags`, {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    const response = await fetch(`${API_BASE}/public/users/${TENANT_EMAIL}/blog-tags`);
     const result = await handleResponse(response);
     return result.data || [];
   }
