@@ -221,6 +221,8 @@ const sk = {
     rental: 'Prenájom',
     priceList: 'Cenník prenájmu',
     kmAllowanceTitle: 'Nájazd kilometrov',
+    kmTotal: 'spolu',
+    excessKmPrice: 'Cena za km nad limit',
     reserve: 'Rezervovať',
     description: 'Popis',
     loading: 'Načítavajú sa detaily vozidla...',

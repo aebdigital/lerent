@@ -221,6 +221,8 @@ const hu = {
     rental: 'Bérlés',
     priceList: 'Bérleti díjszabás',
     kmAllowanceTitle: 'Kilométer-keret',
+    kmTotal: 'összesen',
+    excessKmPrice: 'Limit feletti km ára',
     reserve: 'Foglalás',
     description: 'Leírás',
     loading: 'Jármű adatainak betöltése...',

@@ -27,6 +27,7 @@ import ContactMapSection from '../components/ContactMapSection';
 import BookingFormSection from '../components/BookingFormSection';
 import { carsAPI, locationsAPI } from '../services/api';
 import { generateCarSlug, findCarBySlug, getUniqueCarSlugs } from '../utils/slugify';
+import { KM_ALLOWANCE_TIERS, getKmAllowance, formatKm, formatExcessKmPrice } from '../utils/kmPolicy';
 import { useLanguage } from '../context/LanguageContext';
 import HeroImg from '../test.webp';
 import AudiA6Img from '../audia6.webp';
@@ -137,15 +138,6 @@ const getValidPricingEntries = (car, t) => {
 
   return entries;
 };
-
-// Daily km allowance tiers (same for all cars)
-const KM_ALLOWANCE_TIERS = [
-  { duration: '2-3days', km: 250 },
-  { duration: '4-10days', km: 210 },
-  { duration: '11-20days', km: 180 },
-  { duration: '21-29days', km: 150 },
-  { duration: '30-60days', km: 125 }
-];
 
 // Function to get car descriptions
 const getCarDescription = (brand, model) => {
@@ -1221,7 +1213,22 @@ const CarDetailsPage = () => {
                         <span className="text-gray-300">Cena za deň:</span>
                         <span className="font-goldman font-semibold text-white">{getPricePerDay(Math.ceil((bookingData.returnDate - bookingData.pickupDate) / (1000 * 60 * 60 * 24))).toFixed(2)}€</span>
                       </div>
+                      {(() => {
+                        const kmAllowance = getKmAllowance(bookingData.pickupDate, bookingData.returnDate);
+                        return (
+                          <div className="flex justify-between">
+                            <span className="text-gray-300">{t('carDetails.kmAllowanceTitle')}:</span>
+                            <span className="font-goldman font-semibold text-white">{kmAllowance.kmPerDay} km/{t('carDetails.duration.day')} ({t('carDetails.kmTotal')} {formatKm(kmAllowance.totalKm)} km)</span>
+                          </div>
+                        );
+                      })()}
                     </>
+                  )}
+                  {car.mileageLimits?.excessKmPrice > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">{t('carDetails.excessKmPrice')}:</span>
+                      <span className="font-goldman font-semibold text-white">{formatExcessKmPrice(car.mileageLimits.excessKmPrice)}</span>
+                    </div>
                   )}
                   {getDeposit() > 0 && (
                     <div className="flex justify-between">
@@ -1304,10 +1311,18 @@ const CarDetailsPage = () => {
                   <div key={tier.duration} className="py-3">
                     <div className="grid grid-cols-2 gap-4">
                       <span className="text-white">{t(`carDetails.duration.${tier.duration}`)}</span>
-                      <span className="text-[rgb(250,146,8)] font-semibold text-right">{tier.km} km/{t('carDetails.duration.day')}</span>
+                      <span className="text-[rgb(250,146,8)] font-semibold text-right">{tier.kmPerDay} km/{t('carDetails.duration.day')}</span>
                     </div>
                   </div>
                 ))}
+                {car.mileageLimits?.excessKmPrice > 0 && (
+                  <div className="py-3 border-t-2 border-gray-700 mt-2">
+                    <div className="grid grid-cols-2 gap-4">
+                      <span className="text-white font-semibold">{t('carDetails.excessKmPrice')}</span>
+                      <span className="text-white font-semibold text-right">{formatExcessKmPrice(car.mileageLimits.excessKmPrice)}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1393,10 +1408,18 @@ const CarDetailsPage = () => {
                     <div key={tier.duration} className="py-3">
                       <div className="grid grid-cols-2 gap-4">
                         <span className="text-white">{t(`carDetails.duration.${tier.duration}`)}</span>
-                        <span className="text-[rgb(250,146,8)] font-semibold text-right">{tier.km} km/{t('carDetails.duration.day')}</span>
+                        <span className="text-[rgb(250,146,8)] font-semibold text-right">{tier.kmPerDay} km/{t('carDetails.duration.day')}</span>
                       </div>
                     </div>
                   ))}
+                  {car.mileageLimits?.excessKmPrice > 0 && (
+                    <div className="py-3 border-t-2 border-gray-700 mt-2">
+                      <div className="grid grid-cols-2 gap-4">
+                        <span className="text-white font-semibold">{t('carDetails.excessKmPrice')}</span>
+                        <span className="text-white font-semibold text-right">{formatExcessKmPrice(car.mileageLimits.excessKmPrice)}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1450,7 +1473,22 @@ const CarDetailsPage = () => {
                           <span className="text-gray-300">Cena za deň:</span>
                           <span className="font-goldman font-semibold text-white">{getPricePerDay(calculateDaysWithTime()).toFixed(2)}€</span>
                         </div>
+                        {(() => {
+                          const kmAllowance = getKmAllowance(bookingData.pickupDate, bookingData.returnDate);
+                          return (
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">{t('carDetails.kmAllowanceTitle')}:</span>
+                              <span className="font-goldman font-semibold text-white">{kmAllowance.kmPerDay} km/{t('carDetails.duration.day')} ({t('carDetails.kmTotal')} {formatKm(kmAllowance.totalKm)} km)</span>
+                            </div>
+                          );
+                        })()}
                       </>
+                    )}
+                    {car.mileageLimits?.excessKmPrice > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">{t('carDetails.excessKmPrice')}:</span>
+                        <span className="font-goldman font-semibold text-white">{formatExcessKmPrice(car.mileageLimits.excessKmPrice)}</span>
+                      </div>
                     )}
                     {getDeposit() > 0 && (
                       <div className="flex justify-between">

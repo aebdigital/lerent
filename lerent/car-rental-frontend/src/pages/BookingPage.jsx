@@ -14,6 +14,7 @@ import DatePicker from '../components/DatePicker';
 import { carsAPI, bookingAPI, authAPI, servicesAPI, insuranceAPI, locationsAPI } from '../services/api';
 import paymentService from '../services/paymentService';
 import { generatePaymentInfo } from '../utils/payBySquare';
+import { getKmAllowance, formatKm, formatExcessKmPrice } from '../utils/kmPolicy';
 import config from '../config/config';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -2506,6 +2507,21 @@ const BookingPage = () => {
                       <span className="text-gray-300">{t('booking.rentalPrice')}</span>
                       <span className="font-medium text-white">{(getPricePerDay(calculateDays()) * calculateDays()).toFixed(2)}€</span>
                     </div>
+                    {(() => {
+                      const kmAllowance = getKmAllowance(formData.pickupDate, formData.returnDate);
+                      return kmAllowance && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-300">{t('carDetails.kmAllowanceTitle')}</span>
+                          <span className="font-medium text-white">{kmAllowance.kmPerDay} km/{t('carDetails.duration.day')} ({t('carDetails.kmTotal')} {formatKm(kmAllowance.totalKm)} km)</span>
+                        </div>
+                      );
+                    })()}
+                    {selectedCar.mileageLimits?.excessKmPrice > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-300">{t('carDetails.excessKmPrice')}</span>
+                        <span className="font-medium text-white">{formatExcessKmPrice(selectedCar.mileageLimits.excessKmPrice)}</span>
+                      </div>
+                    )}
 
                     {/* Insurance breakdown */}
                     {formData.selectedInsurance && formData.selectedInsurance.length > 0 && (

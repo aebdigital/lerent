@@ -221,6 +221,8 @@ const en = {
     rental: 'Rental',
     priceList: 'Rental price list',
     kmAllowanceTitle: 'Mileage allowance',
+    kmTotal: 'total',
+    excessKmPrice: 'Price per km over limit',
     reserve: 'Book Now',
     description: 'Description',
     specs: {
